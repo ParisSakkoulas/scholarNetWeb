@@ -1,0 +1,5 @@
+<div class="toast-wrap">
+    @for (toast of toastService.toasts(); track toast.id) {
+    <sn-toast [toast]="toast" (onDismiss)="toastService.dismiss($event)" />
+    }
+</div>

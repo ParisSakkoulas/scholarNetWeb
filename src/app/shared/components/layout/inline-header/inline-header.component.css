@@ -1,0 +1,289 @@
+:host {
+  display: block;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  padding: 14px 32px;
+  background: var(--paper);
+  border-bottom: 1px solid var(--rule);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--ink);
+  white-space: nowrap;
+  flex-shrink: 0;
+  text-decoration: none;
+
+  .mark {
+    width: 30px;
+    height: 30px;
+    color: var(--ink);
+
+    .accent {
+      fill: var(--oxblood);
+    }
+  }
+
+  .wm {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 400;
+    letter-spacing: -0.015em;
+
+    i {
+      font-style: italic;
+      font-weight: 500;
+    }
+  }
+}
+
+.search {
+  flex: 1;
+  max-width: 480px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border: 1px solid var(--rule);
+  background: var(--paper-2);
+}
+.search__icon {
+  width: 15px;
+  height: 15px;
+  color: var(--ink-3);
+  flex-shrink: 0;
+}
+.search__input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: var(--sans);
+  font-size: 13.5px;
+  color: var(--ink);
+}
+.search__input::placeholder {
+  color: var(--ink-3);
+}
+.search__shortcut {
+  display: flex;
+  gap: 2px;
+  padding: 2px 6px;
+  border: 1px solid var(--rule);
+  background: var(--paper);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--ink-3);
+  flex-shrink: 0;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.actions__link {
+  font-family: var(--sans);
+  font-size: 13.5px;
+  color: var(--ink-2);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.actions__link:hover {
+  color: var(--ink);
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  background: var(--oxford);
+  color: white;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 12px;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.notificationButton {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  color: var(--oxford);
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 12px;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.btn-signup {
+  padding: 8px 16px;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.btn-signup:hover {
+  opacity: 0.9;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.actions__link {
+  font-family: var(--sans);
+  font-size: 13.5px;
+  color: var(--ink-2);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.actions__link:hover {
+  color: var(--ink);
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  background: var(--oxford);
+  color: var(--paper);
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 12px;
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.profile-menu {
+  position: relative;
+}
+
+.profile-menu__panel {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 240px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  box-shadow: 0 12px 32px -12px rgba(20, 20, 30, 0.18);
+  z-index: 50;
+}
+
+.profile-menu__identity {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--rule);
+}
+.profile-menu__name {
+  font-family: var(--serif);
+  font-size: 15px;
+  color: var(--ink);
+}
+.profile-menu__email {
+  margin-top: 2px;
+  font-family: var(--sans);
+  font-size: 11.5px;
+  color: var(--ink-3);
+}
+
+.profile-menu__item {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  font-family: var(--sans);
+  font-size: 13.5px;
+  color: var(--ink-2);
+  text-decoration: none;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.profile-menu__item:hover {
+  background: var(--paper-2);
+  color: var(--ink);
+}
+
+.profile-menu__divider {
+  height: 1px;
+  background: var(--rule);
+  margin: 4px 0;
+}
+
+.profile-menu__logout {
+  color: var(--oxblood);
+}
+.profile-menu__logout:hover {
+  background: var(--paper-2);
+}
+
+.notification-menu {
+  position: relative;
+}
+
+.notification-menu__panel {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 280px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  box-shadow: 0 12px 32px -12px rgba(20, 20, 30, 0.18);
+  z-index: 50;
+}
+
+.notification-menu__identity {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--rule);
+}
+
+.btn-signup {
+  padding: 8px 16px;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.btn-signup:hover {
+  opacity: 0.9;
+}
+
+@media (max-width: 760px) {
+  .app-header {
+    gap: 16px;
+    padding: 12px 16px;
+  }
+  .search {
+    display: none;
+  } /* needs a mobile search overlay/icon eventually — out of scope for now */
+  .actions {
+    gap: 14px;
+  }
+}

@@ -1,0 +1,74 @@
+<nav class="nav">
+    <div class="container nav-inner">
+
+        <!-- Brand -->
+        <a class="brand" routerLink="/">
+            <svg class="mark" viewBox="0 0 100 100" aria-hidden="true">
+                <g transform="translate(0,4)">
+                    <g stroke="currentColor" stroke-width="1.1" opacity="0.55" fill="none">
+                        <line x1="22" y1="26" x2="56" y2="14" />
+                        <line x1="22" y1="26" x2="40" y2="60" />
+                        <line x1="56" y1="14" x2="78" y2="46" />
+                        <line x1="78" y1="46" x2="40" y2="60" />
+                        <line x1="40" y1="60" x2="14" y2="64" />
+                        <line x1="40" y1="60" x2="60" y2="86" />
+                        <line x1="78" y1="46" x2="86" y2="76" />
+                        <line x1="86" y1="76" x2="60" y2="86" />
+                    </g>
+                    <circle cx="22" cy="26" r="3.2" fill="currentColor" />
+                    <circle cx="56" cy="14" r="3.2" fill="currentColor" />
+                    <circle cx="78" cy="46" r="3.2" fill="currentColor" />
+                    <circle cx="40" cy="60" r="5.0" class="accent" />
+                    <circle cx="14" cy="64" r="3.2" fill="currentColor" />
+                    <circle cx="86" cy="76" r="3.2" fill="currentColor" />
+                    <circle cx="60" cy="86" r="3.2" fill="currentColor" />
+                </g>
+            </svg>
+            <span class="wm">scholar<i>N</i>et</span>
+        </a>
+
+        <!-- Desktop nav links -->
+        <div class="nav-links">
+            <a routerLink="/features" routerLinkActive="active">Features</a>
+            <a routerLink="/how-it-works" routerLinkActive="active">How it works</a>
+            <a routerLink="/researchers" routerLinkActive="active">For researchers</a>
+            <a routerLink="/institutions" routerLinkActive="active">Institutions</a>
+            <a routerLink="/pricing" routerLinkActive="active">Pricing</a>
+        </div>
+
+        <!-- Desktop CTA -->
+        <div class="nav-cta">
+            <a routerLink="/auth/login" class="signin-link">Sign in</a>
+            <a routerLink="/auth/register" class="btn">
+                Claim your profile <span class="arrow">→</span>
+            </a>
+        </div>
+
+        <!-- Mobile hamburger -->
+        <button class="hamburger" [class.open]="mobileMenuOpen()" (click)="toggleMenu()"
+            aria-label="Toggle navigation menu" [attr.aria-expanded]="mobileMenuOpen()">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+    </div>
+
+    <!-- Mobile menu -->
+    @if (mobileMenuOpen()) {
+    <div class="mobile-menu">
+        <div class="container">
+            <a routerLink="/features" (click)="closeMobileMenu()">Features</a>
+            <a routerLink="/how-it-works" (click)="closeMobileMenu()">How it works</a>
+            <a routerLink="/researchers" (click)="closeMobileMenu()">For researchers</a>
+            <a routerLink="/institutions" (click)="closeMobileMenu()">Institutions</a>
+            <a routerLink="/pricing" (click)="closeMobileMenu()">Pricing</a>
+            <div class="mobile-cta">
+                <a routerLink="/auth/login" class="signin-link" (click)="closeMobileMenu()">Sign in</a>
+                <a routerLink="/auth/register" class="btn" (click)="closeMobileMenu()">
+                    Claim your profile <span class="arrow">→</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    }
+</nav>

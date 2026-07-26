@@ -1,0 +1,182 @@
+<div class="auth">
+
+
+    <!-- spinner component -->
+    @if (loading()) {
+    <div class="overlay">
+        <sn-spinner />
+    </div>
+    }
+
+
+    <!-- ── Left brand panel ── -->
+    <aside class="panel">
+
+        <div class="panel-head">
+            <a class="brand" routerLink="/">
+                <svg class="mark" viewBox="0 0 100 100" aria-hidden="true">
+                    <g transform="translate(0,4)">
+                        <g stroke="currentColor" stroke-width="1.1" opacity="0.65" fill="none">
+                            <line x1="22" y1="26" x2="56" y2="14" />
+                            <line x1="22" y1="26" x2="40" y2="60" />
+                            <line x1="56" y1="14" x2="78" y2="46" />
+                            <line x1="78" y1="46" x2="40" y2="60" />
+                            <line x1="40" y1="60" x2="14" y2="64" />
+                            <line x1="40" y1="60" x2="60" y2="86" />
+                            <line x1="78" y1="46" x2="86" y2="76" />
+                            <line x1="86" y1="76" x2="60" y2="86" />
+                        </g>
+                        <circle cx="22" cy="26" r="3.2" fill="currentColor" />
+                        <circle cx="56" cy="14" r="3.2" fill="currentColor" />
+                        <circle cx="78" cy="46" r="3.2" fill="currentColor" />
+                        <circle cx="40" cy="60" r="5.0" class="accent" />
+                        <circle cx="14" cy="64" r="3.2" fill="currentColor" />
+                        <circle cx="86" cy="76" r="3.2" fill="currentColor" />
+                        <circle cx="60" cy="86" r="3.2" fill="currentColor" />
+                    </g>
+                </svg>
+                <span class="wm">scholar<i>N</i>et</span>
+            </a>
+            <a class="panel-back" routerLink="/">
+                <span class="arr">←</span> Back to scholarnet.org
+            </a>
+        </div>
+
+        <!-- Faint background graph -->
+        <svg class="panel-graph" viewBox="0 0 400 400" aria-hidden="true">
+            <g stroke="currentColor" stroke-width="0.8" fill="none">
+                <line x1="80" y1="90" x2="220" y2="50" />
+                <line x1="80" y1="90" x2="160" y2="240" />
+                <line x1="220" y1="50" x2="310" y2="180" />
+                <line x1="310" y1="180" x2="160" y2="240" />
+                <line x1="160" y1="240" x2="50" y2="260" />
+                <line x1="160" y1="240" x2="240" y2="340" />
+                <line x1="310" y1="180" x2="345" y2="300" />
+                <line x1="345" y1="300" x2="240" y2="340" />
+                <line x1="80" y1="90" x2="50" y2="260" />
+                <line x1="220" y1="50" x2="345" y2="300" />
+            </g>
+            <g fill="currentColor">
+                <circle cx="80" cy="90" r="5" />
+                <circle cx="220" cy="50" r="5" />
+                <circle cx="310" cy="180" r="5" />
+                <circle cx="160" cy="240" r="8" />
+                <circle cx="50" cy="260" r="5" />
+                <circle cx="345" cy="300" r="5" />
+                <circle cx="240" cy="340" r="5" />
+            </g>
+        </svg>
+
+        <div class="panel-body">
+            <div class="panel-eyebrow">
+                <span class="dot"></span>Welcome back
+            </div>
+            <p class="panel-quote">
+                Your work, <em>already</em> in order.
+            </p>
+            <p class="panel-sub">
+                Three new publications were auto-synced from CrossRef and arXiv
+                since you last signed in.
+            </p>
+        </div>
+
+        <div class="panel-foot">
+            <div class="stat-row">
+                <div class="stat"><b>1.8M</b>publications</div>
+                <div class="stat"><b>24k</b>researchers</div>
+                <div class="stat"><b>142</b>institutions</div>
+            </div>
+            <div class="foot-copy">© 2026</div>
+        </div>
+    </aside>
+
+    <!-- ── Right form panel ── -->
+    <section class="form-side">
+
+        <div class="form-head">
+            <span class="label">— sign in —</span>
+            <span class="switch">New here? <a routerLink="/auth/register">Create a profile →</a></span>
+        </div>
+
+        <div class="form-body">
+            <h2>Sign in to <em>scholarNet</em>.</h2>
+            <p class="lede">
+                Use your ORCID to keep your publications, identifiers, and
+                affiliations in sync.
+            </p>
+
+            <!-- ORCID primary -->
+            <button class="orcid-btn" type="button">
+                <span class="recommended">recommended</span>
+                <span class="orcid-mark">iD</span>
+                <span class="orcid-label">
+                    Continue with ORCID
+                    <span class="orcid-sub">0000-0002-···· · verifies your identity</span>
+                </span>
+                <span class="arr">→</span>
+            </button>
+
+            <!-- Secondary providers -->
+            <div class="providers">
+                <button class="provider" type="button"><span class="g">G</span> Google</button>
+                <button class="provider" type="button">⌧ Institution SSO</button>
+            </div>
+
+            <div class="or-divider">or use email</div>
+
+            <!-- Email field -->
+
+            <form [formGroup]="loginForm" (ngSubmit)="login()">
+
+                <div class="field">
+                    <label for="identifier">Email or User Name</label>
+                    <input id="identifier" type="text" autocomplete="email" formControlName="identifier" />
+                    @if ( identifierControl?.touched && identifierControl?.hasError('required')) {
+                    <small class="text-red-600">Email or User name is required</small>
+                    }
+                </div>
+
+                <!-- Password field -->
+                <div class="field">
+                    <div class="field-row">
+                        <label for="password">Password</label>
+                        <a class="forgot" routerLink="/auth/forgot-password">Forgot?</a>
+                    </div>
+                    <div class="relative">
+                        <input id="password" formControlName="password" [type]="showPassword ? 'text' : 'password'"
+                            autocomplete="password" class="w-full pr-10" />
+
+                        <i class="pi absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer"
+                            [class.pi-eye]="!showPassword" [class.pi-eye-slash]="showPassword"
+                            (click)="showPassword = !showPassword">
+                        </i>
+
+                    </div>
+                    @if ( passwordControl?.touched && passwordControl?.hasError('required')) {
+                    <small class="text-red-600">You need password in order to log in</small>}
+                    <!-- <input id="password" type="password" formControlName="password" placeholder="••••••••••"
+                        autocomplete="current-password" />
+                    @if ( passwordControl?.touched && passwordControl?.hasError('required')) {
+                    <small class="text-red-600">You need password in order to log in</small>
+                    } -->
+                </div>
+
+                <div class="submit">
+                    <button class="btn" type="submit">
+                        Sign in <span class="arr">→</span>
+                    </button>
+                </div>
+
+            </form>
+
+
+        </div>
+
+        <div class="form-foot">
+            <a routerLink="/privacy">Privacy</a>
+            <a routerLink="/terms">Terms</a>
+            <a routerLink="/contact">Help · hello&#64;scholarnet.org</a>
+        </div>
+    </section>
+
+</div>

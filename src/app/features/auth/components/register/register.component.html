@@ -1,0 +1,268 @@
+<div class="auth">
+
+    <!-- spinner component -->
+    @if (loading()) {
+    <div class="overlay">
+        <sn-spinner />
+    </div>
+    }
+
+    <!-- ── Left brand panel ── -->
+    <aside class="panel panel-signup">
+
+        <div class="panel-head">
+            <a class="brand" routerLink="/">
+                <svg class="mark" viewBox="0 0 100 100" aria-hidden="true">
+                    <g transform="translate(0,4)">
+                        <g stroke="currentColor" stroke-width="1.1" opacity="0.65" fill="none">
+                            <line x1="22" y1="26" x2="56" y2="14" />
+                            <line x1="22" y1="26" x2="40" y2="60" />
+                            <line x1="56" y1="14" x2="78" y2="46" />
+                            <line x1="78" y1="46" x2="40" y2="60" />
+                            <line x1="40" y1="60" x2="14" y2="64" />
+                            <line x1="40" y1="60" x2="60" y2="86" />
+                            <line x1="78" y1="46" x2="86" y2="76" />
+                            <line x1="86" y1="76" x2="60" y2="86" />
+                        </g>
+                        <circle cx="22" cy="26" r="3.2" fill="currentColor" />
+                        <circle cx="56" cy="14" r="3.2" fill="currentColor" />
+                        <circle cx="78" cy="46" r="3.2" fill="currentColor" />
+                        <circle cx="40" cy="60" r="5.0" class="accent" />
+                        <circle cx="14" cy="64" r="3.2" fill="currentColor" />
+                        <circle cx="86" cy="76" r="3.2" fill="currentColor" />
+                        <circle cx="60" cy="86" r="3.2" fill="currentColor" />
+                    </g>
+                </svg>
+                <span class="wm">scholar<i>N</i>et</span>
+            </a>
+            <a class="panel-back" routerLink="/auth/login">
+                <span class="arr">←</span> Already a member? Sign in
+            </a>
+        </div>
+
+        <!-- Faint background graph -->
+        <svg class="panel-graph" viewBox="0 0 400 400" aria-hidden="true">
+            <g stroke="currentColor" stroke-width="0.8" fill="none">
+                <line x1="80" y1="90" x2="220" y2="50" />
+                <line x1="80" y1="90" x2="160" y2="240" />
+                <line x1="220" y1="50" x2="310" y2="180" />
+                <line x1="310" y1="180" x2="160" y2="240" />
+                <line x1="160" y1="240" x2="50" y2="260" />
+                <line x1="160" y1="240" x2="240" y2="340" />
+                <line x1="310" y1="180" x2="345" y2="300" />
+                <line x1="345" y1="300" x2="240" y2="340" />
+                <line x1="80" y1="90" x2="50" y2="260" />
+                <line x1="220" y1="50" x2="345" y2="300" />
+            </g>
+            <g fill="currentColor">
+                <circle cx="80" cy="90" r="5" />
+                <circle cx="220" cy="50" r="5" />
+                <circle cx="310" cy="180" r="5" />
+                <circle cx="160" cy="240" r="8" />
+                <circle cx="50" cy="260" r="5" />
+                <circle cx="345" cy="300" r="5" />
+                <circle cx="240" cy="340" r="5" />
+            </g>
+        </svg>
+
+        <div class="panel-body">
+
+            <p class="panel-quote">
+                One <em>profile</em>.<br />
+                Every paper you've ever written.
+            </p>
+            <p class="panel-sub">
+                Connect ORCID once. We'll resolve your publications from
+                CrossRef, arXiv, and OpenAlex — and keep them current.
+            </p>
+
+            <div class="panel-bullets">
+                <div class="bullet">
+                    <span class="bullet-num">01 / pubs</span>
+                    <span>Auto-sync from DOI, arXiv, ORCID, OpenAlex.</span>
+                </div>
+                <div class="bullet">
+                    <span class="bullet-num">02 / share</span>
+                    <span>Per-link access on every upload — public, group, private.</span>
+                </div>
+                <div class="bullet">
+                    <span class="bullet-num">03 / page</span>
+                    <span>One clean URL for your CV, grants, and lab site.</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel-foot">
+            <div>Free for researchers, always.</div>
+        </div>
+    </aside>
+
+    <!-- ── Right form panel ── -->
+    <section class="form-side">
+
+        <div class="form-head">
+            <span class="label">— claim your profile —</span>
+            <span class="switch">Have an account? <a routerLink="/auth/login">Sign in →</a></span>
+        </div>
+
+        <div class="form-body">
+
+
+
+            <h2>Begin with your <em>identity</em>.</h2>
+            <p class="lede">
+                ORCID is the fastest way — we'll pull your name, affiliations,
+                and known works automatically.
+            </p>
+
+            <!-- ORCID primary -->
+            <button class="orcid-btn" type="button">
+                <span class="orcid-mark">iD</span>
+                <span class="orcid-label">
+                    Continue with ORCID
+                    <span class="orcid-sub">Pre-fills your profile · ~30 seconds</span>
+                </span>
+            </button>
+
+            <div class="or-divider">or fill in manually</div>
+
+
+            <form [formGroup]="registerForm" (ngSubmit)="register()">
+                <!-- Name row -->
+                <div class="row-2">
+                    <div class="field">
+                        <label for="firstName">First name</label>
+                        <input id="firstName" formControlName="firstName" type="text" placeholder="Paris"
+                            autocomplete="given-name" />
+                        @if ( firstNameControl?.touched && firstNameControl?.hasError('required')) {
+                        <small class="text-red-600">First Name is required</small>
+                        }
+                    </div>
+                    <div class="field">
+                        <label for="lastName">Last name</label>
+                        <input id="lastName" formControlName="lastName" type="text" placeholder="Sakkoulas"
+                            autocomplete="family-name" />
+                        @if ( lastNameControl?.touched && lastNameControl?.hasError('required')) {
+                        <small class="text-red-600">Last Name is required</small>
+                        }
+                    </div>
+                </div>
+
+
+                <!-- Email -->
+                <div class="field">
+                    <label for="email">Email</label>
+                    <input id="email" formControlName="email" type="email" placeholder="p.sakkoulas@kth.se"
+                        autocomplete="email" />
+                    <span class="hint">A verification link will send on that email.</span>
+                    @if ( emailControl?.touched && emailControl?.hasError('required')) {
+                    <small class="text-red-600">Email is required</small>
+                    }
+
+                    @if ( emailControl?.touched && emailControl?.hasError('email')) {
+                    <small class="text-red-600">Enter a valid email</small>
+                    }
+                </div>
+
+
+                <!-- user name -->
+                <div class="field">
+                    <label for="username">User name</label>
+                    <input id="username" formControlName="username" type="text" placeholder="_parisSak"
+                        autocomplete="username" />
+                    @if ( usernameControl?.touched && usernameControl?.hasError('required')) {
+                    <small class="text-red-600">user name is required</small>
+                    }
+
+                    @if ( usernameControl?.touched && usernameControl?.hasError('pattern')) {
+                    <small class="text-red-600">User name must start with '_' ex. _user123</small>
+                    }
+                </div>
+
+                <!-- user name -->
+                <div class="field">
+                    <label for="password">Password</label>
+
+                    <div class="relative">
+                        <input id="password" formControlName="password" [type]="showPassword ? 'text' : 'password'"
+                            autocomplete="password" class="w-full pr-10" />
+
+                        <i class="pi absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer"
+                            [class.pi-eye]="!showPassword" [class.pi-eye-slash]="showPassword"
+                            (click)="showPassword = !showPassword">
+                        </i>
+                    </div>
+
+                    @if (passwordControl?.touched && passwordControl?.hasError('required')) {
+                    <small class="text-red-600">Password is required</small>
+                    }
+
+                    @if (passwordControl?.touched && passwordControl?.hasError('minlength')) {
+                    <small class="text-red-600">
+                        Password must be at least 8 characters
+                    </small>
+                    }
+
+                    @if (passwordControl?.touched && passwordControl?.hasError('pattern')) {
+                    <small class="text-red-600">
+                        Password must contain uppercase, lowercase, number and special character
+                    </small>
+                    }
+                </div>
+
+
+                <div class="field">
+                    <label for="confirmPassword">Confirm Password </label>
+
+                    <div class="relative">
+                        <input id="confirmPassword" formControlName="confirmPassword"
+                            [type]="showconfirmPassword ? 'text' : 'password'" autocomplete="confirmPassword"
+                            class="w-full pr-10" />
+
+                        <i class="pi absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer"
+                            [class.pi-eye]="!showconfirmPassword" [class.pi-eye-slash]="showconfirmPassword"
+                            (click)="showconfirmPassword = !showconfirmPassword">
+                        </i>
+                    </div>
+
+                    @if (confirmPasswordControl?.touched && confirmPasswordControl?.hasError('required')) {
+                    <small class="text-red-600">Confirm your Password</small>
+                    }
+
+                    @if (confirmPasswordControl?.touched && registerForm.hasError('passwordMismatch')) {
+                    <small class="text-red-600">Password and Confirm Password must be identical</small>
+                    }
+
+
+                </div>
+
+
+
+                <!-- Terms -->
+                <div class="checkrow">
+                    <p-checkbox [(ngModel)]="checked" [binary]="true" [ngModelOptions]="{ standalone: true }" />
+                    <span>
+                        I agree to the <a routerLink="/terms">terms of use</a> and
+                        <a routerLink="/open-principles">researcher principles</a>. scholarNet will never
+                        post on my behalf.
+                    </span>
+                </div>
+
+                <div class="submit">
+                    <button class="btn btn-oxblood" type="submit">
+                        Register <span class="arr">→</span>
+                    </button>
+                </div>
+            </form>
+
+
+        </div>
+
+        <div class="form-foot">
+            <a routerLink="/privacy">Privacy</a>
+            <a routerLink="/open-principles">Researcher principles</a>
+            <a routerLink="/about">Why we ask · the open paper</a>
+        </div>
+    </section>
+
+</div>

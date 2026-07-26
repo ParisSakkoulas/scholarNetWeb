@@ -1,0 +1,59 @@
+<p>edit profile</p>
+
+
+<div class="edit-user-info">
+    <form [formGroup]="userForm" (ngSubmit)="saveUserBasicInfo()" class="edit-user-info">
+        <p>User Info form</p>
+
+        <div class="field">
+            <label for="firstName">First name</label>
+            <input id="firstName" pInputText type="text" formControlName="firstName" />
+            @if (userForm.controls.firstName.invalid && userForm.controls.firstName.touched) {
+            <span class="error">First name is required</span>
+            }
+        </div>
+
+        <div class="field">
+            <label for="lastName">Last name</label>
+            <input id="lastName" pInputText type="text" formControlName="lastName" />
+        </div>
+
+        <div class="field">
+            <label for="username">Username</label>
+            <input id="username" pInputText type="text" formControlName="username" />
+        </div>
+
+        <div class="field">
+            <label for="email">Email</label>
+            <input id="email" pInputText type="email" formControlName="email" />
+            @if (userForm.controls.email.invalid && userForm.controls.email.touched) {
+            <span class="error">Enter a valid email</span>
+            }
+        </div>
+
+        <button type="submit" class="btn">Save User</button>
+    </form>
+
+
+</div>
+
+
+
+<div class="edit-user-info">
+    <p>Profile info</p>
+    <p>availability[]</p>
+    <p>country(City, Country)</p>
+    <p>googleScholarId</p>
+    <p>languages []</p>
+    <p>orcidId</p>
+    <p>researcherId</p>
+    <p>scopusId</p>
+    <p>timezone</p>
+    <p>websiteUrl</p>
+    <p>bio</p>
+
+
+
+    <button type="button" class="btn" (click)="saveUserBasicInfo()">Save Profile</button>
+
+</div>

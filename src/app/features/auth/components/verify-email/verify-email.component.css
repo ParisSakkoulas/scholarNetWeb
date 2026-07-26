@@ -1,0 +1,91 @@
+@import "../../auth.css";
+
+/* ── Status block ── */
+.verify-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+.status-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: 380px;
+  width: 100%;
+}
+
+/* Icon circle */
+.status-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  margin-bottom: 4px;
+}
+
+.status-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.status-icon.success {
+  background: oklch(0.92 0.04 150);
+  color: var(--forest);
+}
+
+.status-icon.error {
+  background: oklch(0.93 0.03 25);
+  color: var(--oxblood);
+}
+
+/* Meta row */
+.meta-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.meta-pill {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  background: var(--paper-2);
+  color: var(--ink-3);
+}
+
+.meta-pill.success {
+  background: oklch(0.92 0.04 150);
+  color: var(--forest);
+}
+
+.meta-pill.error {
+  background: oklch(0.93 0.03 25);
+  color: var(--oxblood);
+}
+
+.meta-sep {
+  color: var(--ink-3);
+  font-size: 12px;
+}
+
+.meta-dim {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: var(--ink-3);
+}
+
+/* Actions */
+.action-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 8px;
+}
