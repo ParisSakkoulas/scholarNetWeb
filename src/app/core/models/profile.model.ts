@@ -1,75 +1,76 @@
 export interface ProfilePosition {
-    _id: string;
-    title: string;
-    institution: string;
-    department?: string;
-    startYear: number;
-    endYear: number | null;
-    current: boolean;
+  _id: string;
+  title: string;
+  institution: string;
+  department?: string;
+  startYear: number;
+  endYear: number | null;
+  current: boolean;
 }
 
 export interface ProfileStat {
-    value: string;
-    label: string;
-    detail?: string;
-    detailEmphasis?: boolean;
+  value: string;
+  label: string;
+  detail?: string;
+  detailEmphasis?: boolean;
 }
 
-
 export interface PinnedItem {
-    _id: string;
-    index: string;
-    kind: string;
-    title: string;
-    detail: string;
+  _id: string;
+  index: string;
+  kind: string;
+  title: string;
+  detail: string;
 }
 
 export interface UserProfile {
-    _id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    username: string;
-    profilePhotoUrl?: string;   // ← optional: the header tests the no-photo fallback explicitly
+  _id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  username: string;
+  profilePhotoUrl?: string; // ← optional: the header tests the no-photo fallback explicitly
 }
 
 export interface YearlyCount {
-    year: number;
-    count: number;
+  year: number;
+  count: number;
 }
 
 export interface Profile {
-    user: UserProfile;
-    bio: string;
-    verified: boolean;
-    profileViews: number;
-    citationCount: number;
-    hIndex: number;
-    i10Index: number;
+  user: UserProfile;
 
-    // ── header fields ──────────────────────────────────────────
-    headline?: string;          // fallback line when there's no current position
-    country?: string;
-    orcidId?: string;
-    scopusId?: string;
-    googleScholarId?: string;
-    arxivId?: string;
-    researcherId?: string;
-    websiteUrl?: string;
-    pronouns?: string;
-    timezone?: string;
-    languages?: string[];
-    availability?: string[];
+  bio: string;
+  verified: boolean;
+  profileViews: number;
+  citationCount: number;
+  hIndex: number;
+  i10Index: number;
 
-    positions: ProfilePosition[];
-    pinnedItems: PinnedItem[];
+  // ── header fields ──────────────────────────────────────────
+  headline?: string; // fallback line when there's no current position
+  country?: string;
+  city?: string;
+  timezone?: string;
 
+  orcidId?: string;
+  scopusId?: string;
+  googleScholarId?: string;
+  arxivId?: string;
+  researcherId?: string;
+  websiteUrl?: string;
+  pronouns?: string;
+  languages?: string[];
+  availability?: string[];
 
-    education: unknown[];
-    skills: unknown[];
-    interests: unknown[];
-    yearlyPublications: YearlyCount[];
+  positions: ProfilePosition[];
+  pinnedItems: PinnedItem[];
 
-    createdAt: Date;
-    updatedAt: Date;
+  education: unknown[];
+  skills: unknown[];
+  interests: unknown[];
+  yearlyPublications: YearlyCount[];
+
+  createdAt: Date;
+  updatedAt: Date;
 }

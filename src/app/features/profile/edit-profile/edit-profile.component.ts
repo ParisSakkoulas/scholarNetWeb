@@ -1,21 +1,48 @@
-import { FormsModule, NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Component, computed, effect, inject, input, OnInit, signal } from '@angular/core';
+import {
+  FormsModule,
+  NonNullableFormBuilder,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import {
+  Component,
+  computed,
+  effect,
+  inject,
+  input,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Title } from '@angular/platform-browser';
-import { Profile, ProfilePosition, ProfileStat } from '../../../core/models/profile.model';
+import {
+  Profile,
+  ProfilePosition,
+  ProfileStat,
+} from '../../../core/models/profile.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { ProfileService } from '../../../core/services/profile.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { UserService } from '../../../core/services/user.service';
 import { SpinnerComponent } from '../../../shared/components/ui/spinner/spinner.component';
-
 import { InputTextModule } from 'primeng/inputtext';
+import { TextareaModule } from 'primeng/textarea';
+import { ButtonModule } from 'primeng/button';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { AutoCompleteModule } from 'primeng/autocomplete';
+import { TabViewModule } from 'primeng/tabview';
 
-
-
-type ProfileTab = 'overview' | 'publications' | 'jobs' | 'interests' | 'education' | 'talks' | 'teaching' | 'network' | 'endorsements';
-
+type ProfileTab =
+  | 'overview'
+  | 'publications'
+  | 'jobs'
+  | 'interests'
+  | 'education'
+  | 'talks'
+  | 'teaching'
+  | 'network'
+  | 'endorsements';
 
 interface ProfileTabDef {
   id: ProfileTab;
@@ -26,7 +53,19 @@ interface ProfileTabDef {
 @Component({
   selector: 'app-edit-profile',
   standalone: true,
-  imports: [RouterLink, ReactiveFormsModule, FormsModule, CommonModule, SpinnerComponent, InputTextModule],
+  imports: [
+    RouterLink,
+    ReactiveFormsModule,
+    FormsModule,
+    CommonModule,
+    SpinnerComponent,
+    InputTextModule,
+    TextareaModule,
+    ButtonModule,
+    SelectButtonModule,
+    AutoCompleteModule,
+    TabViewModule,
+  ],
   templateUrl: './edit-profile.component.html',
   styleUrl: './edit-profile.component.css',
 })
@@ -53,8 +92,60 @@ export class EditProfileComponent implements OnInit {
     email: ['', [Validators.required, Validators.email]],
   });
 
+  readonly profileForm = this.fb.group({
+    bio: [''],
+    city: [''],
+    country: [''],
+    timezone: [''],
+    websiteUrl: [''],
+    orcidId: [''],
+    googleScholarId: [''],
+    scopusId: [''],
+    researcherId: [''],
+    availability: this.fb.control<string[]>([]),
+    languages: this.fb.control<string[]>([]),
+  });
 
+  readonly changePasswordForm = this.fb.group({
+    currentPassword: ['', Validators.required],
+    newPassword: ['', Validators.required],
+    confirmPassword: ['', Validators.required],
+  });
 
+  readonly deletAccountForm = this.fb.group({
+    username: ['', Validators.required],
+    email: ['', [Validators.required, Validators.email]],
+    currentPassword: ['', Validators.required],
+  });
+
+  readonly availabilityOptions = [
+    { label: 'Available for collaboration', value: 'collaboration' },
+    { label: 'Available for supervision', value: 'supervision' },
+    { label: 'Open to consulting', value: 'consulting' },
+    { label: 'Not currently available', value: 'unavailable' },
+  ];
+  readonly availability = signal<string[]>([]);
+  readonly languages = signal<string[]>([]);
+  readonly languageInput = signal('');
+
+  toggleAvailability(option: string): void {
+    this.availability.update((list) =>
+      list.includes(option)
+        ? list.filter((o) => o !== option)
+        : [...list, option],
+    );
+  }
+
+  addLanguage(): void {
+    const value = this.languageInput().trim();
+    if (!value || this.languages().includes(value)) return;
+    this.languages.update((list) => [...list, value]);
+    this.languageInput.set('');
+  }
+
+  removeLanguage(lang: string): void {
+    this.languages.update((list) => list.filter((l) => l !== lang));
+  }
 
   /** true when the profile being viewed belongs to the signed-in user —
    *  drives Edit profile/Generate CV vs Follow/Send message in the header. */
@@ -65,7 +156,6 @@ export class EditProfileComponent implements OnInit {
   });
 
   readonly activeTab = signal<ProfileTab>('overview');
-
 
   constructor() {
     // Repopulates both forms whenever the profile signal changes —
@@ -80,7 +170,7 @@ export class EditProfileComponent implements OnInit {
         username: p.user.username,
         email: p.user.email,
       });
-    })
+    });
   }
 
   ngOnInit(): void {
@@ -88,9 +178,7 @@ export class EditProfileComponent implements OnInit {
   }
 
   loadProfile() {
-
-    this.loading.set(true)
-
+    this.loading.set(true);
 
     const targetId =
       this.route.snapshot.paramMap.get('userId') ??
@@ -100,7 +188,7 @@ export class EditProfileComponent implements OnInit {
     this.profileService.getProfile(targetId).subscribe({
       next: (response) => {
         this.profile.set(response);
-        this.loading.set(false)
+        this.loading.set(false);
 
         // console.log(response)
       },
@@ -119,7 +207,14 @@ export class EditProfileComponent implements OnInit {
 
   editSection(section: string): void {
     const ownId = this.authService.currentUser()?.id;
-    this.router.navigate(['/main/profile', ownId], { queryParams: { section } });
+    this.router.navigate(['/main/profile', ownId], {
+      queryParams: { section },
+    });
+  }
+
+  onLanguageInput(event: { query: string }): void {
+    // no suggestion source — user is just typing free-text tags,
+    // this only exists because p-autocomplete requires the binding
   }
 
   followProfile(): void {
@@ -128,8 +223,6 @@ export class EditProfileComponent implements OnInit {
     //   this.toastService.show('Following — notifications enabled for this profile.')
     // );
   }
-
-
 
   messageProfile(): void {
     // this.router.navigate(['/messages', this.profile()!.user._id]);
@@ -143,24 +236,31 @@ export class EditProfileComponent implements OnInit {
     return p.yearlyPublications.reduce((sum, y) => sum + y.count, 0);
   }
 
-
   stats(p: Profile): ProfileStat[] {
     return [
       { value: String(this.publicationCount(p)), label: 'Publications' },
       { value: p.citationCount.toLocaleString(), label: 'Citations' },
-      { value: String(p.hIndex), label: 'h-index', detail: `i10-index · ${p.i10Index}` },
+      {
+        value: String(p.hIndex),
+        label: 'h-index',
+        detail: `i10-index · ${p.i10Index}`,
+      },
       { value: p.profileViews.toLocaleString(), label: 'Profile views' },
     ];
   }
 
   /** Counts default to undefined until the backing data exists — the
-  *  template only renders a count badge when one is actually present
-  *  (`@if (tab.count !== undefined)`), so this is safe to extend
-  *  incrementally as each section gets built. */
+   *  template only renders a count badge when one is actually present
+   *  (`@if (tab.count !== undefined)`), so this is safe to extend
+   *  incrementally as each section gets built. */
   tabs(p: Profile): ProfileTabDef[] {
     return [
       { id: 'overview', label: 'Overview' },
-      { id: 'publications', label: 'Publications', count: this.publicationCount(p) },
+      {
+        id: 'publications',
+        label: 'Publications',
+        count: this.publicationCount(p),
+      },
       { id: 'education', label: 'Education' },
       { id: 'jobs', label: 'Jobs' },
       { id: 'interests', label: 'Interests' },
@@ -176,28 +276,25 @@ export class EditProfileComponent implements OnInit {
 
   setTab(tab: ProfileTab): void {
     this.activeTab.set(tab);
-    document.getElementById(tab)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document
+      .getElementById(tab)
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
-
 
   async copyToClipboard(value: string): Promise<void> {
     try {
       await navigator.clipboard.writeText(value);
-      this.toastService.success("Copied to clipboard!");
-
-
+      this.toastService.success('Copied to clipboard!');
     } catch {
-      this.toastService.success("Could not copy, try selecting it manually");
-
+      this.toastService.success('Could not copy, try selecting it manually');
     }
   }
 
+  saveUserBasicInfo() {}
 
-  saveUserBasicInfo() {
+  saveProfileInfo(): void {}
 
-  }
+  changePassword() {}
 
-
-
-
+  deleteAccount() {}
 }

@@ -1,25 +1,32 @@
-import { Component, computed, ElementRef, HostListener, inject, signal, ViewChild } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import {
+  Component,
+  computed,
+  ElementRef,
+  HostListener,
+  inject,
+  signal,
+  ViewChild,
+} from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../../core/services/auth.service';
-
-
+import { InputTextModule } from 'primeng/inputtext';
 import { ClickOutsideDirective } from '../../../directives/click-outside.directive';
 
 @Component({
   selector: 'app-inline-header',
-  imports: [CommonModule, RouterLink, RouterLinkActive, ClickOutsideDirective],
+  imports: [CommonModule, RouterLink, ClickOutsideDirective, InputTextModule],
   templateUrl: './inline-header.component.html',
-  styleUrl: './inline-header.component.css'
+  styleUrl: './inline-header.component.css',
 })
 export class InlineHeaderComponent {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
-  @ViewChild('searchInput') private readonly searchInputRef?: ElementRef<HTMLInputElement>;
+  @ViewChild('searchInput')
+  private readonly searchInputRef?: ElementRef<HTMLInputElement>;
   // @ViewChild('profileMenuRef') private readonly profileMenuRef?: ElementRef<HTMLElement>;
   // @ViewChild('notificatationMenuRef') private readonly notificatationMenuRef?: ElementRef<HTMLElement>;
-
 
   // assumes AuthService exposes currentUser as a signal, same as everywhere
   // else in this app (ProfileComponent reads it the same way)
@@ -28,10 +35,8 @@ export class InlineHeaderComponent {
   readonly profileMenuOpen = signal(false);
   readonly notificationMenuOpen = signal(false);
 
-
-
   readonly initials = computed(() => {
-    const user = this.authService.currentUser()
+    const user = this.authService.currentUser();
     if (!user) return '';
     const first = user.firstName?.[0] ?? user.username?.[0] ?? '';
     const last = user.lastName?.[0] ?? '';
@@ -42,7 +47,8 @@ export class InlineHeaderComponent {
    *  matches the shortcut hint already shown inside the input. */
   @HostListener('window:keydown', ['$event'])
   handleShortcut(event: KeyboardEvent): void {
-    const isShortcut = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k';
+    const isShortcut =
+      (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k';
     if (isShortcut) {
       event.preventDefault();
       this.searchInputRef?.nativeElement.focus();
