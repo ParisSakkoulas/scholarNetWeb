@@ -3,9 +3,6 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { tap } from 'rxjs';
 
-
-
-
 import { environment } from '../../../environmets/environment';
 import {
   EmailVerify,
@@ -14,18 +11,17 @@ import {
   Register,
   RegisterResponse,
   User,
-  VerifyEmailResponse
+  VerifyEmailResponse,
 } from '../../features/auth/models/auth.model';
 
-
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
 
-  private readonly apiAuth = `${environment.apiUrl}/auth`
+  private readonly apiAuth = `${environment.apiUrl}/auth`;
 
   // Curent user states
   private _currentUser = signal<User | null>(null);
@@ -38,17 +34,22 @@ export class AuthService {
   }
 
   register(registerPayload: Register) {
-    return this.http.post<RegisterResponse>(`${this.apiAuth}/register`, registerPayload)
+    return this.http.post<RegisterResponse>(
+      `${this.apiAuth}/register`,
+      registerPayload,
+    );
   }
 
   login(loginPayload: Login) {
-    return this.http.post<LoginResponse>(`${this.apiAuth}/login`, loginPayload).pipe(
-      tap(response => {
-        this._currentUser.set(response.user);
-        localStorage.setItem('user', JSON.stringify(response.user));
-        localStorage.setItem('accessToken', response.accessToken);
-      })
-    );
+    return this.http
+      .post<LoginResponse>(`${this.apiAuth}/login`, loginPayload)
+      .pipe(
+        tap((response) => {
+          this._currentUser.set(response.user);
+          localStorage.setItem('user', JSON.stringify(response.user));
+          localStorage.setItem('accessToken', response.accessToken);
+        }),
+      );
   }
 
   logout() {
@@ -59,6 +60,12 @@ export class AuthService {
   }
 
   verifyEmai(emailVerifyPayload: string) {
-    return this.http.get<VerifyEmailResponse>(`${this.apiAuth}/verify-email/${emailVerifyPayload}`)
+    return this.http.get<VerifyEmailResponse>(
+      `${this.apiAuth}/verify-email/${emailVerifyPayload}`,
+    );
+  }
+
+  getToken(): string | null {
+    return localStorage.getItem('accessToken');
   }
 }

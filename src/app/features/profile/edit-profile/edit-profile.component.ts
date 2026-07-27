@@ -292,7 +292,37 @@ export class EditProfileComponent implements OnInit {
 
   saveUserBasicInfo() {}
 
-  saveProfileInfo(): void {}
+  saveProfileInfo(): void {
+    if (this.profileForm.invalid) {
+      this.profileForm.markAllAsTouched();
+      return;
+    }
+
+    this.loading.set(true);
+
+    const profileInfo = {
+      bio: this.profileForm.value.bio,
+      city: this.profileForm.value.city,
+      country: this.profileForm.value.country,
+      timezone: this.profileForm.value.timezone,
+      websiteUrl: this.profileForm.value.websiteUrl,
+      orcidId: this.profileForm.value.orcidId,
+      googleScholarId: this.profileForm.value.googleScholarId,
+      scopusId: this.profileForm.value.scopusId,
+      researcherId: this.profileForm.value.researcherId,
+      languages: this.profileForm.value.languages,
+    };
+
+    this.profileService.updateProfileInfo(profileInfo).subscribe({
+      next: (response) => {
+        console.log(response);
+      },
+
+      error: (err) => {
+        console.log('Err', err);
+      },
+    });
+  }
 
   changePassword() {}
 

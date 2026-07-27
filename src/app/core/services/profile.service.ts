@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 
 import { environment } from '../../../environmets/environment';
-import { Profile } from '../models/profile.model';
+import { CreateProfile, Profile } from '../models/profile.model';
 
 @Injectable({
   providedIn: 'root',
@@ -29,8 +29,8 @@ export class ProfileService {
     });
   }
 
-  updateProfileInofo(profilePayload: Profile) {
-    return this.http.patch(`${this.apiProfile}/me`);
+  updateProfileInfo(profilePayload: CreateProfile) {
+    return this.http.patch(`${this.apiProfile}/me`, profilePayload);
   }
 
   // ---------------- OWN PROFILE — UPDATE ----------------

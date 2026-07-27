@@ -74,3 +74,13 @@ export interface Profile {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface CreateProfile {
+  headline?: string;
+  bio?: string;
+  city?: string;
+  timezone?: string;
+  websiteUrl?: string;
+  country?: string;
+  orcidId?: string;
+}

@@ -1,6 +1,13 @@
 // Angular basics
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
+import {
+  Component,
+  computed,
+  inject,
+  input,
+  OnInit,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Title } from '@angular/platform-browser';
@@ -11,12 +18,22 @@ import { ToastService } from '../../core/services/toast.service';
 import { ProfileService } from '../../core/services/profile.service';
 
 import { UserService } from '../../core/services/user.service';
-import { Profile, ProfilePosition, ProfileStat } from '../../core/models/profile.model';
+import {
+  Profile,
+  ProfilePosition,
+  ProfileStat,
+} from '../../core/models/profile.model';
 
-
-
-type ProfileTab = 'overview' | 'publications' | 'jobs' | 'interests' | 'education' | 'talks' | 'teaching' | 'network' | 'endorsements';
-
+type ProfileTab =
+  | 'overview'
+  | 'publications'
+  | 'jobs'
+  | 'interests'
+  | 'education'
+  | 'talks'
+  | 'teaching'
+  | 'network'
+  | 'endorsements';
 
 interface ProfileTabDef {
   id: ProfileTab;
@@ -27,7 +44,13 @@ interface ProfileTabDef {
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [RouterLink, ReactiveFormsModule, FormsModule, CommonModule, SpinnerComponent],
+  imports: [
+    RouterLink,
+    ReactiveFormsModule,
+    FormsModule,
+    CommonModule,
+    SpinnerComponent,
+  ],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css',
 })
@@ -45,8 +68,6 @@ export class ProfileComponent implements OnInit {
 
   loading = signal(false);
 
-
-
   /** true when the profile being viewed belongs to the signed-in user —
    *  drives Edit profile/Generate CV vs Follow/Send message in the header. */
   readonly isOwnProfile = computed(() => {
@@ -57,15 +78,12 @@ export class ProfileComponent implements OnInit {
 
   readonly activeTab = signal<ProfileTab>('overview');
 
-
   ngOnInit(): void {
     this.loadProfile();
   }
 
   loadProfile() {
-
-    this.loading.set(true)
-
+    this.loading.set(true);
 
     const targetId =
       this.route.snapshot.paramMap.get('userId') ??
@@ -75,7 +93,7 @@ export class ProfileComponent implements OnInit {
     this.profileService.getProfile(targetId).subscribe({
       next: (response) => {
         this.profile.set(response);
-        this.loading.set(false)
+        this.loading.set(false);
 
         // console.log(response)
       },
@@ -104,8 +122,6 @@ export class ProfileComponent implements OnInit {
     // );
   }
 
-
-
   messageProfile(): void {
     // this.router.navigate(['/messages', this.profile()!.user._id]);
   }
@@ -118,24 +134,31 @@ export class ProfileComponent implements OnInit {
     return p.yearlyPublications.reduce((sum, y) => sum + y.count, 0);
   }
 
-
   stats(p: Profile): ProfileStat[] {
     return [
       { value: String(this.publicationCount(p)), label: 'Publications' },
       { value: p.citationCount.toLocaleString(), label: 'Citations' },
-      { value: String(p.hIndex), label: 'h-index', detail: `i10-index · ${p.i10Index}` },
+      {
+        value: String(p.hIndex),
+        label: 'h-index',
+        detail: `i10-index · ${p.i10Index}`,
+      },
       { value: p.profileViews.toLocaleString(), label: 'Profile views' },
     ];
   }
 
   /** Counts default to undefined until the backing data exists — the
-  *  template only renders a count badge when one is actually present
-  *  (`@if (tab.count !== undefined)`), so this is safe to extend
-  *  incrementally as each section gets built. */
+   *  template only renders a count badge when one is actually present
+   *  (`@if (tab.count !== undefined)`), so this is safe to extend
+   *  incrementally as each section gets built. */
   tabs(p: Profile): ProfileTabDef[] {
     return [
       { id: 'overview', label: 'Overview' },
-      { id: 'publications', label: 'Publications', count: this.publicationCount(p) },
+      {
+        id: 'publications',
+        label: 'Publications',
+        count: this.publicationCount(p),
+      },
       { id: 'education', label: 'Education' },
       { id: 'jobs', label: 'Jobs' },
       { id: 'interests', label: 'Interests' },
@@ -151,24 +174,17 @@ export class ProfileComponent implements OnInit {
 
   setTab(tab: ProfileTab): void {
     this.activeTab.set(tab);
-    document.getElementById(tab)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document
+      .getElementById(tab)
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
-
 
   async copyToClipboard(value: string): Promise<void> {
     try {
       await navigator.clipboard.writeText(value);
-      this.toastService.success("Copied to clipboard!");
-
-
+      this.toastService.success('Copied to clipboard!');
     } catch {
-      this.toastService.success("Could not copy, try selecting it manually");
-
+      this.toastService.success('Could not copy, try selecting it manually');
     }
   }
-
-
-
-
-
 }
