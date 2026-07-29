@@ -21,6 +21,13 @@ export const ScholarNetPreset = definePreset(Aura, {
     },
   },
   semantic: {
+    focusRing: {
+      width: '2px',
+      style: 'solid',
+      color: 'var(--oxblood)',
+      offset: '2px',
+    },
+
     primary: {
       50: 'oklch(0.97 0.01 250)',
       100: 'oklch(0.93 0.02 250)',

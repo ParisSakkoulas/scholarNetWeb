@@ -1,0 +1,12 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <formly-form
+    [form]="form"
+    [fields]="fields"
+    [model]="model"
+    class="grid grid-cols-12 gap-4"
+  ></formly-form>
+  <div class="flex justify-end gap-2 mt-4">
+    <button type="button" (click)="cancel.emit()">Cancel</button>
+    <button type="submit" [disabled]="form.invalid">Save</button>
+  </div>
+</form>
