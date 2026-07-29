@@ -1,3 +1,5 @@
+import { ProfileLink } from '../../shared/interfaces/Profile/profile-linkt';
+
 export interface ProfilePosition {
   _id: string;
   title: string;
@@ -62,6 +64,8 @@ export interface Profile {
   pronouns?: string;
   languages?: string[];
   availability?: string[];
+
+  links?: ProfileLink[];
 
   positions: ProfilePosition[];
   pinnedItems: PinnedItem[];

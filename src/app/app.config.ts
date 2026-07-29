@@ -6,6 +6,7 @@ import Aura from '@primeuix/themes/aura';
 import { ScholarNetPreset } from './scholarnet-preset';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -19,5 +20,6 @@ export const appConfig: ApplicationConfig = {
       },
       ripple: false,
     }),
+    provideAnimationsAsync(),
   ],
 };

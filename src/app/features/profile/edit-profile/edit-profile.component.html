@@ -156,6 +156,53 @@
                 </div>
               </div>
 
+              <div class="field" formArrayName="links">
+                <label class="t-label block mb-2">Links</label>
+
+                <div
+                  *ngFor="let linkGroup of links.controls; let i = index"
+                  [formGroupName]="i"
+                  class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 items-start mb-3"
+                >
+                  <p-select
+                    [options]="linkTypeOptions"
+                    formControlName="type"
+                    optionLabel="label"
+                    optionValue="value"
+                    appendTo="body"
+                    styleClass="w-full"
+                    placeholder="Type"
+                  />
+
+                  <div class="flex gap-3 items-start">
+                    <input
+                      pInputText
+                      type="url"
+                      formControlName="url"
+                      class="flex-1"
+                      placeholder="https://..."
+                    />
+
+                    <button
+                      pButton
+                      type="button"
+                      icon="pi pi-trash"
+                      class="p-button-text p-button-danger shrink-0"
+                      (click)="removeLink(i)"
+                    ></button>
+                  </div>
+                </div>
+
+                <button
+                  pButton
+                  type="button"
+                  label="Add link"
+                  icon="pi pi-plus"
+                  class="p-button-text"
+                  (click)="addLink()"
+                ></button>
+              </div>
+
               <p-button type="submit" label="Save profile" />
             </form>
           </section>
@@ -205,6 +252,12 @@
                     formControlName="lastName"
                     class="w-full"
                   />
+                  @if (
+                    userForm.controls.lastName.invalid &&
+                    userForm.controls.lastName.touched
+                  ) {
+                    <p class="error">Last name is required</p>
+                  }
                 </div>
 
                 <div class="field">
@@ -218,6 +271,21 @@
                     formControlName="username"
                     class="w-full"
                   />
+                  @if (userForm.controls.username.pending) {
+                    <p class="text-sm pt-2">Checking availability...</p>
+                  }
+                  @if (
+                    userForm.controls.username.touched &&
+                    userForm.controls.username.hasError("required")
+                  ) {
+                    <p class="text-sm pt-2">Username is required</p>
+                  }
+                  @if (
+                    userForm.controls.username.touched &&
+                    userForm.controls.username.hasError("alreadyExists")
+                  ) {
+                    <p class="text-sm pt-2">This username is already taken</p>
+                  }
                 </div>
 
                 <div class="field">
@@ -229,11 +297,26 @@
                     formControlName="email"
                     class="w-full"
                   />
+                  @if (userForm.controls.email.pending) {
+                    <p class="text-sm pt-2">Checking availability...</p>
+                  }
                   @if (
-                    userForm.controls.email.invalid &&
-                    userForm.controls.email.touched
+                    userForm.controls.email.touched &&
+                    userForm.controls.email.hasError("required")
                   ) {
-                    <p class="error">Enter a valid email address</p>
+                    <p class="text-sm pt-2">Email is required</p>
+                  }
+                  @if (
+                    userForm.controls.email.touched &&
+                    userForm.controls.email.hasError("email")
+                  ) {
+                    <p class="text-sm pt-2">Enter a valid email address</p>
+                  }
+                  @if (
+                    userForm.controls.email.touched &&
+                    userForm.controls.email.hasError("alreadyExists")
+                  ) {
+                    <p class="text-sm pt-2">This email is already registered</p>
                   }
                 </div>
               </div>
@@ -246,6 +329,7 @@
             </form>
           </section>
         </p-tabPanel>
+
         <p-tabPanel header="Change Password">
           <form
             [formGroup]="changePasswordForm"
@@ -341,3 +425,13 @@
     </header>
   </div>
 </div>
+
+<!-- toast -->
+<p-toast />
+
+<!-- spinner component -->
+@if (loading()) {
+  <div class="overlay">
+    <sn-spinner />
+  </div>
+}

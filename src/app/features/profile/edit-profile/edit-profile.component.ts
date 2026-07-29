@@ -1,4 +1,6 @@
 import {
+  FormArray,
+  FormGroup,
   FormsModule,
   NonNullableFormBuilder,
   ReactiveFormsModule,
@@ -32,23 +34,16 @@ import { ButtonModule } from 'primeng/button';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { TabViewModule } from 'primeng/tabview';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 
-type ProfileTab =
-  | 'overview'
-  | 'publications'
-  | 'jobs'
-  | 'interests'
-  | 'education'
-  | 'talks'
-  | 'teaching'
-  | 'network'
-  | 'endorsements';
+import { ProfileTab } from '../../../shared/types/Profile/profile-tab';
+import { ProfileTabDef } from '../../../shared/interfaces/Profile/profiel-tab-definition';
+import { ProfileLink } from '../../../shared/interfaces/Profile/profile-linkt';
+import { linkTypeOptions } from './link-type-options';
 
-interface ProfileTabDef {
-  id: ProfileTab;
-  label: string;
-  count?: number;
-}
+import { Select } from 'primeng/select';
+import { uniqueFieldValidator } from '../../../shared/utils/custom-validators/unique-field.validator';
 
 @Component({
   selector: 'app-edit-profile',
@@ -65,31 +60,67 @@ interface ProfileTabDef {
     SelectButtonModule,
     AutoCompleteModule,
     TabViewModule,
+    ToastModule,
+    Select,
   ],
   templateUrl: './edit-profile.component.html',
   styleUrl: './edit-profile.component.css',
+  providers: [MessageService],
 })
 export class EditProfileComponent implements OnInit {
-  private readonly route = inject(ActivatedRoute);
-  private readonly router = inject(Router);
-  private readonly authService = inject(AuthService);
   private readonly profileService = inject(ProfileService);
+  private readonly fb = inject(NonNullableFormBuilder);
   private readonly toastService = inject(ToastService);
+  private readonly authService = inject(AuthService);
+  private readonly route = inject(ActivatedRoute);
+  private messageService = inject(MessageService);
+  private userService = inject(UserService);
+  private readonly router = inject(Router);
   private readonly title = inject(Title);
 
-  private userService = inject(UserService);
-
+  readonly activeTab = signal<ProfileTab>('overview');
   readonly profile = signal<Profile | null>(null);
-
+  readonly availability = signal<string[]>([]);
+  readonly languages = signal<string[]>([]);
+  readonly languageInput = signal('');
   loading = signal(false);
 
-  private readonly fb = inject(NonNullableFormBuilder);
+  linkTypeOptions = linkTypeOptions;
+
+  private currentUserId = '';
+  private currentUsername = '';
+  private currentEmail = '';
+
+  readonly isOwnProfile = computed(() => {
+    const targetId = this.route.snapshot.paramMap.get('userId');
+    const currentId = this.authService.currentUser()?.id;
+    return !targetId || targetId === currentId;
+  });
 
   readonly userForm = this.fb.group({
     firstName: ['', Validators.required],
     lastName: ['', Validators.required],
-    username: ['', Validators.required],
-    email: ['', [Validators.required, Validators.email]],
+    username: [
+      '',
+      [Validators.required],
+      [
+        uniqueFieldValidator(
+          (val) =>
+            this.userService.checkUsernameExists(val, this.currentUserId),
+          () => this.currentUsername,
+        ),
+      ],
+    ],
+    email: [
+      '',
+      [Validators.required, Validators.email],
+      [
+        uniqueFieldValidator(
+          (val) => this.userService.checkEmailExists(val, this.currentUserId),
+          () => this.currentEmail,
+        ),
+      ],
+    ],
   });
 
   readonly profileForm = this.fb.group({
@@ -104,6 +135,7 @@ export class EditProfileComponent implements OnInit {
     researcherId: [''],
     availability: this.fb.control<string[]>([]),
     languages: this.fb.control<string[]>([]),
+    links: this.fb.array<FormGroup>([]),
   });
 
   readonly changePasswordForm = this.fb.group({
@@ -124,9 +156,6 @@ export class EditProfileComponent implements OnInit {
     { label: 'Open to consulting', value: 'consulting' },
     { label: 'Not currently available', value: 'unavailable' },
   ];
-  readonly availability = signal<string[]>([]);
-  readonly languages = signal<string[]>([]);
-  readonly languageInput = signal('');
 
   toggleAvailability(option: string): void {
     this.availability.update((list) =>
@@ -147,22 +176,14 @@ export class EditProfileComponent implements OnInit {
     this.languages.update((list) => list.filter((l) => l !== lang));
   }
 
-  /** true when the profile being viewed belongs to the signed-in user —
-   *  drives Edit profile/Generate CV vs Follow/Send message in the header. */
-  readonly isOwnProfile = computed(() => {
-    const targetId = this.route.snapshot.paramMap.get('userId');
-    const currentId = this.authService.currentUser()?.id;
-    return !targetId || targetId === currentId;
-  });
-
-  readonly activeTab = signal<ProfileTab>('overview');
-
   constructor() {
-    // Repopulates both forms whenever the profile signal changes —
-    // covers the initial load without a second ngOnInit branch.
     effect(() => {
       const p = this.profile();
       if (!p) return;
+
+      this.currentUserId = p.user._id;
+      this.currentUsername = p.user.username;
+      this.currentEmail = p.user.email;
 
       this.userForm.patchValue({
         firstName: p.user.firstName,
@@ -184,13 +205,17 @@ export class EditProfileComponent implements OnInit {
       this.route.snapshot.paramMap.get('userId') ??
       this.authService.currentUser()?.id;
 
-    if (!targetId) return;
+    if (!targetId) {
+      this.loading.set(false);
+      return;
+    }
+
     this.profileService.getProfile(targetId).subscribe({
       next: (response) => {
         this.profile.set(response);
+        this.profileForm.patchValue(response);
+        this.patchLinks(response.links);
         this.loading.set(false);
-
-        // console.log(response)
       },
     });
   }
@@ -199,8 +224,6 @@ export class EditProfileComponent implements OnInit {
     return `${profile.user.firstName[0] ?? ''}${profile.user.lastName[0] ?? ''}`.toUpperCase();
   }
 
-  /** First position flagged current, falling back to the first entry so
-   *  something sensible still shows if `current` was never set on import. */
   currentPosition(profile: Profile): ProfilePosition | undefined {
     return profile.positions.find((pos) => pos.current) ?? profile.positions[0];
   }
@@ -212,21 +235,13 @@ export class EditProfileComponent implements OnInit {
     });
   }
 
-  onLanguageInput(event: { query: string }): void {
-    // no suggestion source — user is just typing free-text tags,
-    // this only exists because p-autocomplete requires the binding
-  }
+  onLanguageInput(event: { query: string }): void {}
 
-  followProfile(): void {
-    // wire up once the follow endpoint exists, e.g.:
-    // this.userService.follow(this.profile()!.user._id).subscribe(() =>
-    //   this.toastService.show('Following — notifications enabled for this profile.')
-    // );
-  }
+  onLinkInput(event: { query: string }): void {}
 
-  messageProfile(): void {
-    // this.router.navigate(['/messages', this.profile()!.user._id]);
-  }
+  followProfile(): void {}
+
+  messageProfile(): void {}
 
   displayUrl(url: string): string {
     return url.replace(/^https?:\/\//, '');
@@ -249,10 +264,6 @@ export class EditProfileComponent implements OnInit {
     ];
   }
 
-  /** Counts default to undefined until the backing data exists — the
-   *  template only renders a count badge when one is actually present
-   *  (`@if (tab.count !== undefined)`), so this is safe to extend
-   *  incrementally as each section gets built. */
   tabs(p: Profile): ProfileTabDef[] {
     return [
       { id: 'overview', label: 'Overview' },
@@ -290,7 +301,45 @@ export class EditProfileComponent implements OnInit {
     }
   }
 
-  saveUserBasicInfo() {}
+  get links(): FormArray<FormGroup> {
+    return this.profileForm.get('links') as FormArray<FormGroup>;
+  }
+
+  private buildLinkGroup(link?: ProfileLink): FormGroup {
+    return this.fb.group({
+      type: [link?.type ?? 'website', Validators.required],
+      url: [link?.url ?? '', [Validators.required]],
+    });
+  }
+
+  addLink(): void {
+    this.links.push(this.buildLinkGroup());
+  }
+
+  removeLink(index: number): void {
+    this.links.removeAt(index);
+  }
+
+  patchLinks(existingLinks: ProfileLink[] | undefined): void {
+    this.links.clear();
+    (existingLinks ?? []).forEach((l) =>
+      this.links.push(this.buildLinkGroup(l)),
+    );
+  }
+
+  saveUserBasicInfo() {
+    if (this.userForm.invalid) {
+      this.userForm.markAllAsTouched();
+      return;
+    }
+
+    const userInfoChange = {
+      firstName: this.userForm.value.firstName,
+      lastName: this.userForm.value.lastName,
+      username: this.userForm.value.username,
+      email: this.userForm.value.email,
+    };
+  }
 
   saveProfileInfo(): void {
     if (this.profileForm.invalid) {
@@ -299,7 +348,6 @@ export class EditProfileComponent implements OnInit {
     }
 
     this.loading.set(true);
-
     const profileInfo = {
       bio: this.profileForm.value.bio,
       city: this.profileForm.value.city,
@@ -311,15 +359,29 @@ export class EditProfileComponent implements OnInit {
       scopusId: this.profileForm.value.scopusId,
       researcherId: this.profileForm.value.researcherId,
       languages: this.profileForm.value.languages,
+      availability: this.profileForm.value.availability,
+      links: this.links.value,
     };
 
     this.profileService.updateProfileInfo(profileInfo).subscribe({
       next: (response) => {
         console.log(response);
+        this.loading.set(false);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Profile Info Updated Successfully!',
+        });
       },
 
       error: (err) => {
         console.log('Err', err);
+        this.loading.set(false);
+        this.messageService.add({
+          severity: 'danger',
+          summary: 'Error',
+          detail: 'Something went wrong',
+        });
       },
     });
   }
