@@ -1,199 +1,248 @@
 @if (profile(); as p) {
-
-<div class="profile-full-container">
-    <section class="profile-header">
-
+  <div class="profile-page">
+    <section class="card card--header">
+      <div class="header-top">
         <div class="av-xl">
-            @if (p.user.profilePhotoUrl) {
-            <img [src]="p.user.profilePhotoUrl" [alt]="p.user.firstName + ' ' + p.user.lastName" class="av-xl__img" />
-            }
-            @else {
+          @if (p.user.profilePhotoUrl) {
+            <img
+              [src]="p.user.profilePhotoUrl"
+              [alt]="p.user.firstName + ' ' + p.user.lastName"
+              class="av-xl__img"
+            />
+          } @else {
             {{ initials(p) }}
-            }
-            @if (p.verified) {
+          }
+          @if (p.verified) {
             <span class="verified-corner">✓</span>
-            }
+          }
         </div>
 
         <div>
-            <div class="id-row">
-                @if (p.orcidId) {
-                <span>{{ p.orcidId }}</span>
-                <span class="sep">·</span>
-                <span class="verified-pill">orcid verified</span>
-                }
-                @if (p.scopusId) {
-                <span class="sep">·</span>
-                <a [href]="'https://www.scopus.com/authid/detail.uri?authorId=' + p.scopusId" target="_blank"
-                    rel="noopener">scopus</a>
-                }
-                @if (p.googleScholarId) {
-                <a [href]="'https://scholar.google.com/citations?user=' + p.googleScholarId" target="_blank"
-                    rel="noopener">google scholar</a>
-                }
-                @if (p.arxivId) {
-                <a [href]="'https://arxiv.org/a/' + p.arxivId" target="_blank" rel="noopener">arxiv</a>
-                }
-            </div>
-
-            <h1 class="name">{{ p.user.firstName }} <em>{{ p.user.lastName }}</em></h1>
-
-            <p class="aff">
-                @if (currentPosition(p); as cp) {
-                <span class="role">{{ cp.title }}</span>@if (cp.department) { of <i>{{ cp.department }}</i> }<br>
-                {{ cp.institution }}{{ p.country ? ' · ' + p.country : '' }}
-                }
-                @else if (p.headline) {
-                {{ p.headline }}
-                }
-            </p>
-
-            @if (p.pronouns || p.timezone || p.languages?.length || p.availability?.length) {
-            <div class="pronouns">
-                @if (p.pronouns) {<span><span class="pn">pronouns</span> {{ p.pronouns }}</span>}
-                @if (p.timezone) {<span><span class="pn">timezone</span> {{ p.timezone }}</span>}
-                @if (p.languages?.length) {<span><span class="pn">languages</span> {{ p.languages?.join(' · ')
-                    }}</span>}
-                @if (p.availability?.length) {<span><span class="pn">availability</span> {{ p.availability?.join(' · ')
-                    }}</span>}
-            </div>
+          <div class="id-row">
+            @if (p.orcidId) {
+              <span>{{ p.orcidId }}</span>
+              <span class="sep">·</span>
+              <span class="verified-pill">orcid verified</span>
             }
+            @if (p.scopusId) {
+              <span class="sep">·</span>
+              <a
+                [href]="
+                  'https://www.scopus.com/authid/detail.uri?authorId=' +
+                  p.scopusId
+                "
+                target="_blank"
+                rel="noopener"
+                >scopus</a
+              >
+            }
+            @if (p.googleScholarId) {
+              <a
+                [href]="
+                  'https://scholar.google.com/citations?user=' +
+                  p.googleScholarId
+                "
+                target="_blank"
+                rel="noopener"
+                >google scholar</a
+              >
+            }
+            @if (p.arxivId) {
+              <a
+                [href]="'https://arxiv.org/a/' + p.arxivId"
+                target="_blank"
+                rel="noopener"
+                >arxiv</a
+              >
+            }
+          </div>
+
+          <h1 class="name">
+            {{ p.user.firstName }} <em>{{ p.user.lastName }}</em>
+          </h1>
+
+          <p class="aff">
+            @if (currentPosition(p); as cp) {
+              <span class="role">{{ cp.title }}</span>
+              @if (cp.department) {
+                of <i>{{ cp.department }}</i>
+              }
+              <br />
+              {{ cp.institution }}{{ p.country ? " · " + p.country : "" }}
+            } @else if (p.headline) {
+              {{ p.headline }}
+            }
+          </p>
+
+          @if (
+            p.pronouns ||
+            p.timezone ||
+            p.languages?.length ||
+            p.availability?.length
+          ) {
+            <div class="pronouns">
+              @if (p.pronouns) {
+                <span><span class="pn">pronouns</span> {{ p.pronouns }}</span>
+              }
+              @if (p.timezone) {
+                <span><span class="pn">timezone</span> {{ p.timezone }}</span>
+              }
+              @if (p.languages?.length) {
+                <span
+                  ><span class="pn">languages</span>
+                  {{ p.languages?.join(" · ") }}</span
+                >
+              }
+              @if (p.availability?.length) {
+                <span
+                  ><span class="pn">availability</span>
+                  {{ p.availability?.join(" · ") }}</span
+                >
+              }
+            </div>
+          }
         </div>
 
         <div class="actions-col">
-            @if (isOwnProfile()) {
-            <button type="button" class="btn" (click)="editSection('personal')">Edit profile <span
-                    class="arr">→</span></button>
-            <a routerLink="/profile/cv" class="btn ghost">Generate CV</a>
-            }
-            @else {
-            <button type="button" class="btn" (click)="followProfile()">Follow <span class="arr">→</span></button>
-            <button type="button" class="btn ghost" (click)="messageProfile()">Send message</button>
-            }
-            @if (p.websiteUrl) {
+          @if (isOwnProfile()) {
+            <p-button (onClick)="editSection('personal')"
+              >Edit profile <span class="arr">→</span></p-button
+            >
+            <p-button
+              routerLink="/profile/cv"
+              [outlined]="true"
+              severity="secondary"
+              >Generate CV</p-button
+            >
+          } @else {
+            <p-button (onClick)="followProfile()"
+              >Follow <span class="arr">→</span></p-button
+            >
+            <p-button
+              [outlined]="true"
+              severity="secondary"
+              (onClick)="messageProfile()"
+              >Send message</p-button
+            >
+          }
+          @if (p.websiteUrl) {
             <div class="url-line">
-                <a [href]="p.websiteUrl" target="_blank" rel="noopener">↗ {{ displayUrl(p.websiteUrl) }}</a>
+              <a [href]="p.websiteUrl" target="_blank" rel="noopener"
+                >↗ {{ displayUrl(p.websiteUrl) }}</a
+              >
             </div>
-            }
+          }
         </div>
+      </div>
     </section>
 
     <!-- Stats -->
-    <div class="stats">
+    <section class="card card--stats">
+      <div class="stats-grid">
         @for (stat of stats(p); track stat.label) {
-        <div class="stat">
+          <div class="stat-tile">
             <div class="v">{{ stat.value }}</div>
             <div class="l">{{ stat.label }}</div>
             @if (stat.detail) {
-            <div class="d">{{ stat.detail }}</div>
+              <div class="d">{{ stat.detail }}</div>
             }
-        </div>
+          </div>
         }
-    </div>
-
+      </div>
+    </section>
 
     <!-- tabs -->
-    <nav class="tabs">
+    <section class="card card--tabs">
+      <nav class="tabs-pills">
         @for (tab of tabs(p); track tab.id) {
-        <span class="t" [class.on]="activeTab() === tab.id" (click)="setTab(tab.id)">
+          <span
+            class="t"
+            [class.on]="activeTab() === tab.id"
+            (click)="setTab(tab.id)"
+          >
             {{ tab.label }}
-            @if (tab.count !== undefined) {<span class="c">{{ tab.count }}</span>}
-        </span>
-        }
-        <span class="t-updated">last updated {{p.updatedAt | date}}</span>
-    </nav>
-
-
-    <div class="body">
-
-        <div class="body-tab">
-
-            @if(activeTab() === 'overview'){
-
-            <div class="overview-header">
-                <h3 class="tabTitle">About &<em> currently</em></h3>
-
-                <span>
-                    Lorem ipsum dolor, sit amet consectetur adipisicing elit. Cum labore deleniti eius quasi tempore
-                    eveniet
-                    vero unde laudantium dolor magnam iusto, iure ipsum doloribus soluta. Aut corrupti eveniet inventore
-                    dolor?Lorem ipsum, dolor sit amet consectetur adipisicing elit. Deleniti maiores quasi labore
-                    asperiores
-                    cumque amet enim non consectetur, beatae libero doloremque, soluta odit quod, suscipit alias ullam
-                    possimus repellendus ducimus.
-
-                </span>
-            </div>
-
-            <section id="overview">
-                @if (p.pinnedItems?.length) {
-                <div class="pinned">
-                    <span class="corner">currently working on</span>
-                    <div class="pinned-grid">
-                        @for (item of p.pinnedItems; track item._id) {
-                        <div class="pinned-item">
-                            <div class="pi-k">{{ item.index }} · {{ item.kind }}</div>
-                            <div class="pi-t" [innerHTML]="item.title"></div>
-                            <div class="pi-d">{{ item.detail }}</div>
-                        </div>
-                        }
-                    </div>
-                </div>
-                }
-            </section>
-
-
+            @if (tab.count !== undefined) {
+              <span class="c">{{ tab.count }}</span>
             }
+          </span>
+        }
+      </nav>
+    </section>
 
+    <div class="body-grid">
+      <section class="card card--main">
+        @if (activeTab() === "overview") {
+          <div class="overview-header">
+            <h3 class="tabTitle">About &<em> currently</em></h3>
+          </div>
 
+          <p class="overview-body">
+            Lorem ipsum dolor, sit amet consectetur adipisicing elit. Cum labore
+            deleniti eius quasi tempore eveniet vero unde laudantium dolor
+            magnam iusto, iure ipsum doloribus soluta. Aut corrupti eveniet
+            inventore dolor? Lorem ipsum, dolor sit amet consectetur adipisicing
+            elit. Deleniti maiores quasi labore asperiores cumque amet enim non
+            consectetur, beatae libero doloremque, soluta odit quod, suscipit
+            alias ullam possimus repellendus ducimus.
+          </p>
 
-
-
-
-
-        </div>
-
-        <aside class="side">
-            <div class="side-block">
-                <h3>Identifiers</h3>
-                @if (p.orcidId) {
-                <div class="ident-row" (click)="copyToClipboard(p.orcidId)"><span class="k">ORCID</span><span
-                        class="v">{{ p.orcidId }}</span></div>
+          <section id="overview">
+            @if (p.pinnedItems?.length) {
+              <div class="pinned-label">currently working on</div>
+              <div class="pinned-grid">
+                @for (item of p.pinnedItems; track item._id) {
+                  <div class="pinned-item">
+                    <div class="pi-k">{{ item.index }} · {{ item.kind }}</div>
+                    <div class="pi-t" [innerHTML]="item.title"></div>
+                    <div class="pi-d">{{ item.detail }}</div>
+                  </div>
                 }
-                @if (p.scopusId) {
-                <div class="ident-row" (click)="copyToClipboard(p.scopusId)"><span class="k">Scopus</span><span
-                        class="v">{{ p.scopusId }}</span></div>
-                }
-                @if (p.googleScholarId) {
-                <div class="ident-row" (click)="copyToClipboard(p.googleScholarId)"><span class="k">Google
-                        Scholar</span><span class="v">{{ p.googleScholarId
-                        }}</span></div>
-                }
-                @if (p.arxivId) {
-                <div class="ident-row" (click)="copyToClipboard(p.arxivId)"><span class="k">arXiv</span><span
-                        class="v">{{ p.arxivId }}</span></div>
-                }
-                @if (p.researcherId) {
-                <div class="ident-row" (click)="copyToClipboard(p.researcherId)"><span
-                        class="k">ResearcherID</span><span class="v">{{ p.researcherId }}</span>
-                </div>
-                }
+              </div>
+            }
+          </section>
+        }
+      </section>
+
+      <aside class="card card--sidebar">
+        <div class="side-block">
+          <h3>Identifiers</h3>
+          @if (p.orcidId) {
+            <div class="ident-row" (click)="copyToClipboard(p.orcidId)">
+              <span class="k">ORCID</span><span class="v">{{ p.orcidId }}</span>
             </div>
-        </aside>
-
+          }
+          @if (p.scopusId) {
+            <div class="ident-row" (click)="copyToClipboard(p.scopusId)">
+              <span class="k">Scopus</span
+              ><span class="v">{{ p.scopusId }}</span>
+            </div>
+          }
+          @if (p.googleScholarId) {
+            <div class="ident-row" (click)="copyToClipboard(p.googleScholarId)">
+              <span class="k">Google Scholar</span
+              ><span class="v">{{ p.googleScholarId }}</span>
+            </div>
+          }
+          @if (p.arxivId) {
+            <div class="ident-row" (click)="copyToClipboard(p.arxivId)">
+              <span class="k">arXiv</span><span class="v">{{ p.arxivId }}</span>
+            </div>
+          }
+          @if (p.researcherId) {
+            <div class="ident-row" (click)="copyToClipboard(p.researcherId)">
+              <span class="k">ResearcherID</span
+              ><span class="v">{{ p.researcherId }}</span>
+            </div>
+          }
+        </div>
+      </aside>
     </div>
-
-
-
-
-
-</div>
-
+  </div>
 }
 
 <!-- spinner component -->
 @if (loading()) {
-<div class="overlay">
+  <div class="overlay">
     <sn-spinner />
-</div>
+  </div>
 }

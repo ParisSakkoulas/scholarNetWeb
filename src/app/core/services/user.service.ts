@@ -39,4 +39,11 @@ export class UserService {
       params,
     });
   }
+
+  requestEmailChange(currentPassword: string, newEmail: string) {
+    return this.http.patch(`${this.apiUsers}//me/change-request`, {
+      currentPassword,
+      newEmail,
+    });
+  }
 }

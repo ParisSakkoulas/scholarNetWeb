@@ -3,7 +3,7 @@
 @import "tailwindcss";
 
 @import "primeicons/primeicons.css";
-
+/*
 html,
 body {
   margin: 0;
@@ -33,4 +33,50 @@ a {
   background: rgba(255, 255, 255, 0.55);
   backdrop-filter: blur(3px);
   border-radius: inherit;
+}
+*/
+
+@import url("https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,ital,wght@8..60,0,300..700;8..60,1,300..700&family=IBM+Plex+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap");
+
+:root {
+  --ink: oklch(0.22 0.02 250);
+  --ink-2: oklch(0.32 0.02 250);
+  --ink-3: oklch(0.5 0.018 250);
+
+  --paper: oklch(0.96 0.01 85);
+  --paper-2: oklch(0.92 0.012 85);
+  --paper-3: oklch(0.88 0.012 85);
+  --rule: oklch(0.86 0.012 85);
+
+  --oxford: oklch(0.32 0.07 250);
+  --oxford-hover: oklch(0.28 0.075 250);
+  --oxblood: oklch(0.36 0.09 25);
+  --forest: oklch(0.36 0.06 150);
+  --ochre: oklch(0.68 0.12 75);
+
+  --serif: "Source Serif 4", Georgia, serif;
+  --sans: "IBM Plex Sans", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --p-button-border-radius: 0;
+  --p-button-font-family: var(--sans);
+  --p-button-label-font-weight: 500;
+  --p-button-padding-x: 18px;
+  --p-button-padding-y: 13px;
+  --p-button-gap: 10px;
+
+  /* Primary button color now comes entirely from newModern-preset.ts
+     (semantic.primary + colorScheme.primary) — no --p-button-primary-*
+     overrides here, so the preset is the single source of truth. */
+
+  --p-button-secondary-background: var(--oxblood);
+  --p-button-secondary-border-color: var(--oxblood);
+  --p-button-secondary-color: var(--paper);
+}
+
+.p-button {
+  transition: transform 0.15s ease;
+}
+.p-button:hover {
+  transform: translateY(-1px);
 }

@@ -1,6 +1,6 @@
 :host {
   display: block;
-  background: var(--paper);
+  background: var(--paper-2);
   min-height: 100%;
   color: var(--ink);
   font-family: var(--sans);
@@ -11,485 +11,124 @@ a {
   text-decoration: none;
 }
 
-/* ═══════════════ HEADER ═══════════════ */
-.profile-header {
-  padding: 52px 48px 48px;
-  border-bottom: 1px solid var(--rule);
-  background: var(--paper);
-  display: grid;
-  grid-template-columns: 180px 1fr 280px;
-  gap: 48px;
-  align-items: end;
-  position: relative;
-}
-
-.av-xl {
-  width: 168px;
-  height: 168px;
-  background: var(--oxford);
-  color: var(--paper);
-  display: grid;
-  place-items: center;
-  font-family: var(--serif);
-  font-size: 72px;
-  font-style: italic;
-  font-weight: 400;
-  letter-spacing: -0.02em;
-  position: relative;
-  flex-shrink: 0;
-  overflow: hidden;
-}
-.av-xl__img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.av-xl .verified-corner {
-  position: absolute;
-
-  bottom: -6px;
-  right: -6px;
-  background: var(--forest);
-  color: var(--paper);
-  width: 28px;
-  height: 28px;
-  display: grid;
-  place-items: center;
-  font-size: 14px;
-  font-family: var(--sans);
-  font-weight: 700;
-}
-
-.id-row {
-  display: flex;
-  gap: 14px;
-  align-items: baseline;
-  flex-wrap: wrap;
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-  margin-bottom: 22px;
-}
-.id-row .sep {
-  color: var(--rule);
-}
-.id-row .verified-pill {
-  background: var(--forest);
-  color: var(--paper);
-  padding: 2px 8px;
-  letter-spacing: 0.12em;
-}
-.id-row a {
-  color: var(--ink-2);
-  border-bottom: 1px solid var(--rule);
-  padding-bottom: 1px;
-}
-.id-row a:hover {
-  color: var(--ink);
-  border-bottom-color: var(--ink);
-}
-
-.name {
-  font-family: var(--serif);
-  font-weight: 400;
-  font-size: 88px;
-  line-height: 0.92;
-  letter-spacing: -0.028em;
-  margin: 0;
-  color: var(--ink);
-}
-.name em {
-  font-style: italic;
-  color: var(--oxblood);
-}
-
-.body-tab {
-  padding: 2px;
-  margin-top: 25px;
-  /* border: 2px solid black; */
-}
-
-.overview-header .tabTitle {
-  padding-bottom: 20px;
-  margin-bottom: 20px;
-  border-bottom: 1px solid #ccc;
-}
-
-.tabTitle {
-  font-family: var(--serif);
-  font-weight: 400;
-  font-size: 37px;
-  line-height: 0.92;
-  letter-spacing: -0.028em;
-  margin: 0;
-  color: var(--ink);
-  padding-bottom: 1px;
-}
-.tabTitle em {
-  font-style: italic;
-  color: var(--oxblood);
-}
-
-.aff {
-  margin-top: 18px;
-  font-family: var(--serif);
-  font-size: 20px;
-  color: var(--ink-2);
-  line-height: 1.42;
-  max-width: 56ch;
-}
-.aff i {
-  font-style: italic;
-}
-.aff .role {
-  color: var(--ink);
-}
-
-.pronouns {
-  margin-top: 10px;
-  display: flex;
-  gap: 14px;
-  flex-wrap: wrap;
-  align-items: baseline;
-  font-family: var(--sans);
-  font-size: 13px;
-  color: var(--ink-3);
-}
-.pronouns .pn {
-  font-family: var(--mono);
-  font-size: 10.5px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  margin-right: 4px;
-}
-
-.actions-col {
+.settings-page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 32px 24px 64px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  align-items: stretch;
+  gap: 20px;
 }
-.btn {
+
+.card {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 20px;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.03),
+    0 6px 16px rgba(0, 0, 0, 0.03);
+}
+
+.card--main {
+  padding: 28px 32px 32px;
+}
+
+/* ═══════════════ TABS ═══════════════
+   Same card as the profile page's .card--tabs — its own card, so it
+   matches .card--main's width automatically, individual pill tabs
+   instead of one oval-shaped group. */
+.card--tabs {
+  padding: 6px;
+}
+.tabs-pills {
+  display: flex;
+  gap: 2px;
+  overflow-x: auto;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.tabs-pills::-webkit-scrollbar {
+  display: none;
+}
+.tabs-pills .t {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 13px 18px;
-  font-family: var(--sans);
-  font-size: 14px;
-  font-weight: 500;
-  border: 1px solid var(--ink);
-  background: var(--ink);
-  color: var(--paper);
-  cursor: pointer;
-  white-space: nowrap;
-  transition: transform 0.15s ease;
-}
-.btn:hover {
-  transform: translateY(-1px);
-}
-.btn.ghost {
-  background: transparent;
-  color: var(--ink);
-}
-.btn.oxblood {
-  background: var(--oxblood);
-  border-color: var(--oxblood);
-}
-.btn .arr {
-  font-family: var(--serif);
-  font-style: italic;
-  font-size: 17px;
-}
-
-.url-line {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-  text-align: right;
-  padding-top: 4px;
-}
-.url-line a {
-  color: var(--oxblood);
-}
-
-/* ═══════════════ STATS STRIP ═══════════════ */
-.stats {
-  padding: 30px 48px;
-  border-bottom: 1px solid var(--rule);
-  display: grid;
-  grid-template-columns: repeat(4, 1fr); /* ← bump this when you add a stat */
-  gap: 28px;
-}
-.stat {
-  border-right: 1px solid var(--rule);
-  padding-right: 28px;
-}
-.stat:last-child {
-  border-right: none;
-}
-.stat .v {
-  font-family: var(--serif);
-  font-size: 36px;
-  font-weight: 400;
-  letter-spacing: -0.012em;
-  color: var(--ink);
-  line-height: 1;
-}
-.stat .l {
-  margin-top: 6px;
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ink-2);
-}
-.stat .d {
-  margin-top: 4px;
-  font-family: var(--sans);
-  font-size: 11px;
-  color: var(--ink-3);
-}
-/* ═══════════════ TABS ═══════════════ */
-.tabs {
-  padding: 0 48px;
-  border-bottom: 1px solid var(--rule);
-  display: flex;
-  justify-content: space-between;
-  gap: 36px;
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.14em;
-
-  color: var(--ink-3);
-  position: sticky;
-  top: 0;
-  background: var(--paper);
-  z-index: 4;
-}
-.tabs .t {
-  text-transform: uppercase;
-  padding: 16px 0;
-  cursor: pointer;
-}
-
-.tabs .t-updated {
-  padding: 16px 0;
-  margin-right: 0;
-}
-
-.tabs .t.on {
-  color: var(--ink);
-  border-bottom: 2px solid var(--oxblood);
-  margin-bottom: -1px;
-}
-.tabs .t .c {
-  margin-left: 5px;
-  color: var(--ink-3);
-}
-
-.body-tab {
-  padding: 48px 48px;
-}
-
-/* ═══════════════ PINNED ITEMS ("currently working on") ═══════════════ */
-.pinned {
-  margin: 32px 48px 0;
-  padding: 24px;
-  background: var(--paper-2);
-  border: 1px solid var(--rule);
-  position: relative;
-}
-.pinned .corner {
-  position: absolute;
-  border: 1px solid gray;
-  top: -10px;
-  left: 20px;
-  background: var(--paper);
-  padding: 0 8px;
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ink);
-}
-.pinned-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 24px;
-}
-.pinned-item .pi-k {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ink-3);
-  margin-bottom: 8px;
-}
-.pinned-item .pi-t {
-  font-family: var(--serif);
-  font-size: 16px;
-  line-height: 1.35;
-  letter-spacing: -0.005em;
-  color: var(--ink);
-}
-.pinned-item .pi-t em {
-  font-style: italic;
-  color: var(--oxblood);
-}
-.pinned-item .pi-d {
-  margin-top: 8px;
-  font-family: var(--sans);
-  font-size: 12.5px;
-  color: var(--ink-3);
-  line-height: 1.5;
-}
-
-/* ═══════════════ BODY ═══════════════ */
-.body {
-  padding: 48px 48px 56px;
-  display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 56px;
-  align-items: start; /* required — without it .side stretches full height and can't stick */
-}
-
-@media (max-width: 1080px) {
-  .body {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ═══════════════ SIDE RAIL ═══════════════ */
-.side {
-  position: sticky;
-  top: 49px; /* match your .tabs height */
-  max-height: calc(100vh - 49px);
-  overflow-y: auto;
-}
-.side h3 {
-  font-family: var(--mono);
-  font-size: 10.5px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  font-weight: 400;
-  color: var(--ink-2);
-  margin: 0 0 14px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--rule);
-}
-.side-block {
-  margin-bottom: 36px;
-}
-.side-block:last-child {
-  margin-bottom: 0;
-}
-
-.ident-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  padding: 8px 0;
   font-family: var(--sans);
   font-size: 13px;
-  color: var(--ink-2);
-  cursor: pointer;
-}
-.ident-row .k {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.1em;
+  font-weight: 500;
   color: var(--ink-3);
-  text-transform: uppercase;
+  padding: 10px 16px;
+  border-radius: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
-.ident-row .v {
-  font-family: var(--mono);
-  font-size: 11.5px;
+.tabs-pills .t:hover {
   color: var(--ink);
+  background: var(--paper-2);
+}
+.tabs-pills .t.on {
+  background: var(--ink);
+  color: var(--paper);
 }
 
+/* ═══════════════ SECTION HEADER ═══════════════ */
+.section-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--rule);
+  padding-bottom: 12px;
+  margin-bottom: 24px;
+}
+.t-meta {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0;
+}
+.t-label {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+/* ═══════════════ FIELDS ═══════════════ */
 .field {
   display: flex;
   flex-direction: column;
 }
 
-.input {
-  width: 100%;
-  background: transparent;
-  border: none;
-  border-bottom: var(--border);
-  padding: var(--s-2) 0;
-  font-family: var(--sans);
-  font-size: var(--t-body);
-  color: var(--ink);
-  transition: border-color 0.15s ease;
-}
-.input:focus {
-  outline: none;
-  border-bottom: 1px solid var(--oxblood);
-}
-.input::placeholder {
-  color: var(--ink-3);
-}
-
 .error {
-  margin-top: var(--s-1);
+  margin-top: 6px;
   font-family: var(--mono);
-  font-size: var(--t-label);
+  font-size: 11px;
   color: var(--oxblood);
 }
 
-.btn-primary {
-  font-family: var(--mono);
-  font-size: var(--t-label);
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  color: var(--paper);
-  background: var(--ink);
-  border: none;
-  padding: var(--s-3) var(--s-5);
-  cursor: pointer;
-  transition: background-color 0.15s ease;
-}
-.btn-primary:hover {
-  background: var(--oxblood);
-}
-.btn-primary:disabled {
-  background: var(--ink-3);
-  cursor: not-allowed;
+.hint {
+  margin-top: 6px;
+  font-family: var(--sans);
+  font-size: 12px;
+  color: var(--ink-3);
 }
 
-.chip-toggle {
-  font-family: var(--mono);
-  font-size: var(--t-label);
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  border: var(--border);
-  background: transparent;
-  color: var(--ink-2);
-  padding: var(--s-2) var(--s-3);
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-.chip-toggle--active {
-  background: var(--oxford);
-  border-color: var(--oxford);
-  color: var(--paper);
-}
-
+/* ═══════════════ CHIPS (autocomplete tokens) ═══════════════ */
 .chip {
   display: inline-flex;
   align-items: center;
-  gap: var(--s-1);
+  gap: 6px;
   font-family: var(--sans);
-  font-size: var(--t-small);
+  font-size: 12.5px;
   background: var(--paper-2);
-  border: var(--border);
-  padding: var(--s-1) var(--s-2);
+  border: 1px solid var(--rule);
+  border-radius: 100px;
+  padding: 4px 10px;
   color: var(--ink-2);
 }
 .chip-remove {
@@ -503,28 +142,20 @@ a {
   color: var(--oxblood);
 }
 
-@media (max-width: 720px) {
-  .pinned-grid {
-    grid-template-columns: 1fr;
-  }
+/* ═══════════════ ACTIONS ═══════════════ */
+form ::ng-deep .p-button {
+  border-radius: 12px;
 }
-
-/* ═══════════════ MOBILE ═══════════════ */
-@media (max-width: 1080px) {
-  .profile-header {
-    grid-template-columns: 1fr;
-  }
-  .actions-col {
-    flex-direction: row;
-  }
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
 }
 
 @media (max-width: 640px) {
-  .profile-header {
-    padding: 32px 20px 28px;
-    gap: 24px;
+  .settings-page {
+    padding: 20px 16px 48px;
   }
-  .name {
-    font-size: 52px;
+  .card--main {
+    padding: 20px 20px 24px;
   }
 }

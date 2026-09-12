@@ -18,11 +18,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Title } from '@angular/platform-browser';
-import {
-  Profile,
-  ProfilePosition,
-  ProfileStat,
-} from '../../../core/models/profile.model';
+import { Profile } from '../../../core/models/profile.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { ProfileService } from '../../../core/services/profile.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -33,17 +29,26 @@ import { TextareaModule } from 'primeng/textarea';
 import { ButtonModule } from 'primeng/button';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { AutoCompleteModule } from 'primeng/autocomplete';
-import { TabViewModule } from 'primeng/tabview';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 
-import { ProfileTab } from '../../../shared/types/Profile/profile-tab';
-import { ProfileTabDef } from '../../../shared/interfaces/Profile/profiel-tab-definition';
 import { ProfileLink } from '../../../shared/interfaces/Profile/profile-linkt';
 import { linkTypeOptions } from './link-type-options';
 
+import { passwordMatchValidator } from '../../../features/auth/utils/helpers';
+
 import { Select } from 'primeng/select';
 import { uniqueFieldValidator } from '../../../shared/utils/custom-validators/unique-field.validator';
+
+// This component's own tab set — distinct from ProfileTab, which belongs
+// to the main profile page (overview/publications/jobs/etc.) and was
+// imported here by mistake.
+type SettingsTab = 'profile' | 'account' | 'email' | 'password' | 'delete';
+
+interface SettingsTabDef {
+  id: SettingsTab;
+  label: string;
+}
 
 @Component({
   selector: 'app-edit-profile',
@@ -59,7 +64,6 @@ import { uniqueFieldValidator } from '../../../shared/utils/custom-validators/un
     ButtonModule,
     SelectButtonModule,
     AutoCompleteModule,
-    TabViewModule,
     ToastModule,
     Select,
   ],
@@ -78,7 +82,20 @@ export class EditProfileComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly title = inject(Title);
 
-  readonly activeTab = signal<ProfileTab>('overview');
+  readonly activeTab = signal<SettingsTab>('profile');
+
+  readonly settingsTabs: SettingsTabDef[] = [
+    { id: 'profile', label: 'Profile Info' },
+    { id: 'account', label: 'Account Setting' },
+    { id: 'email', label: 'Email' },
+    { id: 'password', label: 'Change Password' },
+    { id: 'delete', label: 'Delete Account' },
+  ];
+
+  setTab(tab: SettingsTab): void {
+    this.activeTab.set(tab);
+  }
+
   readonly profile = signal<Profile | null>(null);
   readonly availability = signal<string[]>([]);
   readonly languages = signal<string[]>([]);
@@ -111,16 +128,6 @@ export class EditProfileComponent implements OnInit {
         ),
       ],
     ],
-    email: [
-      '',
-      [Validators.required, Validators.email],
-      [
-        uniqueFieldValidator(
-          (val) => this.userService.checkEmailExists(val, this.currentUserId),
-          () => this.currentEmail,
-        ),
-      ],
-    ],
   });
 
   readonly profileForm = this.fb.group({
@@ -149,6 +156,21 @@ export class EditProfileComponent implements OnInit {
     email: ['', [Validators.required, Validators.email]],
     currentPassword: ['', Validators.required],
   });
+
+  readonly requestEmailForm = this.fb.group(
+    {
+      currentPassword: [
+        '',
+        Validators.required,
+        Validators.minLength(8),
+        Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/),
+      ],
+
+      confirmPassword: ['', Validators.required],
+      newEmail: ['', [Validators.required, Validators.email]],
+    },
+    { validators: passwordMatchValidator },
+  );
 
   readonly availabilityOptions = [
     { label: 'Available for collaboration', value: 'collaboration' },
@@ -189,7 +211,6 @@ export class EditProfileComponent implements OnInit {
         firstName: p.user.firstName,
         lastName: p.user.lastName,
         username: p.user.username,
-        email: p.user.email,
       });
     });
   }
@@ -220,86 +241,9 @@ export class EditProfileComponent implements OnInit {
     });
   }
 
-  initials(profile: Profile): string {
-    return `${profile.user.firstName[0] ?? ''}${profile.user.lastName[0] ?? ''}`.toUpperCase();
-  }
-
-  currentPosition(profile: Profile): ProfilePosition | undefined {
-    return profile.positions.find((pos) => pos.current) ?? profile.positions[0];
-  }
-
-  editSection(section: string): void {
-    const ownId = this.authService.currentUser()?.id;
-    this.router.navigate(['/main/profile', ownId], {
-      queryParams: { section },
-    });
-  }
-
   onLanguageInput(event: { query: string }): void {}
 
   onLinkInput(event: { query: string }): void {}
-
-  followProfile(): void {}
-
-  messageProfile(): void {}
-
-  displayUrl(url: string): string {
-    return url.replace(/^https?:\/\//, '');
-  }
-
-  publicationCount(p: Profile): number {
-    return p.yearlyPublications.reduce((sum, y) => sum + y.count, 0);
-  }
-
-  stats(p: Profile): ProfileStat[] {
-    return [
-      { value: String(this.publicationCount(p)), label: 'Publications' },
-      { value: p.citationCount.toLocaleString(), label: 'Citations' },
-      {
-        value: String(p.hIndex),
-        label: 'h-index',
-        detail: `i10-index · ${p.i10Index}`,
-      },
-      { value: p.profileViews.toLocaleString(), label: 'Profile views' },
-    ];
-  }
-
-  tabs(p: Profile): ProfileTabDef[] {
-    return [
-      { id: 'overview', label: 'Overview' },
-      {
-        id: 'publications',
-        label: 'Publications',
-        count: this.publicationCount(p),
-      },
-      { id: 'education', label: 'Education' },
-      { id: 'jobs', label: 'Jobs' },
-      { id: 'interests', label: 'Interests' },
-
-      { id: 'talks', label: 'Talks' },
-
-      { id: 'endorsements', label: 'Endorsements' },
-
-      { id: 'teaching', label: 'Teaching' },
-      { id: 'network', label: 'Network' },
-    ];
-  }
-
-  setTab(tab: ProfileTab): void {
-    this.activeTab.set(tab);
-    document
-      .getElementById(tab)
-      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  async copyToClipboard(value: string): Promise<void> {
-    try {
-      await navigator.clipboard.writeText(value);
-      this.toastService.success('Copied to clipboard!');
-    } catch {
-      this.toastService.success('Could not copy, try selecting it manually');
-    }
-  }
 
   get links(): FormArray<FormGroup> {
     return this.profileForm.get('links') as FormArray<FormGroup>;
@@ -337,7 +281,6 @@ export class EditProfileComponent implements OnInit {
       firstName: this.userForm.value.firstName,
       lastName: this.userForm.value.lastName,
       username: this.userForm.value.username,
-      email: this.userForm.value.email,
     };
   }
 
@@ -382,6 +325,21 @@ export class EditProfileComponent implements OnInit {
           summary: 'Error',
           detail: 'Something went wrong',
         });
+      },
+    });
+  }
+
+  changeRequestEmail() {
+    if (this.requestEmailForm.invalid) {
+      this.requestEmailForm.markAllAsTouched();
+      return;
+    }
+
+    const { currentPassword, newEmail } = this.requestEmailForm.getRawValue();
+
+    this.userService.requestEmailChange(currentPassword, newEmail).subscribe({
+      next: (response) => {
+        console.log(response);
       },
     });
   }

@@ -1,429 +1,510 @@
-<div class="min-h-screen bg-[var(--paper)] text-[var(--ink)]">
-  <div class="mx-auto max-w-3xl px-6 py-12 sm:px-8">
-    <header class="mb-10">
-      <p-tabView>
-        <p-tabPanel header="Profile Info">
-          <section>
-            <div
-              class="flex items-baseline justify-between border-b border-[var(--rule)] pb-3 mb-6"
-            >
-              <p class="t-meta">Visible on your public researcher page</p>
+<div class="settings-page">
+  <section class="card card--tabs">
+    <nav class="tabs-pills">
+      @for (tab of settingsTabs; track tab.id) {
+        <span
+          class="t"
+          [class.on]="activeTab() === tab.id"
+          (click)="setTab(tab.id)"
+        >
+          {{ tab.label }}
+        </span>
+      }
+    </nav>
+  </section>
+
+  <section class="card card--main">
+    @if (activeTab() === "profile") {
+      <section>
+        <div class="section-meta">
+          <p class="t-meta">Visible on your public researcher page</p>
+        </div>
+
+        <form
+          [formGroup]="profileForm"
+          (ngSubmit)="saveProfileInfo()"
+          class="space-y-8"
+        >
+          <div class="field">
+            <label class="t-label block mb-2" for="bio">Bio</label>
+            <textarea
+              pTextarea
+              id="bio"
+              rows="4"
+              formControlName="bio"
+              class="w-full"
+              placeholder="A short introduction other researchers will see"
+            ></textarea>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-6">
+            <div class="field">
+              <label class="t-label block mb-2" for="city">City</label>
+              <input
+                pInputText
+                id="city"
+                type="text"
+                formControlName="city"
+                class="w-full"
+              />
             </div>
+            <div class="field">
+              <label class="t-label block mb-2" for="country">Country</label>
+              <input
+                pInputText
+                id="country"
+                type="text"
+                formControlName="country"
+                class="w-full"
+              />
+            </div>
+            <div class="field">
+              <label class="t-label block mb-2" for="timezone">Timezone</label>
+              <input
+                pInputText
+                id="timezone"
+                type="text"
+                formControlName="timezone"
+                class="w-full"
+                placeholder="e.g. Europe/Athens"
+              />
+            </div>
+            <div class="field">
+              <label class="t-label block mb-2" for="websiteUrl">Website</label>
+              <input
+                pInputText
+                id="websiteUrl"
+                type="url"
+                formControlName="websiteUrl"
+                class="w-full"
+                placeholder="https://"
+              />
+            </div>
+          </div>
 
-            <form
-              [formGroup]="profileForm"
-              (ngSubmit)="saveProfileInfo()"
-              class="space-y-8"
+          <div class="field">
+            <label class="t-label block mb-2">Availability</label>
+            <p-selectbutton
+              [options]="availabilityOptions"
+              formControlName="availability"
+              optionLabel="label"
+              optionValue="value"
+              [multiple]="true"
+            />
+          </div>
+
+          <div class="field">
+            <label class="t-label block mb-2" for="languages">Languages</label>
+            <p-autocomplete
+              id="languages"
+              formControlName="languages"
+              [multiple]="true"
+              [typeahead]="false"
+              (completeMethod)="onLanguageInput($event)"
+              placeholder="Type a language and press Enter"
+              styleClass="w-full"
+            />
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-6">
+            <div class="field">
+              <label class="t-label block mb-2" for="orcidId">ORCID iD</label>
+              <input
+                pInputText
+                id="orcidId"
+                type="text"
+                formControlName="orcidId"
+                class="w-full font-mono"
+                placeholder="0000-0000-0000-0000"
+              />
+            </div>
+            <div class="field">
+              <label class="t-label block mb-2" for="googleScholarId"
+                >Google Scholar ID</label
+              >
+              <input
+                pInputText
+                id="googleScholarId"
+                type="text"
+                formControlName="googleScholarId"
+                class="w-full font-mono"
+              />
+            </div>
+            <div class="field">
+              <label class="t-label block mb-2" for="scopusId"
+                >Scopus Author ID</label
+              >
+              <input
+                pInputText
+                id="scopusId"
+                type="text"
+                formControlName="scopusId"
+                class="w-full font-mono"
+              />
+            </div>
+            <div class="field">
+              <label class="t-label block mb-2" for="researcherId"
+                >ResearcherID</label
+              >
+              <input
+                pInputText
+                id="researcherId"
+                type="text"
+                formControlName="researcherId"
+                class="w-full font-mono"
+              />
+            </div>
+          </div>
+
+          <div class="field" formArrayName="links">
+            <label class="t-label block mb-2">Links</label>
+
+            <div
+              *ngFor="let linkGroup of links.controls; let i = index"
+              [formGroupName]="i"
+              class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 items-start mb-3"
             >
-              <div class="field">
-                <label class="t-label block mb-2" for="bio">Bio</label>
-                <textarea
-                  pTextarea
-                  id="bio"
-                  rows="4"
-                  formControlName="bio"
-                  class="w-full"
-                  placeholder="A short introduction other researchers will see"
-                ></textarea>
-              </div>
+              <p-select
+                [options]="linkTypeOptions"
+                formControlName="type"
+                optionLabel="label"
+                optionValue="value"
+                appendTo="body"
+                styleClass="w-full"
+                placeholder="Type"
+              />
 
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-6">
-                <div class="field">
-                  <label class="t-label block mb-2" for="city">City</label>
-                  <input
-                    pInputText
-                    id="city"
-                    type="text"
-                    formControlName="city"
-                    class="w-full"
-                  />
-                </div>
-                <div class="field">
-                  <label class="t-label block mb-2" for="country"
-                    >Country</label
-                  >
-                  <input
-                    pInputText
-                    id="country"
-                    type="text"
-                    formControlName="country"
-                    class="w-full"
-                  />
-                </div>
-                <div class="field">
-                  <label class="t-label block mb-2" for="timezone"
-                    >Timezone</label
-                  >
-                  <input
-                    pInputText
-                    id="timezone"
-                    type="text"
-                    formControlName="timezone"
-                    class="w-full"
-                    placeholder="e.g. Europe/Athens"
-                  />
-                </div>
-                <div class="field">
-                  <label class="t-label block mb-2" for="websiteUrl"
-                    >Website</label
-                  >
-                  <input
-                    pInputText
-                    id="websiteUrl"
-                    type="url"
-                    formControlName="websiteUrl"
-                    class="w-full"
-                    placeholder="https://"
-                  />
-                </div>
-              </div>
-
-              <div class="field">
-                <label class="t-label block mb-2">Availability</label>
-                <p-selectbutton
-                  [options]="availabilityOptions"
-                  formControlName="availability"
-                  optionLabel="label"
-                  optionValue="value"
-                  [multiple]="true"
+              <div class="flex gap-3 items-start">
+                <input
+                  pInputText
+                  type="url"
+                  formControlName="url"
+                  class="flex-1"
+                  placeholder="https://..."
                 />
-              </div>
-
-              <div class="field">
-                <label class="t-label block mb-2" for="languages"
-                  >Languages</label
-                >
-                <p-autocomplete
-                  id="languages"
-                  formControlName="languages"
-                  [multiple]="true"
-                  [typeahead]="false"
-                  (completeMethod)="onLanguageInput($event)"
-                  placeholder="Type a language and press Enter"
-                  styleClass="w-full"
-                />
-              </div>
-
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-6">
-                <div class="field">
-                  <label class="t-label block mb-2" for="orcidId"
-                    >ORCID iD</label
-                  >
-                  <input
-                    pInputText
-                    id="orcidId"
-                    type="text"
-                    formControlName="orcidId"
-                    class="w-full font-mono"
-                    placeholder="0000-0000-0000-0000"
-                  />
-                </div>
-                <div class="field">
-                  <label class="t-label block mb-2" for="googleScholarId"
-                    >Google Scholar ID</label
-                  >
-                  <input
-                    pInputText
-                    id="googleScholarId"
-                    type="text"
-                    formControlName="googleScholarId"
-                    class="w-full font-mono"
-                  />
-                </div>
-                <div class="field">
-                  <label class="t-label block mb-2" for="scopusId"
-                    >Scopus Author ID</label
-                  >
-                  <input
-                    pInputText
-                    id="scopusId"
-                    type="text"
-                    formControlName="scopusId"
-                    class="w-full font-mono"
-                  />
-                </div>
-                <div class="field">
-                  <label class="t-label block mb-2" for="researcherId"
-                    >ResearcherID</label
-                  >
-                  <input
-                    pInputText
-                    id="researcherId"
-                    type="text"
-                    formControlName="researcherId"
-                    class="w-full font-mono"
-                  />
-                </div>
-              </div>
-
-              <div class="field" formArrayName="links">
-                <label class="t-label block mb-2">Links</label>
-
-                <div
-                  *ngFor="let linkGroup of links.controls; let i = index"
-                  [formGroupName]="i"
-                  class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 items-start mb-3"
-                >
-                  <p-select
-                    [options]="linkTypeOptions"
-                    formControlName="type"
-                    optionLabel="label"
-                    optionValue="value"
-                    appendTo="body"
-                    styleClass="w-full"
-                    placeholder="Type"
-                  />
-
-                  <div class="flex gap-3 items-start">
-                    <input
-                      pInputText
-                      type="url"
-                      formControlName="url"
-                      class="flex-1"
-                      placeholder="https://..."
-                    />
-
-                    <button
-                      pButton
-                      type="button"
-                      icon="pi pi-trash"
-                      class="p-button-text p-button-danger shrink-0"
-                      (click)="removeLink(i)"
-                    ></button>
-                  </div>
-                </div>
 
                 <button
                   pButton
                   type="button"
-                  label="Add link"
-                  icon="pi pi-plus"
-                  class="p-button-text"
-                  (click)="addLink()"
+                  icon="pi pi-trash"
+                  class="p-button-text p-button-danger shrink-0"
+                  (click)="removeLink(i)"
                 ></button>
               </div>
-
-              <p-button type="submit" label="Save profile" />
-            </form>
-          </section>
-        </p-tabPanel>
-
-        <p-tabPanel header="Account Setting">
-          <section class="mb-14">
-            <div
-              class="flex items-baseline justify-between border-b border-[var(--rule)] pb-3 mb-6"
-            >
-              <p class="t-meta">Used for sign in and identification</p>
             </div>
 
-            <form
-              [formGroup]="userForm"
-              (ngSubmit)="saveUserBasicInfo()"
-              class="space-y-6"
-            >
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-6">
-                <div class="field">
-                  <label class="t-label block mb-2" for="firstName"
-                    >First name</label
-                  >
-                  <input
-                    pInputText
-                    id="firstName"
-                    type="text"
-                    formControlName="firstName"
-                    class="w-full"
-                  />
-                  @if (
-                    userForm.controls.firstName.invalid &&
-                    userForm.controls.firstName.touched
-                  ) {
-                    <p class="error">First name is required</p>
-                  }
-                </div>
+            <button
+              pButton
+              type="button"
+              label="Add link"
+              icon="pi pi-plus"
+              class="p-button-text"
+              (click)="addLink()"
+            ></button>
+          </div>
 
-                <div class="field">
-                  <label class="t-label block mb-2" for="lastName"
-                    >Last name</label
-                  >
-                  <input
-                    pInputText
-                    id="lastName"
-                    type="text"
-                    formControlName="lastName"
-                    class="w-full"
-                  />
-                  @if (
-                    userForm.controls.lastName.invalid &&
-                    userForm.controls.lastName.touched
-                  ) {
-                    <p class="error">Last name is required</p>
-                  }
-                </div>
+          <div class="form-actions">
+            <p-button type="submit" label="Save profile" />
+          </div>
+        </form>
+      </section>
+    }
 
-                <div class="field">
-                  <label class="t-label block mb-2" for="username"
-                    >Username</label
-                  >
-                  <input
-                    pInputText
-                    id="username"
-                    type="text"
-                    formControlName="username"
-                    class="w-full"
-                  />
-                  @if (userForm.controls.username.pending) {
-                    <p class="text-sm pt-2">Checking availability...</p>
-                  }
-                  @if (
-                    userForm.controls.username.touched &&
-                    userForm.controls.username.hasError("required")
-                  ) {
-                    <p class="text-sm pt-2">Username is required</p>
-                  }
-                  @if (
-                    userForm.controls.username.touched &&
-                    userForm.controls.username.hasError("alreadyExists")
-                  ) {
-                    <p class="text-sm pt-2">This username is already taken</p>
-                  }
-                </div>
+    @if (activeTab() === "account") {
+      <section>
+        <div class="section-meta">
+          <p class="t-meta">Used for sign in and identification</p>
+        </div>
 
-                <div class="field">
-                  <label class="t-label block mb-2" for="email">Email</label>
-                  <input
-                    pInputText
-                    id="email"
-                    type="email"
-                    formControlName="email"
-                    class="w-full"
-                  />
-                  @if (userForm.controls.email.pending) {
-                    <p class="text-sm pt-2">Checking availability...</p>
-                  }
-                  @if (
-                    userForm.controls.email.touched &&
-                    userForm.controls.email.hasError("required")
-                  ) {
-                    <p class="text-sm pt-2">Email is required</p>
-                  }
-                  @if (
-                    userForm.controls.email.touched &&
-                    userForm.controls.email.hasError("email")
-                  ) {
-                    <p class="text-sm pt-2">Enter a valid email address</p>
-                  }
-                  @if (
-                    userForm.controls.email.touched &&
-                    userForm.controls.email.hasError("alreadyExists")
-                  ) {
-                    <p class="text-sm pt-2">This email is already registered</p>
-                  }
-                </div>
-              </div>
-
-              <p-button
-                type="submit"
-                label="Save account"
-                [disabled]="userForm.invalid"
-              />
-            </form>
-          </section>
-        </p-tabPanel>
-
-        <p-tabPanel header="Change Password">
-          <form
-            [formGroup]="changePasswordForm"
-            (ngSubmit)="changePassword()"
-            class="space-y-8"
-          >
+        <form
+          [formGroup]="userForm"
+          (ngSubmit)="saveUserBasicInfo()"
+          class="space-y-6"
+        >
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-6">
             <div class="field">
-              <label class="t-label block mb-2" for="bio"
-                >Current Password</label
+              <label class="t-label block mb-2" for="firstName"
+                >First name</label
               >
               <input
                 pInputText
-                id="currentPassword"
-                type="password"
-                formControlName="currentPassword"
+                id="firstName"
+                type="text"
+                formControlName="firstName"
                 class="w-full"
               />
+              @if (
+                userForm.controls.firstName.invalid &&
+                userForm.controls.firstName.touched
+              ) {
+                <p class="error">First name is required</p>
+              }
             </div>
 
             <div class="field">
-              <label class="t-label block mb-2" for="bio">New Password</label>
+              <label class="t-label block mb-2" for="lastName">Last name</label>
               <input
                 pInputText
-                id="newPassword"
-                type="password"
-                formControlName="newPassword"
+                id="lastName"
+                type="text"
+                formControlName="lastName"
                 class="w-full"
               />
+              @if (
+                userForm.controls.lastName.invalid &&
+                userForm.controls.lastName.touched
+              ) {
+                <p class="error">Last name is required</p>
+              }
             </div>
 
             <div class="field">
-              <label class="t-label block mb-2" for="bio"
-                >Confirm New Password</label
-              >
-              <input
-                pInputText
-                id="confirmPassword"
-                type="confirmPassword"
-                formControlName="confirmPassword"
-                class="w-full"
-              />
-            </div>
-
-            <p-button type="submit" label="Change Password" />
-          </form>
-        </p-tabPanel>
-
-        <p-tabPanel header="Delete Account">
-          <form
-            [formGroup]="deletAccountForm"
-            (ngSubmit)="deleteAccount()"
-            class="space-y-8"
-          >
-            <div class="field">
-              <label class="t-label block mb-2" for="bio"
-                >Current Password</label
-              >
-              <input
-                pInputText
-                id="currentPassword"
-                type="password"
-                formControlName="currentPassword"
-                class="w-full"
-              />
-            </div>
-
-            <div class="field">
-              <label class="t-label block mb-2" for="bio">User name</label>
+              <label class="t-label block mb-2" for="username">Username</label>
               <input
                 pInputText
                 id="username"
-                type="username"
+                type="text"
                 formControlName="username"
                 class="w-full"
               />
+              @if (userForm.controls.username.pending) {
+                <p class="hint">Checking availability...</p>
+              }
+              @if (
+                userForm.controls.username.touched &&
+                userForm.controls.username.hasError("required")
+              ) {
+                <p class="error">Username is required</p>
+              }
+              @if (
+                userForm.controls.username.touched &&
+                userForm.controls.username.hasError("alreadyExists")
+              ) {
+                <p class="error">This username is already taken</p>
+              }
             </div>
+          </div>
 
-            <div class="field">
-              <label class="t-label block mb-2" for="bio">Email</label>
-              <input
-                pInputText
-                id="email"
-                type="email"
-                formControlName="email"
-                class="w-full"
-              />
-            </div>
+          <div class="form-actions">
+            <p-button
+              type="submit"
+              label="Save account"
+              [disabled]="userForm.invalid"
+            />
+          </div>
+        </form>
+      </section>
+    }
 
-            <p-button type="submit" label="Delete Account" />
-          </form>
-        </p-tabPanel>
-      </p-tabView>
-    </header>
-  </div>
+    @if (activeTab() === "email") {
+      <section>
+        <div class="section-meta">
+          <p class="t-meta">Email change</p>
+        </div>
+
+        <form
+          [formGroup]="requestEmailForm"
+          (ngSubmit)="changeRequestEmail()"
+          class="space-y-8"
+        >
+          <div class="field">
+            <label class="t-label block mb-2" for="currentPassword"
+              >Current password</label
+            >
+            <input
+              pInputText
+              id="currentPassword"
+              type="text"
+              formControlName="currentPassword"
+              class="w-full"
+            />
+            @if (
+              requestEmailForm.controls.currentPassword.invalid &&
+              requestEmailForm.controls.currentPassword.touched
+            ) {
+              <p class="error">Current password is required</p>
+            }
+          </div>
+
+          <div class="field">
+            <label class="t-label block mb-2" for="confirmPassword"
+              >Confirm password</label
+            >
+            <input
+              pInputText
+              id="confirmPassword"
+              type="text"
+              formControlName="confirmPassword"
+              class="w-full"
+            />
+            @if (
+              requestEmailForm.controls.confirmPassword.invalid &&
+              requestEmailForm.controls.confirmPassword.touched
+            ) {
+              <p class="error">Confirm your password</p>
+            }
+            @if (
+              requestEmailForm.controls.confirmPassword.invalid &&
+              requestEmailForm.hasError("passwordMismatch")
+            ) {
+              <p class="error">
+                Password and confirm password must be identical
+              </p>
+            }
+          </div>
+
+          <div class="field">
+            <label class="t-label block mb-2" for="newEmail">New email</label>
+            <input
+              pInputText
+              id="newEmail"
+              type="text"
+              formControlName="newEmail"
+              class="w-full"
+            />
+            @if (requestEmailForm.controls.newEmail.pending) {
+              <p class="hint">Checking availability...</p>
+            }
+            @if (
+              requestEmailForm.controls.newEmail.touched &&
+              requestEmailForm.controls.newEmail.hasError("required")
+            ) {
+              <p class="error">New email is required</p>
+            }
+            @if (
+              requestEmailForm.controls.newEmail.touched &&
+              requestEmailForm.controls.newEmail.hasError("alreadyExists")
+            ) {
+              <p class="error">This new email is already taken</p>
+            }
+          </div>
+
+          <div class="form-actions">
+            <p-button
+              type="submit"
+              label="Request change"
+              [disabled]="requestEmailForm.invalid"
+            />
+          </div>
+        </form>
+      </section>
+    }
+
+    @if (activeTab() === "password") {
+      <section>
+        <div class="section-meta">
+          <p class="t-meta">Update your account password</p>
+        </div>
+
+        <form
+          [formGroup]="changePasswordForm"
+          (ngSubmit)="changePassword()"
+          class="space-y-8"
+        >
+          <div class="field">
+            <label class="t-label block mb-2" for="currentPassword"
+              >Current password</label
+            >
+            <input
+              pInputText
+              id="currentPassword"
+              type="password"
+              formControlName="currentPassword"
+              class="w-full"
+            />
+          </div>
+
+          <div class="field">
+            <label class="t-label block mb-2" for="newPassword"
+              >New password</label
+            >
+            <input
+              pInputText
+              id="newPassword"
+              type="password"
+              formControlName="newPassword"
+              class="w-full"
+            />
+          </div>
+
+          <div class="field">
+            <label class="t-label block mb-2" for="confirmPassword"
+              >Confirm new password</label
+            >
+            <input
+              pInputText
+              id="confirmPassword"
+              type="password"
+              formControlName="confirmPassword"
+              class="w-full"
+            />
+          </div>
+
+          <div class="form-actions">
+            <p-button type="submit" label="Change password" />
+          </div>
+        </form>
+      </section>
+    }
+
+    @if (activeTab() === "delete") {
+      <section>
+        <div class="section-meta">
+          <p class="t-meta">This action cannot be undone</p>
+        </div>
+
+        <form
+          [formGroup]="deletAccountForm"
+          (ngSubmit)="deleteAccount()"
+          class="space-y-8"
+        >
+          <div class="field">
+            <label class="t-label block mb-2" for="currentPassword"
+              >Current password</label
+            >
+            <input
+              pInputText
+              id="currentPassword"
+              type="password"
+              formControlName="currentPassword"
+              class="w-full"
+            />
+          </div>
+
+          <div class="field">
+            <label class="t-label block mb-2" for="username">Username</label>
+            <input
+              pInputText
+              id="username"
+              type="text"
+              formControlName="username"
+              class="w-full"
+            />
+          </div>
+
+          <div class="field">
+            <label class="t-label block mb-2" for="email">Email</label>
+            <input
+              pInputText
+              id="email"
+              type="email"
+              formControlName="email"
+              class="w-full"
+            />
+          </div>
+
+          <div class="form-actions">
+            <p-button
+              type="submit"
+              label="Delete account"
+              severity="danger"
+              [outlined]="true"
+            />
+          </div>
+        </form>
+      </section>
+    }
+  </section>
 </div>
 
 <!-- toast -->
