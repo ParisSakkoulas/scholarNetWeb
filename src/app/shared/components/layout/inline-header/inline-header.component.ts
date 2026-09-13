@@ -25,11 +25,6 @@ export class InlineHeaderComponent {
 
   @ViewChild('searchInput')
   private readonly searchInputRef?: ElementRef<HTMLInputElement>;
-  // @ViewChild('profileMenuRef') private readonly profileMenuRef?: ElementRef<HTMLElement>;
-  // @ViewChild('notificatationMenuRef') private readonly notificatationMenuRef?: ElementRef<HTMLElement>;
-
-  // assumes AuthService exposes currentUser as a signal, same as everywhere
-  // else in this app (ProfileComponent reads it the same way)
   readonly currentUser = this.authService.currentUser;
 
   readonly profileMenuOpen = signal(false);
@@ -43,8 +38,6 @@ export class InlineHeaderComponent {
     return `${first}${last}`.toUpperCase();
   });
 
-  /** ⌘K / Ctrl+K focuses the search box from anywhere on the page —
-   *  matches the shortcut hint already shown inside the input. */
   @HostListener('window:keydown', ['$event'])
   handleShortcut(event: KeyboardEvent): void {
     const isShortcut =

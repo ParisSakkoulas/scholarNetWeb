@@ -1,0 +1,79 @@
+<div class="max-w-5xl mx-auto p-6">
+  @if (team(); as t) {
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-3">
+        @if (t.avatarUrl) {
+          <p-avatar [image]="t.avatarUrl" shape="circle" size="xlarge" />
+        } @else {
+          <p-avatar
+            [label]="t.name[0]"
+            shape="circle"
+            size="xlarge"
+            styleClass="bg-indigo-100 text-indigo-700"
+          />
+        }
+        <div>
+          <h1 class="text-xl font-semibold text-gray-900">{{ t.name }}</h1>
+          <p class="text-sm text-gray-500">{{ t.description }}</p>
+        </div>
+      </div>
+
+      <p-button
+        label="Manage Members"
+        icon="pi pi-users"
+        severity="secondary"
+        [outlined]="true"
+        (click)="goToMembers()"
+      />
+    </div>
+  }
+
+  <div class="flex items-center justify-between mb-4">
+    <h2 class="text-lg font-medium text-gray-900">Projects</h2>
+    <p-button
+      label="New Project"
+      icon="pi pi-plus"
+      (click)="showProjectModal.set(true)"
+    />
+  </div>
+
+  @if (loading()) {
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      @for (i of [1, 2, 3]; track i) {
+        <p-skeleton height="6rem" borderRadius="0.75rem" />
+      }
+    </div>
+  } @else if (projects().length === 0) {
+    <p class="text-gray-500">No projects yet.</p>
+  } @else {
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      @for (project of projects(); track project._id) {
+        <p-card
+          (click)="openProject(project._id)"
+          styleClass="cursor-pointer hover:shadow-md transition"
+        >
+          <p class="font-medium text-gray-900">{{ project.name }}</p>
+          <p-tag
+            [value]="project.status"
+            [severity]="
+              project.status === 'active'
+                ? 'success'
+                : project.status === 'archived'
+                  ? 'secondary'
+                  : 'info'
+            "
+            styleClass="mt-2"
+          />
+        </p-card>
+      }
+    </div>
+  }
+
+  @if (showProjectModal()) {
+    <app-project-form
+      [teamId]="teamId"
+      (created)="onProjectCreated($event)"
+      (cancelled)="showProjectModal.set(false)"
+    />
+  }
+</div>

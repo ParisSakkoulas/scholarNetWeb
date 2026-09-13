@@ -4,7 +4,7 @@ import { provideRouter } from '@angular/router';
 import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeuix/themes/aura';
 import { ScholarNetPreset } from './scholarnet-preset';
-import { NewPreset } from './newModern-preset';
+import { ModernPreset } from './moder-preset';
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
@@ -16,10 +16,10 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptors([authInterceptor])),
     providePrimeNG({
       theme: {
-        preset: NewPreset,
+        preset: ModernPreset,
         options: { darkModeSelector: false },
       },
-      ripple: false,
+      ripple: true,
     }),
     provideAnimationsAsync(),
   ],

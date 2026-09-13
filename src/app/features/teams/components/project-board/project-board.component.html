@@ -1,0 +1,69 @@
+<div class="p-6 overflow-x-auto">
+  @if (project(); as p) {
+    <h1 class="text-xl font-semibold text-gray-900 mb-6">{{ p.name }} Tasks</h1>
+  }
+
+  @if (loading()) {
+    <p class="text-gray-500">Loading board...</p>
+  } @else {
+    <div class="flex justify-between gap-4">
+      @for (column of columns(); track column._id) {
+        <div class="w-150 bg-gray-50 rounded-xl p-3 flex-shrink-0">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-medium text-gray-700">{{ column.name }}</h3>
+            <span class="text-xs text-gray-400">{{
+              tasksFor(column._id).length
+            }}</span>
+          </div>
+
+          <div
+            cdkDropList
+            [id]="column._id"
+            [cdkDropListData]="tasksFor(column._id)"
+            [cdkDropListConnectedTo]="connectedLists()"
+            (cdkDropListDropped)="onDrop($event, column._id)"
+            class="space-y-2 min-h-[40px]"
+          >
+            @for (task of tasksFor(column._id); track task._id) {
+              <div cdkDrag>
+                <app-task-card
+                  [task]="task"
+                  (edit)="openTask($event)"
+                  (deleteTask)="onDeleteTask($event)"
+                />
+              </div>
+            }
+          </div>
+
+          <div class="mt-4">
+            @if (addingToColumn() === column._id) {
+              <app-task-form
+                [projectId]="projectId"
+                [columnId]="column._id"
+                (created)="onTaskCreated($event)"
+                (cancelled)="addingToColumn.set(null)"
+              />
+            }
+            <p-button
+              label="Add task"
+              icon="pi pi-plus"
+              size="small"
+              [text]="true"
+              (click)="addingToColumn.set(column._id)"
+            />
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  @if (selectedTask(); as t) {
+    <app-task-detail-modal
+      [task]="t"
+      (closed)="selectedTask.set(null)"
+      (taskUpdated)="onTaskUpdated($event)"
+    />
+  }
+</div>
+
+<p-confirmDialog />

@@ -1,0 +1,68 @@
+<div class="max-w-3xl mx-auto p-6">
+  <h1 class="text-xl font-semibold text-gray-900 mb-4">Team Members</h1>
+
+  <div class="flex gap-2 mb-6">
+    <input
+      [(ngModel)]="inviteUserId"
+      [ngModelOptions]="{ standalone: true }"
+      placeholder="User ID to invite"
+      class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm"
+    />
+    <select
+      [(ngModel)]="inviteRole"
+      [ngModelOptions]="{ standalone: true }"
+      class="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+    >
+      <option value="member">Member</option>
+      <option value="admin">Admin</option>
+      <option value="viewer">Viewer</option>
+    </select>
+    <button
+      (click)="invite()"
+      class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700"
+    >
+      Invite
+    </button>
+  </div>
+
+  @if (error()) {
+    <p class="text-sm text-red-600 mb-4">{{ error() }}</p>
+  }
+
+  @if (loading()) {
+    <p class="text-gray-500">Loading members...</p>
+  } @else {
+    <div class="border border-gray-200 rounded-xl divide-y">
+      @for (member of members(); track memberUserId(member)) {
+        <div class="flex items-center justify-between px-4 py-3">
+          <div>
+            <p class="text-sm font-medium text-gray-900">
+              {{ memberName(member) }}
+            </p>
+            <p class="text-xs text-gray-500">{{ member.status }}</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <app-role-badge [role]="member.role" />
+            @if (member.role !== "owner") {
+              <select
+                [ngModel]="member.role"
+                (ngModelChange)="changeRole(memberUserId(member), $event)"
+                class="text-xs border border-gray-300 rounded px-2 py-1"
+              >
+                <option value="admin">Admin</option>
+                <option value="member">Member</option>
+                <option value="viewer">Viewer</option>
+              </select>
+              <button
+                (click)="remove(memberUserId(member))"
+                class="text-xs text-red-600 hover:underline"
+              >
+                Remove
+              </button>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

@@ -1,0 +1,133 @@
+<p-dialog
+  [(visible)]="visible"
+  [modal]="true"
+  [closable]="true"
+  [style]="{ width: '38rem' }"
+  (visibleChange)="onVisibleChange($event)"
+>
+  <ng-template pTemplate="header">
+    <input
+      pInputText
+      [ngModel]="editableTitle()"
+      (ngModelChange)="editableTitle.set($event)"
+      class="w-full text-lg font-semibold border-none"
+    />
+  </ng-template>
+
+  <div class="grid grid-cols-2 gap-4 mb-4">
+    <div>
+      <label class="block text-xs font-medium text-gray-500 mb-1"
+        >Priority</label
+      >
+      <p-select
+        [ngModel]="editablePriority()"
+        (ngModelChange)="editablePriority.set($event)"
+        [options]="priorityOptions"
+        optionLabel="label"
+        optionValue="value"
+        styleClass="w-full"
+        appendTo="body"
+      />
+    </div>
+
+    <div>
+      <label class="block text-xs font-medium text-gray-500 mb-1">Status</label>
+      <p-select
+        [ngModel]="editableStatus()"
+        (ngModelChange)="editableStatus.set($event)"
+        [options]="statusOptions"
+        optionLabel="label"
+        optionValue="value"
+        styleClass="w-full"
+        appendTo="body"
+      />
+    </div>
+  </div>
+
+  <div class="mb-6">
+    <label class="block text-xs font-medium text-gray-500 mb-1"
+      >Description</label
+    >
+    <textarea
+      pTextarea
+      [ngModel]="editableDescription()"
+      (ngModelChange)="editableDescription.set($event)"
+      rows="3"
+      class="w-full"
+    ></textarea>
+  </div>
+
+  <div class="mb-6">
+    <div class="flex items-center justify-between mb-2">
+      <label class="block text-xs font-medium text-gray-500">Subtasks</label>
+      <span class="text-xs text-gray-400"
+        >{{ doneSubtasksCount }}/{{ subtasks().length }}</span
+      >
+    </div>
+
+    @for (sub of subtasks(); track sub._id) {
+      <div class="flex items-center gap-2 py-1 group">
+        <p-checkbox
+          [binary]="true"
+          [ngModel]="sub.status === 'done'"
+          (ngModelChange)="toggleSubtaskDone(sub)"
+        />
+        <span
+          [class.line-through]="sub.status === 'done'"
+          [class.text-gray-400]="sub.status === 'done'"
+          class="text-sm flex-1"
+        >
+          {{ sub.title }}
+        </span>
+
+        <p-button
+          (click)="removeSubtask(sub._id)"
+          icon="pi pi-times"
+          [rounded]="true"
+          [text]="true"
+          severity="danger"
+        />
+      </div>
+    }
+
+    @if (addingSubtask()) {
+      <div class="flex gap-2 mt-2">
+        <input
+          pInputText
+          [ngModel]="newSubtaskTitle()"
+          (ngModelChange)="newSubtaskTitle.set($event)"
+          (keydown.enter)="addSubtask()"
+          placeholder="Subtask title..."
+          class="flex-1 text-sm"
+        />
+        <p-button label="Add" size="small" (click)="addSubtask()" />
+        <p-button
+          icon="pi pi-times"
+          [text]="true"
+          size="small"
+          (click)="addingSubtask.set(false)"
+        />
+      </div>
+    } @else {
+      <p-button
+        label="Add subtask"
+        icon="pi pi-plus"
+        [text]="true"
+        size="small"
+        (click)="addingSubtask.set(true)"
+      />
+    }
+  </div>
+
+  <div class="flex justify-end items-center mb-6">
+    <p-button
+      [label]="saving() ? 'Saving...' : 'Save Changes'"
+      [loading]="saving()"
+      (click)="save()"
+    />
+  </div>
+
+  <hr class="mb-4" />
+
+  <app-comment-thread [taskId]="task._id" />
+</p-dialog>

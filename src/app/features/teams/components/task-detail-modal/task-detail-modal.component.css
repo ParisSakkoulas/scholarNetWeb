@@ -1,0 +1,7 @@
+::ng-deep .task-detail-dialog .p-dialog-content {
+  padding: 1.7rem;
+}
+
+::ng-deep .task-detail-dialog .p-dialog-header {
+  padding: 1.25rem 1.5rem 0.75rem;
+}
