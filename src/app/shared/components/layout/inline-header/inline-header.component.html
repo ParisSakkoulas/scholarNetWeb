@@ -1,6 +1,6 @@
 <header class="app-header">
   <!-- Brand -->
-  <a class="brand" routerLink="/">
+  <a class="brand" routerLink="/" aria-label="scholarNet home">
     <svg class="mark" viewBox="0 0 100 100" aria-hidden="true">
       <g transform="translate(0,4)">
         <g stroke="currentColor" stroke-width="1.1" opacity="0.55" fill="none">
@@ -16,138 +16,90 @@
         <circle cx="22" cy="26" r="3.2" fill="currentColor" />
         <circle cx="56" cy="14" r="3.2" fill="currentColor" />
         <circle cx="78" cy="46" r="3.2" fill="currentColor" />
-        <circle cx="40" cy="60" r="5.0" class="accent" />
+        <circle cx="40" cy="60" r="5" class="accent" />
         <circle cx="14" cy="64" r="3.2" fill="currentColor" />
         <circle cx="86" cy="76" r="3.2" fill="currentColor" />
         <circle cx="60" cy="86" r="3.2" fill="currentColor" />
       </g>
     </svg>
-    <span class="wm">scholar<i>N</i>et</span>
+    <span class="wordmark">scholar<b>Net</b></span>
   </a>
 
-  <div class="search">
-    <svg
-      class="search__icon"
-      viewBox="0 0 16 16"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <circle cx="7" cy="7" r="5.25" stroke="currentColor" stroke-width="1.3" />
-      <path
-        d="M11 11 L14.5 14.5"
-        stroke="currentColor"
-        stroke-width="1.3"
-        stroke-linecap="round"
+  <!-- Search -->
+  <div class="search" role="search">
+    <p-iconfield>
+      <p-inputicon class="pi pi-search" />
+      <input
+        #searchInput
+        pInputText
+        type="text"
+        class="search-input"
+        aria-label="Search"
+        placeholder="Search researchers, papers, materials"
+        (keydown.enter)="onSearchSubmit(searchInput.value)"
       />
-    </svg>
-    <input
-      #searchInput
-      type="text"
-      class="search__input"
-      placeholder="Search researchers, papers, materials"
-      (keydown.enter)="onSearchSubmit(searchInput.value)"
-    />
-    <kbd class="search__shortcut"><span>⌘</span><span>K</span></kbd>
+    </p-iconfield>
+    <kbd class="search-kbd" aria-hidden="true">⌘ K</kbd>
   </div>
+
   @if (currentUser(); as user) {
-    <nav class="actions">
-      <a routerLink="/library" class="actions__link">My library</a>
-      <a routerLink="/network" class="actions__link">Network</a>
-      <a routerLink="/main/teams" class="actions__link">Teams</a>
-
-      <div
-        class="notification-menu"
-        (appClickOutside)="notificationMenuOpen.set(false)"
+    <nav class="actions" aria-label="Main">
+      <a routerLink="/library" routerLinkActive="is-active" class="nav-link"
+        >My library</a
       >
-        <button
-          type="button"
-          class="notificationButton"
-          (click)="toggleNotifications()"
-          aria-haspopup="menu"
-          [attr.aria-expanded]="notificationMenuOpen()"
-        >
-          <i class="pi pi-bell" style="font-size: 1rem"></i>
-        </button>
+      <a routerLink="/network" routerLinkActive="is-active" class="nav-link"
+        >Network</a
+      >
+      <a routerLink="/main/teams" routerLinkActive="is-active" class="nav-link"
+        >Teams</a
+      >
 
-        @if (notificationMenuOpen()) {
-          <div class="notification-menu__panel" role="menu">
-            <div class="notification-menu__identity">
-              <div class="profile-menu__name">Notifications</div>
+      <!-- Notifications -->
+      <p-button
+        icon="pi pi-bell"
+        variant="text"
+        severity="secondary"
+        rounded
+        ariaLabel="Notifications"
+        (onClick)="notifications.toggle($event)"
+      />
+      <p-popover #notifications>
+        <div class="notif">
+          <h2 class="notif-title">Notifications</h2>
+          <p class="notif-empty">You're all caught up.</p>
+        </div>
+      </p-popover>
+
+      <!-- Profile menu -->
+      <button
+        type="button"
+        class="avatar-btn"
+        aria-label="Account menu"
+        aria-haspopup="menu"
+        (click)="profileMenu.toggle($event)"
+      >
+        <p-avatar [label]="initials()" shape="circle" />
+      </button>
+      <p-menu #profileMenu [model]="profileItems" [popup]="true">
+        <ng-template #start>
+          <div class="menu-identity">
+            <div class="menu-name">
+              {{ user.firstName }} {{ user.lastName }}
             </div>
+            <div class="menu-email">{{ user.email }}</div>
           </div>
-        }
-      </div>
-
-      <div class="profile-menu" (appClickOutside)="profileMenuOpen.set(false)">
-        <button type="button" class="avatar" (click)="toggleProfileMenu()" ...>
-          {{ initials() }}
-        </button>
-        @if (profileMenuOpen()) {
-          <div class="profile-menu__panel" role="menu">
-            <div class="profile-menu__identity">
-              <div class="profile-menu__name">
-                {{ user.firstName }} {{ user.lastName }}
-              </div>
-              <div class="profile-menu__email">{{ user.email }}</div>
-            </div>
-
-            <button
-              type="button"
-              class="profile-menu__item"
-              role="menuitem"
-              (click)="goToOwnProfile(); profileMenuOpen.set(false)"
-            >
-              View profile
-            </button>
-
-            <a
-              routerLink="/main/teams"
-              class="profile-menu__item"
-              role="menuitem"
-              (click)="profileMenuOpen.set(false)"
-              >My teams</a
-            >
-
-            <a
-              routerLink="/settings"
-              class="profile-menu__item"
-              role="menuitem"
-              (click)="profileMenuOpen.set(false)"
-              >Settings</a
-            >
-
-            <a
-              routerLink="/settings"
-              class="profile-menu__item"
-              role="menuitem"
-              (click)="profileMenuOpen.set(false)"
-              >Activity</a
-            >
-            <!-- <a routerLink="/profile/cv" class="profile-menu__item" role="menuitem"
-                    (click)="profileMenuOpen.set(false)">Generate CV</a> -->
-
-            <!-- @if (isAdmin()) {
-                    <a routerLink="/admin" class="profile-menu__item" role="menuitem" (click)="profileMenuOpen.set(false)">Admin panel</a>
-                    } -->
-
-            <div class="profile-menu__divider"></div>
-
-            <button
-              type="button"
-              class="profile-menu__item profile-menu__logout"
-              role="menuitem"
-              (click)="logout()"
-            >
-              Log out
-            </button>
-          </div>
-        }
-      </div>
+        </ng-template>
+      </p-menu>
     </nav>
   } @else {
-    <nav class="actions">
-      <a routerLink="/login" class="actions__link">Log in</a>
-      <a routerLink="/register" class="btn-signup">Sign up</a>
+    <nav class="actions" aria-label="Account">
+      <p-button
+        label="Log in"
+        variant="text"
+        severity="secondary"
+        routerLink="/login"
+      />
+      <p-button label="Sign up" rounded routerLink="/register" />
     </nav>
   }
 </header>

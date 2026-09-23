@@ -12,6 +12,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { ButtonModule } from 'primeng/button';
+import { TagModule } from 'primeng/tag';
 
 import { SpinnerComponent } from '../../shared/components/ui/spinner/spinner.component';
 import { AuthService } from '../../core/services/auth.service';
@@ -52,6 +53,7 @@ interface ProfileTabDef {
     CommonModule,
     SpinnerComponent,
     ButtonModule,
+    TagModule,
   ],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css',

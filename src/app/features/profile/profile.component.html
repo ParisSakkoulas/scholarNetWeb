@@ -1,240 +1,296 @@
 @if (profile(); as p) {
   <div class="profile-page">
-    <section class="card card--header">
-      <div class="header-top">
-        <div class="av-xl">
-          @if (p.user.profilePhotoUrl) {
-            <img
-              [src]="p.user.profilePhotoUrl"
-              [alt]="p.user.firstName + ' ' + p.user.lastName"
-              class="av-xl__img"
-            />
-          } @else {
-            {{ initials(p) }}
-          }
+    <!-- ── Header ── -->
+    <section class="card header">
+      <div class="cover" aria-hidden="true"></div>
+
+      <div class="header-body">
+        <div class="avatar-wrap">
+          <div class="avatar">
+            @if (p.user.profilePhotoUrl) {
+              <img
+                [src]="p.user.profilePhotoUrl"
+                [alt]="p.user.firstName + ' ' + p.user.lastName"
+              />
+            } @else {
+              {{ initials(p) }}
+            }
+          </div>
           @if (p.verified) {
-            <span class="verified-corner">✓</span>
+            <span class="verified" title="Verified profile">
+              <i class="pi pi-check" aria-hidden="true"></i>
+            </span>
           }
         </div>
 
-        <div>
-          <div class="id-row">
-            @if (p.orcidId) {
-              <span>{{ p.orcidId }}</span>
-              <span class="sep">·</span>
-              <span class="verified-pill">orcid verified</span>
-            }
-            @if (p.scopusId) {
-              <span class="sep">·</span>
-              <a
-                [href]="
-                  'https://www.scopus.com/authid/detail.uri?authorId=' +
-                  p.scopusId
-                "
-                target="_blank"
-                rel="noopener"
-                >scopus</a
-              >
-            }
-            @if (p.googleScholarId) {
-              <a
-                [href]="
-                  'https://scholar.google.com/citations?user=' +
-                  p.googleScholarId
-                "
-                target="_blank"
-                rel="noopener"
-                >google scholar</a
-              >
-            }
-            @if (p.arxivId) {
-              <a
-                [href]="'https://arxiv.org/a/' + p.arxivId"
-                target="_blank"
-                rel="noopener"
-                >arxiv</a
-              >
-            }
-          </div>
+        <div class="actions">
+          @if (isOwnProfile()) {
+            <p-button
+              label="Edit profile"
+              icon="pi pi-pencil"
+              (onClick)="editSection('personal')"
+            />
+            <p-button
+              label="Generate CV"
+              icon="pi pi-file"
+              variant="outlined"
+              severity="secondary"
+              routerLink="/profile/cv"
+            />
+          } @else {
+            <p-button
+              label="Follow"
+              icon="pi pi-user-plus"
+              (onClick)="followProfile()"
+            />
+            <p-button
+              label="Send message"
+              icon="pi pi-envelope"
+              variant="outlined"
+              severity="secondary"
+              (onClick)="messageProfile()"
+            />
+          }
+        </div>
 
-          <h1 class="name">
-            {{ p.user.firstName }} <em>{{ p.user.lastName }}</em>
-          </h1>
+        <div class="identity">
+          <h1 class="name">{{ p.user.firstName }} {{ p.user.lastName }}</h1>
 
-          <p class="aff">
-            @if (currentPosition(p); as cp) {
-              <span class="role">{{ cp.title }}</span>
-              @if (cp.department) {
-                of <i>{{ cp.department }}</i>
-              }
-              <br />
-              {{ cp.institution }}{{ p.country ? " · " + p.country : "" }}
-            } @else if (p.headline) {
-              {{ p.headline }}
-            }
-          </p>
+          @if (currentPosition(p); as cp) {
+            <p class="position">
+              <span class="position-title">
+                {{ cp.title }}
+                @if (cp.department) {
+                  of {{ cp.department }}
+                }
+              </span>
+              <span class="position-place">
+                {{ cp.institution }}{{ p.country ? ", " + p.country : "" }}
+              </span>
+            </p>
+          } @else if (p.headline) {
+            <p class="position">
+              <span class="position-title">{{ p.headline }}</span>
+            </p>
+          }
 
           @if (
             p.pronouns ||
             p.timezone ||
             p.languages?.length ||
-            p.availability?.length
+            p.availability?.length ||
+            p.websiteUrl
           ) {
-            <div class="pronouns">
+            <ul class="meta">
               @if (p.pronouns) {
-                <span><span class="pn">pronouns</span> {{ p.pronouns }}</span>
+                <li title="Pronouns">
+                  <i class="pi pi-user" aria-hidden="true"></i>{{ p.pronouns }}
+                </li>
               }
               @if (p.timezone) {
-                <span><span class="pn">timezone</span> {{ p.timezone }}</span>
+                <li title="Timezone">
+                  <i class="pi pi-clock" aria-hidden="true"></i>{{ p.timezone }}
+                </li>
               }
               @if (p.languages?.length) {
-                <span
-                  ><span class="pn">languages</span>
-                  {{ p.languages?.join(" · ") }}</span
-                >
+                <li title="Languages">
+                  <i class="pi pi-globe" aria-hidden="true"></i
+                  >{{ p.languages?.join(", ") }}
+                </li>
               }
               @if (p.availability?.length) {
-                <span
-                  ><span class="pn">availability</span>
-                  {{ p.availability?.join(" · ") }}</span
+                <li title="Availability">
+                  <i class="pi pi-calendar" aria-hidden="true"></i
+                  >{{ p.availability?.join(", ") }}
+                </li>
+              }
+              @if (p.websiteUrl) {
+                <li title="Website">
+                  <i class="pi pi-link" aria-hidden="true"></i>
+                  <a
+                    class="link"
+                    [href]="p.websiteUrl"
+                    target="_blank"
+                    rel="noopener"
+                    >{{ displayUrl(p.websiteUrl) }}</a
+                  >
+                </li>
+              }
+            </ul>
+          }
+
+          @if (p.orcidId || p.scopusId || p.googleScholarId || p.arxivId) {
+            <div class="chips">
+              @if (p.orcidId) {
+                <span class="chip">
+                  <span class="orcid-mark" aria-hidden="true">iD</span
+                  >{{ p.orcidId }}
+                </span>
+                <p-tag
+                  severity="success"
+                  icon="pi pi-verified"
+                  value="ORCID verified"
+                  [rounded]="true"
+                />
+              }
+              @if (p.scopusId) {
+                <a
+                  class="chip chip--link"
+                  [href]="
+                    'https://www.scopus.com/authid/detail.uri?authorId=' +
+                    p.scopusId
+                  "
+                  target="_blank"
+                  rel="noopener"
                 >
+                  Scopus <i class="pi pi-external-link" aria-hidden="true"></i>
+                </a>
+              }
+              @if (p.googleScholarId) {
+                <a
+                  class="chip chip--link"
+                  [href]="
+                    'https://scholar.google.com/citations?user=' +
+                    p.googleScholarId
+                  "
+                  target="_blank"
+                  rel="noopener"
+                >
+                  Google Scholar
+                  <i class="pi pi-external-link" aria-hidden="true"></i>
+                </a>
+              }
+              @if (p.arxivId) {
+                <a
+                  class="chip chip--link"
+                  [href]="'https://arxiv.org/a/' + p.arxivId"
+                  target="_blank"
+                  rel="noopener"
+                >
+                  arXiv <i class="pi pi-external-link" aria-hidden="true"></i>
+                </a>
               }
             </div>
           }
         </div>
+      </div>
+    </section>
 
-        <div class="actions-col">
-          @if (isOwnProfile()) {
-            <p-button (onClick)="editSection('personal')"
-              >Edit profile <span class="arr">→</span></p-button
-            >
-            <p-button
-              routerLink="/profile/cv"
-              [outlined]="true"
-              severity="secondary"
-              >Generate CV</p-button
-            >
-          } @else {
-            <p-button (onClick)="followProfile()"
-              >Follow <span class="arr">→</span></p-button
-            >
-            <p-button
-              [outlined]="true"
-              severity="secondary"
-              (onClick)="messageProfile()"
-              >Send message</p-button
-            >
-          }
-          @if (p.websiteUrl) {
-            <div class="url-line">
-              <a [href]="p.websiteUrl" target="_blank" rel="noopener"
-                >↗ {{ displayUrl(p.websiteUrl) }}</a
-              >
-            </div>
+    <!-- ── Stats ── -->
+    <section class="card stats">
+      @for (stat of stats(p); track stat.label) {
+        <div class="stat">
+          <span class="stat-value">{{ stat.value }}</span>
+          <span class="stat-label">{{ stat.label }}</span>
+          @if (stat.detail) {
+            <span class="stat-detail">{{ stat.detail }}</span>
           }
         </div>
-      </div>
+      }
     </section>
 
-    <!-- Stats -->
-    <section class="card card--stats">
-      <div class="stats-grid">
-        @for (stat of stats(p); track stat.label) {
-          <div class="stat-tile">
-            <div class="v">{{ stat.value }}</div>
-            <div class="l">{{ stat.label }}</div>
-            @if (stat.detail) {
-              <div class="d">{{ stat.detail }}</div>
-            }
-          </div>
-        }
-      </div>
-    </section>
-
-    <!-- tabs -->
-    <section class="card card--tabs">
-      <nav class="tabs-pills">
-        @for (tab of tabs(p); track tab.id) {
-          <span
-            class="t"
-            [class.on]="activeTab() === tab.id"
-            (click)="setTab(tab.id)"
-          >
-            {{ tab.label }}
-            @if (tab.count !== undefined) {
-              <span class="c">{{ tab.count }}</span>
-            }
-          </span>
-        }
-      </nav>
-    </section>
+    <!-- ── Tabs: put your existing hardcoded tabs here.
+         Wrap them in <section class="card tabs-card"> if you want the sticky bar. ── -->
 
     <div class="body-grid">
-      <section class="card card--main">
+      <section class="card main">
         @if (activeTab() === "overview") {
-          <div class="overview-header">
-            <h3 class="tabTitle">About &<em> currently</em></h3>
+          <div class="section">
+            <h2 class="section-title">About</h2>
+            <p class="about">
+              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Cum
+              labore deleniti eius quasi tempore eveniet vero unde laudantium
+              dolor magnam iusto, iure ipsum doloribus soluta. Aut corrupti
+              eveniet inventore dolor? Lorem ipsum, dolor sit amet consectetur
+              adipisicing elit. Deleniti maiores quasi labore asperiores cumque
+              amet enim non consectetur, beatae libero doloremque, soluta odit
+              quod, suscipit alias ullam possimus repellendus ducimus.
+            </p>
           </div>
 
-          <p class="overview-body">
-            Lorem ipsum dolor, sit amet consectetur adipisicing elit. Cum labore
-            deleniti eius quasi tempore eveniet vero unde laudantium dolor
-            magnam iusto, iure ipsum doloribus soluta. Aut corrupti eveniet
-            inventore dolor? Lorem ipsum, dolor sit amet consectetur adipisicing
-            elit. Deleniti maiores quasi labore asperiores cumque amet enim non
-            consectetur, beatae libero doloremque, soluta odit quod, suscipit
-            alias ullam possimus repellendus ducimus.
-          </p>
-
-          <section id="overview">
-            @if (p.pinnedItems?.length) {
-              <div class="pinned-label">currently working on</div>
+          @if (p.pinnedItems?.length) {
+            <div class="section" id="overview">
+              <h2 class="section-title">Currently working on</h2>
               <div class="pinned-grid">
                 @for (item of p.pinnedItems; track item._id) {
-                  <div class="pinned-item">
-                    <div class="pi-k">{{ item.index }} · {{ item.kind }}</div>
-                    <div class="pi-t" [innerHTML]="item.title"></div>
-                    <div class="pi-d">{{ item.detail }}</div>
-                  </div>
+                  <article class="pinned-item">
+                    <div class="pinned-top">
+                      <p-tag severity="secondary">{{ item.kind }}</p-tag>
+                      <span class="pinned-index">{{ item.index }}</span>
+                    </div>
+                    <h3 class="pinned-title" [innerHTML]="item.title"></h3>
+                    <p class="pinned-detail">{{ item.detail }}</p>
+                  </article>
                 }
               </div>
-            }
-          </section>
+            </div>
+          }
         }
       </section>
 
-      <aside class="card card--sidebar">
-        <div class="side-block">
-          <h3>Identifiers</h3>
-          @if (p.orcidId) {
-            <div class="ident-row" (click)="copyToClipboard(p.orcidId)">
-              <span class="k">ORCID</span><span class="v">{{ p.orcidId }}</span>
-            </div>
-          }
-          @if (p.scopusId) {
-            <div class="ident-row" (click)="copyToClipboard(p.scopusId)">
-              <span class="k">Scopus</span
-              ><span class="v">{{ p.scopusId }}</span>
-            </div>
-          }
-          @if (p.googleScholarId) {
-            <div class="ident-row" (click)="copyToClipboard(p.googleScholarId)">
-              <span class="k">Google Scholar</span
-              ><span class="v">{{ p.googleScholarId }}</span>
-            </div>
-          }
-          @if (p.arxivId) {
-            <div class="ident-row" (click)="copyToClipboard(p.arxivId)">
-              <span class="k">arXiv</span><span class="v">{{ p.arxivId }}</span>
-            </div>
-          }
-          @if (p.researcherId) {
-            <div class="ident-row" (click)="copyToClipboard(p.researcherId)">
-              <span class="k">ResearcherID</span
-              ><span class="v">{{ p.researcherId }}</span>
-            </div>
-          }
-        </div>
+      <aside class="card sidebar">
+        <h3 class="side-title">Identifiers</h3>
+
+        @if (p.orcidId) {
+          <button
+            type="button"
+            class="ident-row"
+            title="Copy"
+            (click)="copyToClipboard(p.orcidId)"
+          >
+            <span class="k">ORCID</span>
+            <span class="v">{{ p.orcidId }}</span>
+            <i class="pi pi-copy copy" aria-hidden="true"></i>
+          </button>
+        }
+        @if (p.scopusId) {
+          <button
+            type="button"
+            class="ident-row"
+            title="Copy"
+            (click)="copyToClipboard(p.scopusId)"
+          >
+            <span class="k">Scopus</span>
+            <span class="v">{{ p.scopusId }}</span>
+            <i class="pi pi-copy copy" aria-hidden="true"></i>
+          </button>
+        }
+        @if (p.googleScholarId) {
+          <button
+            type="button"
+            class="ident-row"
+            title="Copy"
+            (click)="copyToClipboard(p.googleScholarId)"
+          >
+            <span class="k">Google Scholar</span>
+            <span class="v">{{ p.googleScholarId }}</span>
+            <i class="pi pi-copy copy" aria-hidden="true"></i>
+          </button>
+        }
+        @if (p.arxivId) {
+          <button
+            type="button"
+            class="ident-row"
+            title="Copy"
+            (click)="copyToClipboard(p.arxivId)"
+          >
+            <span class="k">arXiv</span>
+            <span class="v">{{ p.arxivId }}</span>
+            <i class="pi pi-copy copy" aria-hidden="true"></i>
+          </button>
+        }
+        @if (p.researcherId) {
+          <button
+            type="button"
+            class="ident-row"
+            title="Copy"
+            (click)="copyToClipboard(p.researcherId)"
+          >
+            <span class="k">ResearcherID</span>
+            <span class="v">{{ p.researcherId }}</span>
+            <i class="pi pi-copy copy" aria-hidden="true"></i>
+          </button>
+        }
       </aside>
     </div>
   </div>

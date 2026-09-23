@@ -1,117 +1,119 @@
-.footer {
-  background: var(--paper-2);
-  border-top: 1px solid var(--rule);
-  padding: 56px 0 40px;
+/* Colors come from the PrimeNG (Aura) tokens, so your blue preset and
+   dark mode flow through automatically. */
+
+:host {
+  display: block;
 }
 
-.container {
+a:focus-visible {
+  outline: 2px solid var(--p-primary-color);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.footer {
+  padding: 56px 0 32px;
+  border-top: 1px solid var(--p-content-border-color);
+  background: color-mix(
+    in srgb,
+    var(--p-content-background),
+    var(--p-text-color) 4%
+  );
+}
+
+.inner {
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 56px;
 }
 
-.foot-inner {
+.foot-top {
   display: grid;
-  grid-template-columns: 1.4fr 1fr 1fr 1fr;
+  grid-template-columns: 1.6fr repeat(3, 1fr);
   gap: 48px;
 }
 
-.foot-brand {
-  .brand {
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    color: var(--ink);
-    text-decoration: none;
-    margin-bottom: 14px;
-
-    .mark {
-      width: 34px;
-      height: 34px;
-      color: var(--ink);
-      .accent {
-        fill: var(--oxblood);
-      }
-    }
-
-    .wm {
-      font-family: var(--serif);
-      font-size: 28px;
-      font-weight: 400;
-      letter-spacing: -0.015em;
-
-      i {
-        font-style: italic;
-        font-weight: 500;
-      }
-    }
-  }
-
-  p {
-    font-family: var(--serif);
-    font-style: italic;
-    font-size: 15px;
-    color: var(--ink-2);
-    margin: 0;
-    max-width: 32ch;
-    line-height: 1.5;
-  }
-}
-
-.foot-col {
-  h4 {
-    font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--ink-2);
-    margin: 0 0 18px;
-    font-weight: 400;
-  }
-
-  ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  li {
-    padding: 5px 0;
-
-    a {
-      font-family: var(--sans);
-      font-size: 14px;
-      color: var(--ink-2);
-      text-decoration: none;
-      transition: color 0.15s ease;
-
-      &:hover {
-        color: var(--ink);
-      }
-    }
-  }
-}
-
-.foot-bottom {
-  margin-top: 56px;
-  padding-top: 22px;
-  border-top: 1px solid var(--rule);
-  display: flex;
-  justify-content: space-between;
+/* ─────────── Brand ─────────── */
+.brand {
+  display: inline-flex;
   align-items: center;
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ink-3);
+  gap: 10px;
+  color: var(--p-text-color);
+  text-decoration: none;
 }
 
+.mark {
+  width: 32px;
+  height: 32px;
+}
+
+.mark .accent {
+  fill: var(--p-primary-color);
+}
+
+.wordmark {
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+.wordmark b {
+  font-weight: 700;
+}
+
+.tagline {
+  max-width: 34ch;
+  margin: 14px 0 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--p-text-muted-color);
+}
+
+/* ─────────── Link columns ─────────── */
+.foot-title {
+  margin: 0 0 14px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.foot-col ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.foot-col li {
+  padding: 5px 0;
+}
+
+.foot-col a {
+  font-size: 14px;
+  color: var(--p-text-muted-color);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.foot-col a:hover {
+  color: var(--p-primary-color);
+}
+
+/* ─────────── Bottom bar ─────────── */
+.foot-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--p-text-muted-color);
+}
+
+/* ─────────── Responsive ─────────── */
 @media (max-width: 880px) {
-  .container {
+  .inner {
     padding: 0 32px;
   }
 
-  .foot-inner {
+  .foot-top {
     grid-template-columns: 1fr 1fr;
     gap: 32px;
   }
@@ -122,7 +124,7 @@
 }
 
 @media (max-width: 560px) {
-  .foot-inner {
+  .foot-top {
     grid-template-columns: 1fr;
   }
 

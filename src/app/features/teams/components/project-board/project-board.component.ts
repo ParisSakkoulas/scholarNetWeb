@@ -19,7 +19,6 @@ import { TaskDetailModalComponent } from '../task-detail-modal/task-detail-modal
 import { ButtonModule } from 'primeng/button';
 import { ConfirmationService } from 'primeng/api';
 import { PriorityBadgeComponent } from '../shared/priority-badge/priority-badge.component';
-import { UserAvatarGroupComponent } from '../shared/user-avatar-group/user-avatar-group.component';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 @Component({
@@ -31,7 +30,6 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
     TaskFormComponent,
     TaskDetailModalComponent,
     PriorityBadgeComponent,
-    UserAvatarGroupComponent,
     ButtonModule,
     ConfirmDialogModule,
   ],

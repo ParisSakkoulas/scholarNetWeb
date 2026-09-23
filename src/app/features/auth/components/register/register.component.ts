@@ -1,38 +1,53 @@
-
 // Angular basics
-import { FormGroup, FormControl, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
+import {
+  FormGroup,
+  FormControl,
+  ReactiveFormsModule,
+  FormsModule,
+  Validators,
+} from '@angular/forms';
 import { Component, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgTemplateOutlet } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
 // Prime Ng
-import { CheckboxModule } from 'primeng/checkbox';
+import { Checkbox, CheckboxModule } from 'primeng/checkbox';
 import { passwordMatchValidator } from '../../utils/helpers';
+import { Button } from 'primeng/button';
+import { Divider } from 'primeng/divider';
+import { InputText } from 'primeng/inputtext';
+import { Message } from 'primeng/message';
+import { Password } from 'primeng/password';
+import { Tag } from 'primeng/tag';
 
 // Insides
-import { SpinnerComponent } from '../../../../shared/components/ui/spinner/spinner.component'
+import { SpinnerComponent } from '../../../../shared/components/ui/spinner/spinner.component';
 import { AuthService } from '../../../../core/services/auth.service';
 import { ToastService } from '../../../../core/services/toast.service';
-
 
 @Component({
   selector: 'app-register',
   standalone: true,
   imports: [
-    RouterLink,
     ReactiveFormsModule,
-    CheckboxModule,
     FormsModule,
-    CommonModule,
-    SpinnerComponent
+    RouterLink,
+    NgTemplateOutlet,
+    Button,
+    Checkbox,
+    Divider,
+    InputText,
+    Message,
+    Password,
+    Tag,
+    SpinnerComponent,
   ],
   templateUrl: './register.component.html',
   styleUrl: './register.component.css',
-  providers: [HttpClient]
+  providers: [HttpClient],
 })
 export class RegisterComponent {
-
   // variables
   showPassword = false;
   showconfirmPassword = false;
@@ -41,52 +56,32 @@ export class RegisterComponent {
 
   // services
   private authService = inject(AuthService);
-  private toastService = inject(ToastService)
+  private toastService = inject(ToastService);
 
   // register form group
-  registerForm = new FormGroup({
+  registerForm = new FormGroup(
+    {
+      firstName: new FormControl('', [Validators.required]),
 
-    firstName: new FormControl('',
-      [Validators.required]
-    ),
+      lastName: new FormControl('', [Validators.required]),
 
-    lastName: new FormControl('',
-      [Validators.required]
-    ),
-
-    username: new FormControl('',
-      [
+      username: new FormControl('', [
         Validators.required,
         Validators.minLength(3),
-        Validators.pattern(/^_[a-zA-Z0-9_]+$/)
-      ]
-    ),
-    email: new FormControl('',
-      [
-        Validators.email,
-        Validators.required
-      ]
-    ),
+        Validators.pattern(/^_[a-zA-Z0-9_]+$/),
+      ]),
+      email: new FormControl('', [Validators.email, Validators.required]),
 
-    password: new FormControl('',
-      [
+      password: new FormControl('', [
         Validators.required,
         Validators.minLength(8),
-        Validators.pattern(
-          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/
-        )
+        Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/),
+      ]),
 
-      ]
-    ),
-
-    confirmPassword: new FormControl('',
-      [
-        Validators.required
-      ]
-    )
-
-  }, { validators: passwordMatchValidator })
-
+      confirmPassword: new FormControl('', [Validators.required]),
+    },
+    { validators: passwordMatchValidator },
+  );
 
   register() {
     if (this.registerForm.invalid) {
@@ -94,7 +89,7 @@ export class RegisterComponent {
       return;
     }
 
-    this.loading.set(true)
+    this.loading.set(true);
 
     const registerPayload = {
       firstName: this.registerForm.value.firstName!,
@@ -102,21 +97,19 @@ export class RegisterComponent {
       username: this.registerForm.value.username!,
       email: this.registerForm.value.email!,
       password: this.registerForm.value.password!,
-    }
+    };
 
     this.authService.register(registerPayload).subscribe({
       next: (response) => {
-        this.toastService.success('Successfull registration', response.message)
+        this.toastService.success('Successfull registration', response.message);
         this.loading.set(false);
-
       },
 
       error: (err) => {
         this.toastService.error('Registration fail', err.error.message);
         this.loading.set(false);
-      }
-    })
-
+      },
+    });
   }
 
   get passwordControl() {

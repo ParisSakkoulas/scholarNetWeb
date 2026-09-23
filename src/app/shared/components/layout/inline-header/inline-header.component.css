@@ -1,260 +1,191 @@
+/* Colors come from the PrimeNG (Aura) tokens, so your blue preset and
+   dark mode flow through automatically. */
+
 :host {
+  --subtle: color-mix(
+    in srgb,
+    var(--p-content-background),
+    var(--p-text-color) 4%
+  );
   display: block;
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--p-primary-color);
+  outline-offset: 2px;
 }
 
 .app-header {
   display: flex;
   align-items: center;
   gap: 32px;
-  padding: 12px 32px;
-  background: var(--paper);
-  border-bottom: 1px solid var(--rule);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  padding: 10px 32px;
+  background: var(--p-content-background);
+  border-bottom: 1px solid var(--p-content-border-color);
 }
 
+/* ─────────── Brand ─────────── */
 .brand {
   display: flex;
-  align-items: center;
-  gap: 14px;
-  color: var(--ink);
-  white-space: nowrap;
   flex-shrink: 0;
+  align-items: center;
+  gap: 10px;
+  color: var(--p-text-color);
   text-decoration: none;
-
-  .mark {
-    width: 30px;
-    height: 30px;
-    color: var(--ink);
-
-    .accent {
-      fill: var(--oxblood);
-    }
-  }
-
-  .wm {
-    font-family: var(--serif);
-    font-size: 22px;
-    font-weight: 400;
-    letter-spacing: -0.015em;
-
-    i {
-      font-style: italic;
-      font-weight: 500;
-    }
-  }
+  white-space: nowrap;
 }
 
-/* ═══════════════ SEARCH ═══════════════ */
+.mark {
+  width: 30px;
+  height: 30px;
+}
+
+.mark .accent {
+  fill: var(--p-primary-color);
+}
+
+.wordmark {
+  font-size: 20px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+.wordmark b {
+  font-weight: 700;
+}
+
+/* ─────────── Search ─────────── */
 .search {
+  position: relative;
   flex: 1;
   max-width: 480px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 14px;
-  border: 1px solid var(--rule);
-  background: var(--paper-2);
-  border-radius: 100px;
-  transition:
-    border-color 0.15s ease,
-    background 0.15s ease;
-}
-.search:focus-within {
-  border-color: var(--oxford);
-  background: var(--paper);
-}
-.search__icon {
-  width: 15px;
-  height: 15px;
-  color: var(--ink-3);
-  flex-shrink: 0;
-}
-.search__input {
-  flex: 1;
-  min-width: 0;
-  border: none;
-  background: transparent;
-  outline: none;
-  font-family: var(--sans);
-  font-size: 13.5px;
-  color: var(--ink);
-}
-.search__input::placeholder {
-  color: var(--ink-3);
-}
-.search__shortcut {
-  display: flex;
-  gap: 2px;
-  padding: 2px 7px;
-  border-radius: 6px;
-  border: 1px solid var(--rule);
-  background: var(--paper);
-  font-family: var(--mono);
-  font-size: 10.5px;
-  color: var(--ink-3);
-  flex-shrink: 0;
+  /* PrimeNG component tokens: pill-shaped input on a subtle background */
+  --p-inputtext-border-radius: 999px;
+  --p-inputtext-background: var(--subtle);
 }
 
-/* ═══════════════ ACTIONS ═══════════════ */
+.search p-iconfield {
+  display: block;
+}
+
+.search-input {
+  width: 100%;
+  padding-right: 64px;
+  font-size: 14px;
+}
+
+.search-kbd {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  padding: 2px 8px;
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 6px;
+  background: var(--p-content-background);
+  font-family: inherit;
+  font-size: 12px;
+  color: var(--p-text-muted-color);
+  pointer-events: none;
+}
+
+/* ─────────── Actions ─────────── */
 .actions {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: auto;
   flex-shrink: 0;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
 }
-.actions__link {
-  font-family: var(--sans);
-  font-size: 13.5px;
-  color: var(--ink-2);
+
+.nav-link {
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--p-text-muted-color);
   text-decoration: none;
   white-space: nowrap;
-  padding: 8px 12px;
-  border-radius: 100px;
   transition:
     background 0.15s ease,
     color 0.15s ease;
 }
-.actions__link:hover {
-  color: var(--ink);
-  background: var(--paper-2);
+
+.nav-link:hover {
+  background: var(--subtle);
+  color: var(--p-text-color);
 }
 
-.avatar,
-.notificationButton {
-  width: 34px;
-  height: 34px;
+.nav-link.is-active {
+  background: color-mix(in srgb, var(--p-primary-color) 10%, transparent);
+  color: var(--p-primary-color);
+}
+
+.avatar-btn {
   display: grid;
   place-items: center;
-  border: none;
-  cursor: pointer;
-  flex-shrink: 0;
+  margin-left: 4px;
+  padding: 0;
+  border: 0;
   border-radius: 50%;
-  transition:
-    transform 0.15s ease,
-    background 0.15s ease;
-}
-.avatar {
-  background: var(--oxford);
-  color: var(--paper);
-  font-family: var(--serif);
-  font-style: italic;
-  font-size: 13px;
-}
-.avatar:hover {
-  transform: translateY(-1px);
-}
-
-.notificationButton {
   background: transparent;
-  color: var(--ink-2);
-}
-.notificationButton:hover {
-  background: var(--paper-2);
-  color: var(--ink);
-}
-
-.btn-signup {
-  padding: 9px 18px;
-  border-radius: 100px;
-  background: var(--ink);
-  color: var(--paper);
-  font-family: var(--sans);
-  font-size: 13px;
-  font-weight: 500;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: transform 0.15s ease;
-}
-.btn-signup:hover {
-  transform: translateY(-1px);
-}
-
-/* ═══════════════ DROPDOWN PANELS ═══════════════ */
-.profile-menu,
-.notification-menu {
-  position: relative;
-}
-
-.profile-menu__panel,
-.notification-menu__panel {
-  position: absolute;
-  top: calc(100% + 12px);
-  right: 0;
-  width: 240px;
-  background: var(--paper);
-  border: 1px solid var(--rule);
-  border-radius: 16px;
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.03),
-    0 12px 32px -8px rgba(20, 20, 30, 0.12);
-  z-index: 50;
-  padding: 6px;
-  overflow: hidden;
-}
-.notification-menu__panel {
-  width: 280px;
-}
-
-.profile-menu__identity,
-.notification-menu__identity {
-  padding: 12px 12px 14px;
-  border-bottom: 1px solid var(--rule);
-  margin-bottom: 6px;
-}
-.profile-menu__name {
-  font-family: var(--serif);
-  font-size: 15px;
-  color: var(--ink);
-}
-.profile-menu__email {
-  margin-top: 2px;
-  font-family: var(--sans);
-  font-size: 11.5px;
-  color: var(--ink-3);
-}
-
-.profile-menu__item {
-  display: block;
-  width: 100%;
-  padding: 9px 12px;
-  border-radius: 10px;
-  font-family: var(--sans);
-  font-size: 13.5px;
-  color: var(--ink-2);
-  text-decoration: none;
-  text-align: left;
-  background: none;
-  border: none;
   cursor: pointer;
-}
-.profile-menu__item:hover {
-  background: var(--paper-2);
-  color: var(--ink);
-}
-
-.profile-menu__divider {
-  height: 1px;
-  background: var(--rule);
-  margin: 6px 4px;
+  /* PrimeNG avatar tokens */
+  --p-avatar-background: var(--p-primary-color);
+  --p-avatar-color: var(--p-primary-contrast-color);
 }
 
-.profile-menu__logout {
-  color: var(--oxblood);
-}
-.profile-menu__logout:hover {
-  background: var(--bg-tint-oxblood, rgba(150, 50, 40, 0.08));
+/* ─────────── Popover and menu content ─────────── */
+.notif {
+  width: 300px;
 }
 
+.notif-title {
+  margin: 0 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.notif-empty {
+  margin: 0;
+  font-size: 14px;
+  color: var(--p-text-muted-color);
+}
+
+.menu-identity {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--p-content-border-color);
+}
+
+.menu-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.menu-email {
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--p-text-muted-color);
+}
+
+/* ─────────── Responsive ─────────── */
 @media (max-width: 760px) {
   .app-header {
     gap: 16px;
-    padding: 12px 16px;
+    padding: 10px 16px;
   }
+
+  /* needs a mobile search overlay or icon eventually */
   .search {
     display: none;
-  } /* needs a mobile search overlay/icon eventually — out of scope for now */
-  .actions {
-    gap: 4px;
+  }
+
+  .wordmark {
+    display: none;
+  }
+
+  .nav-link {
+    padding: 8px;
   }
 }

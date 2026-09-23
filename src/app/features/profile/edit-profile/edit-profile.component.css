@@ -1,161 +1,251 @@
+/* Colors come from the PrimeNG (Aura) tokens, so your blue preset and
+   dark mode flow through automatically. */
+
 :host {
+  --subtle: color-mix(
+    in srgb,
+    var(--p-content-background),
+    var(--p-text-color) 4%
+  );
   display: block;
-  background: var(--paper-2);
   min-height: 100%;
-  color: var(--ink);
-  font-family: var(--sans);
+  background: var(--subtle);
+  color: var(--p-text-color);
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+button:focus-visible {
+  outline: 2px solid var(--p-primary-color);
+  outline-offset: 2px;
 }
 
 .settings-page {
-  max-width: 760px;
+  max-width: 960px;
   margin: 0 auto;
   padding: 32px 24px 64px;
+}
+
+.page-title h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.page-title p {
+  margin: 4px 0 0;
+  font-size: 15px;
+  color: var(--p-text-muted-color);
+}
+
+.settings-layout {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+  margin-top: 24px;
+}
+
+/* ─────────── Section nav ─────────── */
+.settings-nav {
+  position: sticky;
+  top: 24px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-}
-
-.card {
-  background: var(--paper);
-  border: 1px solid var(--rule);
-  border-radius: 20px;
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.03),
-    0 6px 16px rgba(0, 0, 0, 0.03);
-}
-
-.card--main {
-  padding: 28px 32px 32px;
-}
-
-/* ═══════════════ TABS ═══════════════
-   Same card as the profile page's .card--tabs — its own card, so it
-   matches .card--main's width automatically, individual pill tabs
-   instead of one oval-shaped group. */
-.card--tabs {
-  padding: 6px;
-}
-.tabs-pills {
-  display: flex;
   gap: 2px;
-  overflow-x: auto;
-  -ms-overflow-style: none;
-  scrollbar-width: none;
 }
-.tabs-pills::-webkit-scrollbar {
-  display: none;
-}
-.tabs-pills .t {
-  display: inline-flex;
-  align-items: center;
-  font-family: var(--sans);
-  font-size: 13px;
+
+.nav-item {
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--p-text-muted-color);
+  font: inherit;
+  font-size: 14px;
   font-weight: 500;
-  color: var(--ink-3);
-  padding: 10px 16px;
-  border-radius: 14px;
-  cursor: pointer;
+  text-align: left;
   white-space: nowrap;
+  cursor: pointer;
   transition:
     background 0.15s ease,
     color 0.15s ease;
 }
-.tabs-pills .t:hover {
-  color: var(--ink);
-  background: var(--paper-2);
-}
-.tabs-pills .t.on {
-  background: var(--ink);
-  color: var(--paper);
+
+.nav-item:hover {
+  background: color-mix(in srgb, var(--p-text-color) 6%, transparent);
+  color: var(--p-text-color);
 }
 
-/* ═══════════════ SECTION HEADER ═══════════════ */
-.section-meta {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  border-bottom: 1px solid var(--rule);
-  padding-bottom: 12px;
+.nav-item.is-active {
+  background: color-mix(in srgb, var(--p-primary-color) 10%, transparent);
+  color: var(--p-primary-color);
+}
+
+.nav-item.is-danger {
+  color: var(--p-red-500);
+}
+
+.nav-item.is-danger.is-active {
+  background: color-mix(in srgb, var(--p-red-500) 10%, transparent);
+}
+
+/* ─────────── Card ─────────── */
+.card {
+  padding: 28px 32px 32px;
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 16px;
+  background: var(--p-content-background);
+}
+
+.tab-head {
   margin-bottom: 24px;
 }
-.t-meta {
-  font-family: var(--mono);
-  font-size: 11px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ink-3);
+
+.tab-head h2 {
   margin: 0;
-}
-.t-label {
-  font-family: var(--sans);
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--ink-2);
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
-/* ═══════════════ FIELDS ═══════════════ */
+.tab-head p {
+  margin: 4px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--p-text-muted-color);
+}
+
+.stack {
+  display: grid;
+  gap: 20px;
+}
+
+/* form directly after a warning message */
+.card p-message + .stack {
+  margin-top: 20px;
+}
+
+.section + .section {
+  padding-top: 24px;
+  border-top: 1px solid var(--p-content-border-color);
+}
+
+.section-title {
+  margin: 0 0 16px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* ─────────── Fields ─────────── */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.span-2 {
+  grid-column: 1 / -1;
+}
+
 .field {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  gap: 8px;
+  min-width: 0;
 }
 
-.error {
-  margin-top: 6px;
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--oxblood);
+.field label {
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .hint {
-  margin-top: 6px;
-  font-family: var(--sans);
-  font-size: 12px;
-  color: var(--ink-3);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--p-text-muted-color);
 }
 
-/* ═══════════════ CHIPS (autocomplete tokens) ═══════════════ */
-.chip {
-  display: inline-flex;
+/* Red border once a field is touched and invalid. PrimeNG's own rule needs
+   "dirty", which an empty, blurred field never is. */
+:host ::ng-deep input.ng-invalid.ng-touched,
+:host ::ng-deep textarea.ng-invalid.ng-touched,
+:host ::ng-deep p-password.ng-invalid.ng-touched .p-inputtext,
+:host ::ng-deep p-password.is-invalid .p-inputtext {
+  border-color: var(--p-inputtext-invalid-border-color, var(--p-red-400));
+}
+
+/* ─────────── Availability ─────────── */
+.checks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 20px;
+}
+
+.check {
+  display: flex;
   align-items: center;
-  gap: 6px;
-  font-family: var(--sans);
-  font-size: 12.5px;
-  background: var(--paper-2);
-  border: 1px solid var(--rule);
-  border-radius: 100px;
-  padding: 4px 10px;
-  color: var(--ink-2);
-}
-.chip-remove {
-  border: none;
-  background: none;
-  cursor: pointer;
-  color: var(--ink-3);
-  line-height: 1;
-}
-.chip-remove:hover {
-  color: var(--oxblood);
+  gap: 10px;
+  font-size: 14px;
 }
 
-/* ═══════════════ ACTIONS ═══════════════ */
-form ::ng-deep .p-button {
-  border-radius: 12px;
+/* ─────────── Links ─────────── */
+.links {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 16px;
 }
+
+.link-row {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+}
+
+/* ─────────── Actions ─────────── */
 .form-actions {
   display: flex;
   justify-content: flex-end;
+  padding-top: 4px;
+}
+
+/* ─────────── Responsive ─────────── */
+@media (max-width: 800px) {
+  .settings-layout {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .settings-nav {
+    position: static;
+    flex-direction: row;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .settings-nav::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @media (max-width: 640px) {
   .settings-page {
     padding: 20px 16px 48px;
   }
-  .card--main {
+
+  .card {
     padding: 20px 20px 24px;
+  }
+
+  .form-grid,
+  .checks {
+    grid-template-columns: 1fr;
+  }
+
+  .link-row {
+    grid-template-columns: 1fr auto;
+  }
+
+  .link-row p-select {
+    grid-column: 1 / -1;
   }
 }

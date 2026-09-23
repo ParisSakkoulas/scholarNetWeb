@@ -1,77 +1,86 @@
 <footer class="footer">
-    <div class="container foot-inner">
+  <div class="inner">
+    <div class="foot-top">
+      <!-- Brand col -->
+      <div class="foot-brand">
+        <a class="brand" routerLink="/" aria-label="scholarNet home">
+          <svg class="mark" viewBox="0 0 100 100" aria-hidden="true">
+            <g transform="translate(0,4)">
+              <g
+                stroke="currentColor"
+                stroke-width="1.1"
+                opacity="0.55"
+                fill="none"
+              >
+                <line x1="22" y1="26" x2="56" y2="14" />
+                <line x1="22" y1="26" x2="40" y2="60" />
+                <line x1="56" y1="14" x2="78" y2="46" />
+                <line x1="78" y1="46" x2="40" y2="60" />
+                <line x1="40" y1="60" x2="14" y2="64" />
+                <line x1="40" y1="60" x2="60" y2="86" />
+                <line x1="78" y1="46" x2="86" y2="76" />
+                <line x1="86" y1="76" x2="60" y2="86" />
+              </g>
+              <circle cx="22" cy="26" r="3.2" fill="currentColor" />
+              <circle cx="56" cy="14" r="3.2" fill="currentColor" />
+              <circle cx="78" cy="46" r="3.2" fill="currentColor" />
+              <circle cx="40" cy="60" r="5" class="accent" />
+              <circle cx="14" cy="64" r="3.2" fill="currentColor" />
+              <circle cx="86" cy="76" r="3.2" fill="currentColor" />
+              <circle cx="60" cy="86" r="3.2" fill="currentColor" />
+            </g>
+          </svg>
+          <span class="wordmark">scholar<b>Net</b></span>
+        </a>
+        <p class="tagline">
+          An academic network for publication management and quiet
+          collaboration.
+        </p>
+      </div>
 
-        <!-- Brand col -->
-        <div class="foot-brand">
-            <a class="brand" routerLink="/">
-                <svg class="mark" viewBox="0 0 100 100" aria-hidden="true">
-                    <g transform="translate(0,4)">
-                        <g stroke="currentColor" stroke-width="1.1" opacity="0.55" fill="none">
-                            <line x1="22" y1="26" x2="56" y2="14" />
-                            <line x1="22" y1="26" x2="40" y2="60" />
-                            <line x1="56" y1="14" x2="78" y2="46" />
-                            <line x1="78" y1="46" x2="40" y2="60" />
-                            <line x1="40" y1="60" x2="14" y2="64" />
-                            <line x1="40" y1="60" x2="60" y2="86" />
-                            <line x1="78" y1="46" x2="86" y2="76" />
-                            <line x1="86" y1="76" x2="60" y2="86" />
-                        </g>
-                        <circle cx="22" cy="26" r="3.2" fill="currentColor" />
-                        <circle cx="56" cy="14" r="3.2" fill="currentColor" />
-                        <circle cx="78" cy="46" r="3.2" fill="currentColor" />
-                        <circle cx="40" cy="60" r="5.0" class="accent" />
-                        <circle cx="14" cy="64" r="3.2" fill="currentColor" />
-                        <circle cx="86" cy="76" r="3.2" fill="currentColor" />
-                        <circle cx="60" cy="86" r="3.2" fill="currentColor" />
-                    </g>
-                </svg>
-                <span class="wm">scholar<i>N</i>et</span>
-            </a>
-            <p>An academic network for publication management and quiet collaboration.</p>
-        </div>
+      <!-- Product col -->
+      <nav class="foot-col" aria-labelledby="foot-product">
+        <h2 class="foot-title" id="foot-product">Product</h2>
+        <ul>
+          <li><a routerLink="/features">Features</a></li>
+          <li><a routerLink="/researchers">For researchers</a></li>
+          <li><a routerLink="/institutions">For institutions</a></li>
+          <li><a routerLink="/pricing">Pricing</a></li>
+          <li><a routerLink="/changelog">Changelog</a></li>
+        </ul>
+      </nav>
 
-        <!-- Product col -->
-        <div class="foot-col">
-            <h4>Product</h4>
-            <ul>
-                <li><a routerLink="/features">Features</a></li>
-                <li><a routerLink="/researchers">For researchers</a></li>
-                <li><a routerLink="/institutions">For institutions</a></li>
-                <li><a routerLink="/pricing">Pricing</a></li>
-                <li><a routerLink="/changelog">Changelog</a></li>
-            </ul>
-        </div>
+      <!-- Resources col -->
+      <nav class="foot-col" aria-labelledby="foot-resources">
+        <h2 class="foot-title" id="foot-resources">Resources</h2>
+        <ul>
+          <li><a routerLink="/docs">Documentation</a></li>
+          <li><a routerLink="/integrations">Integrations</a></li>
+          <li><a routerLink="/api">API and OAI-PMH</a></li>
+          <li><a routerLink="/migration">Migration</a></li>
+          <li><a routerLink="/status">Status</a></li>
+        </ul>
+      </nav>
 
-        <!-- Resources col -->
-        <div class="foot-col">
-            <h4>Resources</h4>
-            <ul>
-                <li><a routerLink="/docs">Documentation</a></li>
-                <li><a routerLink="/integrations">Integrations</a></li>
-                <li><a routerLink="/api">API · OAI-PMH</a></li>
-                <li><a routerLink="/migration">Migration</a></li>
-                <li><a routerLink="/status">Status</a></li>
-            </ul>
-        </div>
-
-        <!-- Organisation col -->
-        <div class="foot-col">
-            <h4>Organisation</h4>
-            <ul>
-                <li><a routerLink="/about">About</a></li>
-                <li><a routerLink="/open-principles">Open principles</a></li>
-                <li><a routerLink="/privacy">Privacy</a></li>
-                <li><a routerLink="/terms">Terms</a></li>
-                <li><a routerLink="/contact">Contact</a></li>
-            </ul>
-        </div>
+      <!-- Organisation col -->
+      <nav class="foot-col" aria-labelledby="foot-organisation">
+        <h2 class="foot-title" id="foot-organisation">Organisation</h2>
+        <ul>
+          <li><a routerLink="/about">About</a></li>
+          <li><a routerLink="/open-principles">Open principles</a></li>
+          <li><a routerLink="/privacy">Privacy</a></li>
+          <li><a routerLink="/terms">Terms</a></li>
+          <li><a routerLink="/contact">Contact</a></li>
+        </ul>
+      </nav>
     </div>
+
+    <p-divider />
 
     <!-- Bottom bar -->
-    <div class="container foot-bottom">
-        <span>© {{ year }} scholarNet · made for researchers</span>
-        <span class="foot-bottom-right">
-            Free for researchers, always.
-        </span>
+    <div class="foot-bottom">
+      <span>© {{ year }} scholarNet. Made for researchers.</span>
+      <span>Free for researchers, always.</span>
     </div>
+  </div>
 </footer>

@@ -10,12 +10,35 @@ import {
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../../core/services/auth.service';
-import { InputTextModule } from 'primeng/inputtext';
 import { ClickOutsideDirective } from '../../../directives/click-outside.directive';
+
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+import { InputTextModule } from 'primeng/inputtext';
+import { ButtonModule } from 'primeng/button';
+import { OverlayPanelModule } from 'primeng/overlaypanel';
+import { AvatarModule } from 'primeng/avatar';
+import { AvatarGroupModule } from 'primeng/avatargroup';
+import { MenuModule } from 'primeng/menu';
+import { Popover } from 'primeng/popover';
+import { MenuItem } from 'primeng/api';
 
 @Component({
   selector: 'app-inline-header',
-  imports: [CommonModule, RouterLink, ClickOutsideDirective, InputTextModule],
+  imports: [
+    CommonModule,
+    RouterLink,
+    ClickOutsideDirective,
+    InputTextModule,
+    IconFieldModule,
+    ButtonModule,
+    InputIconModule,
+    OverlayPanelModule,
+    AvatarModule,
+    AvatarGroupModule,
+    MenuModule,
+    Popover,
+  ],
   templateUrl: './inline-header.component.html',
   styleUrl: './inline-header.component.css',
 })
@@ -29,6 +52,19 @@ export class InlineHeaderComponent {
 
   readonly profileMenuOpen = signal(false);
   readonly notificationMenuOpen = signal(false);
+
+  profileItems: MenuItem[] = [
+    {
+      label: 'View profile',
+      icon: 'pi pi-user',
+      command: () => this.goToOwnProfile(),
+    },
+    { label: 'My teams', icon: 'pi pi-users', routerLink: '/main/teams' },
+    { label: 'Settings', icon: 'pi pi-cog', routerLink: '/settings' },
+    { label: 'Activity', icon: 'pi pi-history', routerLink: '/settings' },
+    { separator: true },
+    { label: 'Log out', icon: 'pi pi-sign-out', command: () => this.logout() },
+  ];
 
   readonly initials = computed(() => {
     const user = this.authService.currentUser();

@@ -31,6 +31,9 @@ import { SelectButtonModule } from 'primeng/selectbutton';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { PasswordModule } from 'primeng/password';
+import { CheckboxModule } from 'primeng/checkbox';
+import { MessageModule } from 'primeng/message';
 
 import { ProfileLink } from '../../../shared/interfaces/Profile/profile-linkt';
 import { linkTypeOptions } from './link-type-options';
@@ -66,6 +69,9 @@ interface SettingsTabDef {
     AutoCompleteModule,
     ToastModule,
     Select,
+    PasswordModule,
+    CheckboxModule,
+    MessageModule,
   ],
   templateUrl: './edit-profile.component.html',
   styleUrl: './edit-profile.component.css',
@@ -342,6 +348,14 @@ export class EditProfileComponent implements OnInit {
         console.log(response);
       },
     });
+  }
+
+  backToProfile(): void {
+    const id =
+      this.route.snapshot.paramMap.get('userId') ??
+      this.authService.currentUser()?.id;
+
+    this.router.navigate(['/main/profile', id]);
   }
 
   changePassword() {}
