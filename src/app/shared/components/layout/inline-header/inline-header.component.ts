@@ -28,7 +28,6 @@ import { MenuItem } from 'primeng/api';
   imports: [
     CommonModule,
     RouterLink,
-    ClickOutsideDirective,
     InputTextModule,
     IconFieldModule,
     ButtonModule,

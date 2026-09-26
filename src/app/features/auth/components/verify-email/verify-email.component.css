@@ -1,91 +1,250 @@
-@import "../../auth.css";
+/* Colors come from the PrimeNG (Aura) tokens, so your blue preset and
+   dark mode flow through automatically. Layout mirrors login/register;
+   if you already share one auth.css between those pages, move the
+   ─── Shell ─── section below into it instead of duplicating here. */
 
-/* ── Status block ── */
+:host {
+  display: block;
+}
+
+.auth {
+  --brand-accent: var(--p-primary-300);
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  min-height: 100dvh;
+  background: var(--p-content-background);
+  color: var(--p-text-color);
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--p-primary-color);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ─────────── Brand ─────────── */
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.mark {
+  width: 28px;
+  height: 28px;
+}
+
+.mark .accent {
+  fill: var(--brand-accent);
+}
+
+.wordmark {
+  font-size: 20px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+.wordmark b {
+  font-weight: 700;
+}
+
+/* ─────────── Left showcase panel ─────────── */
+.showcase {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 40px 56px;
+  overflow: hidden;
+  color: #fff;
+  background: radial-gradient(
+    120% 90% at 100% 0%,
+    var(--p-primary-700),
+    var(--p-primary-900) 55%,
+    var(--p-primary-950)
+  );
+}
+
+.showcase a:focus-visible {
+  outline-color: #fff;
+}
+
+.bg-graph {
+  position: absolute;
+  right: -80px;
+  bottom: -40px;
+  width: 460px;
+  height: 460px;
+  color: #fff;
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+.showcase-head,
+.showcase-body,
+.showcase-foot {
+  position: relative;
+}
+
+.showcase-body {
+  max-width: 440px;
+  margin-block: auto;
+  padding-block: 56px;
+}
+
+.showcase-title {
+  margin: 0;
+  font-size: clamp(2rem, 3vw, 2.75rem);
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.showcase-sub {
+  max-width: 42ch;
+  margin: 20px 0 0;
+  font-size: 17px;
+  line-height: 1.6;
+  color: rgb(255 255 255 / 0.78);
+}
+
+.showcase-foot {
+  padding-top: 24px;
+  border-top: 1px solid rgb(255 255 255 / 0.16);
+  font-size: 12.5px;
+  color: rgb(255 255 255 / 0.65);
+}
+
+/* ─────────── Right form/status panel ─────────── */
+.form-side {
+  display: flex;
+  flex-direction: column;
+  padding: 32px clamp(24px, 5vw, 64px);
+}
+
+.mobile-brand {
+  display: none;
+  --brand-accent: var(--p-primary-color);
+  color: var(--p-text-color);
+}
+
+.form-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 24px;
+  padding-top: 16px;
+  font-size: 13px;
+  color: var(--p-text-muted-color);
+}
+
+.form-foot a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.form-foot a:hover {
+  color: var(--p-text-color);
+}
+
+/* ─────────── Verify status block ─────────── */
 .verify-body {
   display: flex;
+  flex: 1;
   align-items: center;
   justify-content: center;
-  flex: 1;
 }
 
 .status-block {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 12px;
-  max-width: 380px;
-  width: 100%;
+  gap: 14px;
+  width: min(100%, 400px);
 }
 
-/* Icon circle */
+.status-block h1 {
+  margin: 0;
+  font-size: 1.625rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.lede {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--p-text-muted-color);
+}
+
+/* spinner shown while verifying */
+:host ::ng-deep .status-spinner {
+  width: 44px;
+  height: 44px;
+  margin-bottom: 2px;
+}
+
+/* result icon circle for success / error */
 .status-icon {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
   display: grid;
   place-items: center;
-  margin-bottom: 4px;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 2px;
+  border-radius: 50%;
+  font-size: 22px;
 }
 
-.status-icon svg {
-  width: 24px;
-  height: 24px;
+.status-icon--success {
+  background: var(--p-green-100);
+  color: var(--p-green-600);
 }
 
-.status-icon.success {
-  background: oklch(0.92 0.04 150);
-  color: var(--forest);
+.status-icon--error {
+  background: var(--p-red-100);
+  color: var(--p-red-600);
 }
 
-.status-icon.error {
-  background: oklch(0.93 0.03 25);
-  color: var(--oxblood);
-}
-
-/* Meta row */
 .meta-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 4px;
-}
-
-.meta-pill {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  padding: 3px 8px;
-  background: var(--paper-2);
-  color: var(--ink-3);
-}
-
-.meta-pill.success {
-  background: oklch(0.92 0.04 150);
-  color: var(--forest);
-}
-
-.meta-pill.error {
-  background: oklch(0.93 0.03 25);
-  color: var(--oxblood);
-}
-
-.meta-sep {
-  color: var(--ink-3);
-  font-size: 12px;
+  gap: 10px;
+  margin-top: 2px;
 }
 
 .meta-dim {
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  color: var(--ink-3);
+  font-size: 13px;
+  color: var(--p-text-muted-color);
 }
 
-/* Actions */
 .action-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 16px;
-  margin-top: 8px;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+/* ─────────── Responsive ─────────── */
+@media (max-width: 900px) {
+  .auth {
+    grid-template-columns: 1fr;
+  }
+
+  .showcase {
+    display: none;
+  }
+
+  .mobile-brand {
+    display: block;
+    margin-bottom: 24px;
+  }
+
+  .form-side {
+    padding: 24px;
+  }
 }

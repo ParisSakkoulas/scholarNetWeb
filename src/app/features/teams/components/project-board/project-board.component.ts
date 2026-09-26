@@ -21,6 +21,9 @@ import { ConfirmationService } from 'primeng/api';
 import { PriorityBadgeComponent } from '../shared/priority-badge/priority-badge.component';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
+
 @Component({
   selector: 'app-project-board',
   imports: [
@@ -32,11 +35,12 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
     PriorityBadgeComponent,
     ButtonModule,
     ConfirmDialogModule,
+    ToastModule,
   ],
 
   templateUrl: './project-board.component.html',
   styleUrl: './project-board.component.css',
-  providers: [ConfirmationService],
+  providers: [ConfirmationService, ToastModule, MessageService],
 })
 export class ProjectBoardComponent implements OnInit {
   project = signal<ProjectWithBoards | null>(null);
@@ -57,6 +61,7 @@ export class ProjectBoardComponent implements OnInit {
   private projectsService = inject(ProjectsService);
   private tasksService = inject(TasksService);
   private confirmationService = inject(ConfirmationService);
+  private messageService = inject(MessageService);
 
   ngOnInit(): void {
     this.projectId = this.route.snapshot.paramMap.get('projectId')!;
@@ -100,6 +105,7 @@ export class ProjectBoardComponent implements OnInit {
       [task.columnId]: [...(grouped[task.columnId] ?? []), task],
     }));
     this.addingToColumn.set(null);
+    this.messageService.add({ severity: 'success', summary: 'Task Created!' });
   }
 
   openTask(task: Task): void {
@@ -109,6 +115,7 @@ export class ProjectBoardComponent implements OnInit {
   onTaskUpdated(updated: Task): void {
     this.loadTasks();
     this.selectedTask.set(null);
+    this.messageService.add({ severity: 'success', summary: 'Task Updated!' });
   }
 
   onDrop(event: CdkDragDrop<Task[]>, columnId: string): void {
@@ -160,6 +167,10 @@ export class ProjectBoardComponent implements OnInit {
       rejectButtonProps: { severity: 'secondary', label: 'Cancel', text: true },
       accept: () => {
         this.tasksService.remove(task._id).subscribe(() => this.loadTasks());
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Task Deleted!',
+        });
       },
     });
   }

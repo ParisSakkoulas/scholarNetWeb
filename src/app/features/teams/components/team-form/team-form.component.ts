@@ -4,6 +4,7 @@ import {
   EventEmitter,
   inject,
   Input,
+  OnInit,
   Output,
   signal,
 } from '@angular/core';
@@ -30,7 +31,7 @@ import { ButtonModule } from 'primeng/button';
   templateUrl: './team-form.component.html',
   styleUrl: './team-form.component.css',
 })
-export class TeamFormComponent {
+export class TeamFormComponent implements OnInit {
   @Input() team: Team | null = null;
   @Output() created = new EventEmitter<Team>();
   @Output() updated = new EventEmitter<Team>();
@@ -47,18 +48,32 @@ export class TeamFormComponent {
   private fb = inject(FormBuilder);
   private teamsService = inject(TeamsService);
 
-  form = this.fb.nonNullable.group({
-    name: [
-      this.team?.name ?? '',
-      [Validators.required, Validators.maxLength(80)],
-    ],
-    slug: [
-      this.team?.slug ?? '',
-      [Validators.required, Validators.pattern(/^[a-z0-9-]+$/)],
-    ],
-    description: [this.team?.description ?? ''],
-    visibility: [this.team?.visibility ?? ('private' as 'private' | 'public')],
-  });
+  // Declared here (typed, empty) but actually filled in ngOnInit — @Input()
+  // isn't set yet when class field initializers run, only by the time
+  // ngOnInit fires. Building the form here with `this.team?.x` always saw
+  // `team` as null, which is why edit mode never showed values.
+  form!: ReturnType<typeof this.buildForm>;
+
+  ngOnInit(): void {
+    this.form = this.buildForm();
+  }
+
+  private buildForm() {
+    return this.fb.nonNullable.group({
+      name: [
+        this.team?.name ?? '',
+        [Validators.required, Validators.maxLength(80)],
+      ],
+      slug: [
+        this.team?.slug ?? '',
+        [Validators.required, Validators.pattern(/^[a-z0-9-]+$/)],
+      ],
+      description: [this.team?.description ?? ''],
+      visibility: [
+        this.team?.visibility ?? ('private' as 'private' | 'public'),
+      ],
+    });
+  }
 
   get isEdit(): boolean {
     return !!this.team;

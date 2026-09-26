@@ -1,0 +1,104 @@
+@if (config().search || config().columnChooser) {
+  <div class="toolbar">
+    @if (config().search) {
+      <p-iconfield class="search-field">
+        <p-inputicon class="pi pi-search" />
+        <input
+          pInputText
+          type="text"
+          size="small"
+          [ngModel]="searchInput()"
+          (ngModelChange)="onSearchInput($event)"
+          [placeholder]="config().searchPlaceholder"
+          aria-label="Search"
+        />
+      </p-iconfield>
+    }
+
+    @if (config().columnChooser) {
+      <p-multiselect
+        [options]="columns()"
+        optionLabel="header"
+        optionValue="field"
+        [ngModel]="visibleFields()"
+        (ngModelChange)="setVisibleFields($event)"
+        [maxSelectedLabels]="0"
+        selectedItemsLabel="Columns ({0})"
+        placeholder="Columns"
+        [showToggleAll]="false"
+        appendTo="body"
+        size="small"
+      />
+    }
+  </div>
+}
+
+<p-table
+  [value]="rows()"
+  [lazy]="true"
+  (onLazyLoad)="onLazyLoad($event)"
+  [loading]="loading()"
+  [paginator]="true"
+  [first]="firstRecord()"
+  [rows]="config().pageSize"
+  [totalRecords]="total()"
+  [rowsPerPageOptions]="config().pageSizeOptions"
+  [sortField]="config().defaultSort?.field"
+  [sortOrder]="config().defaultSort?.order === 'desc' ? -1 : 1"
+>
+  <ng-template #header>
+    <tr>
+      @for (col of visibleColumns(); track col.field) {
+        <th
+          [style.width]="col.width"
+          [pSortableColumn]="col.field"
+          [pSortableColumnDisabled]="!col.sortable"
+        >
+          {{ col.header }}
+          @if (col.sortable) {
+            <p-sortIcon [field]="col.field" />
+          }
+        </th>
+      }
+      @if (actions().length) {
+        <th class="actions-col"></th>
+      }
+    </tr>
+  </ng-template>
+
+  <ng-template #body let-row>
+    <tr>
+      @for (col of visibleColumns(); track col.field) {
+        <td>{{ cell(row, col) }}</td>
+      }
+      @if (actions().length) {
+        <td class="actions-col">
+          <div class="row-actions">
+            @for (action of actions(); track action.icon) {
+              <p-button
+                [icon]="action.icon"
+                variant="text"
+                severity="secondary"
+                rounded
+                size="small"
+                [ariaLabel]="action.label ?? action.icon"
+                (onClick)="action.handler(row)"
+              />
+            }
+          </div>
+        </td>
+      }
+    </tr>
+  </ng-template>
+
+  <ng-template #emptymessage>
+    <tr>
+      <td
+        [attr.colspan]="visibleColumns().length + (actions().length ? 1 : 0)"
+        class="empty"
+      >
+        {{ config().emptyMessage }}
+      </td>
+    </tr>
+  </ng-template>
+</p-table>

@@ -1,170 +1,166 @@
+<!-- Brand lockup, reused in the showcase panel -->
+<ng-template #brand>
+  <a class="brand" routerLink="/" aria-label="scholarNet home">
+    <svg class="mark" viewBox="0 0 100 100" aria-hidden="true">
+      <g transform="translate(0,4)">
+        <g stroke="currentColor" stroke-width="1.1" opacity="0.65" fill="none">
+          <line x1="22" y1="26" x2="56" y2="14" />
+          <line x1="22" y1="26" x2="40" y2="60" />
+          <line x1="56" y1="14" x2="78" y2="46" />
+          <line x1="78" y1="46" x2="40" y2="60" />
+          <line x1="40" y1="60" x2="14" y2="64" />
+          <line x1="40" y1="60" x2="60" y2="86" />
+          <line x1="78" y1="46" x2="86" y2="76" />
+          <line x1="86" y1="76" x2="60" y2="86" />
+        </g>
+        <circle cx="22" cy="26" r="3.2" fill="currentColor" />
+        <circle cx="56" cy="14" r="3.2" fill="currentColor" />
+        <circle cx="78" cy="46" r="3.2" fill="currentColor" />
+        <circle cx="40" cy="60" r="5" class="accent" />
+        <circle cx="14" cy="64" r="3.2" fill="currentColor" />
+        <circle cx="86" cy="76" r="3.2" fill="currentColor" />
+        <circle cx="60" cy="86" r="3.2" fill="currentColor" />
+      </g>
+    </svg>
+    <span class="wordmark">scholar<b>Net</b></span>
+  </a>
+</ng-template>
+
 <div class="auth">
+  <!-- ── Left showcase panel ── -->
+  <aside class="showcase">
+    <svg class="bg-graph" viewBox="0 0 400 400" aria-hidden="true">
+      <g stroke="currentColor" stroke-width="0.8" fill="none">
+        <line x1="80" y1="90" x2="220" y2="50" />
+        <line x1="80" y1="90" x2="160" y2="240" />
+        <line x1="220" y1="50" x2="310" y2="180" />
+        <line x1="310" y1="180" x2="160" y2="240" />
+        <line x1="160" y1="240" x2="50" y2="260" />
+        <line x1="160" y1="240" x2="240" y2="340" />
+        <line x1="310" y1="180" x2="345" y2="300" />
+        <line x1="345" y1="300" x2="240" y2="340" />
+      </g>
+      <g fill="currentColor">
+        <circle cx="80" cy="90" r="5" />
+        <circle cx="220" cy="50" r="5" />
+        <circle cx="310" cy="180" r="5" />
+        <circle cx="160" cy="240" r="8" />
+        <circle cx="50" cy="260" r="5" />
+        <circle cx="345" cy="300" r="5" />
+        <circle cx="240" cy="340" r="5" />
+      </g>
+    </svg>
 
-    <!-- ── Left brand panel ── -->
-    <aside class="panel panel-verify">
+    <div class="showcase-head">
+      <ng-container *ngTemplateOutlet="brand" />
+    </div>
 
-        <div class="panel-head">
-            <a class="brand" routerLink="/">
-                <svg class="mark" viewBox="0 0 100 100" aria-hidden="true">
-                    <g transform="translate(0,4)">
-                        <g stroke="currentColor" stroke-width="1.1" opacity="0.65" fill="none">
-                            <line x1="22" y1="26" x2="56" y2="14" />
-                            <line x1="22" y1="26" x2="40" y2="60" />
-                            <line x1="56" y1="14" x2="78" y2="46" />
-                            <line x1="78" y1="46" x2="40" y2="60" />
-                            <line x1="40" y1="60" x2="14" y2="64" />
-                            <line x1="40" y1="60" x2="60" y2="86" />
-                            <line x1="78" y1="46" x2="86" y2="76" />
-                            <line x1="86" y1="76" x2="60" y2="86" />
-                        </g>
-                        <circle cx="22" cy="26" r="3.2" fill="currentColor" />
-                        <circle cx="56" cy="14" r="3.2" fill="currentColor" />
-                        <circle cx="78" cy="46" r="3.2" fill="currentColor" />
-                        <circle cx="40" cy="60" r="5.0" class="accent" />
-                        <circle cx="14" cy="64" r="3.2" fill="currentColor" />
-                        <circle cx="86" cy="76" r="3.2" fill="currentColor" />
-                        <circle cx="60" cy="86" r="3.2" fill="currentColor" />
-                    </g>
-                </svg>
-                <span class="wm">scholar<i>N</i>et</span>
-            </a>
-        </div>
+    <div class="showcase-body">
+      <h2 class="showcase-title">
+        One click.<br />
+        Your identity, confirmed.
+      </h2>
+      <p class="showcase-sub">
+        Email verification keeps your profile trusted across CrossRef, arXiv,
+        and OpenAlex connections.
+      </p>
+    </div>
 
-        <svg class="panel-graph" viewBox="0 0 400 400" aria-hidden="true">
-            <g stroke="currentColor" stroke-width="0.8" fill="none">
-                <line x1="80" y1="90" x2="220" y2="50" />
-                <line x1="80" y1="90" x2="160" y2="240" />
-                <line x1="220" y1="50" x2="310" y2="180" />
-                <line x1="310" y1="180" x2="160" y2="240" />
-                <line x1="160" y1="240" x2="50" y2="260" />
-                <line x1="160" y1="240" x2="240" y2="340" />
-                <line x1="310" y1="180" x2="345" y2="300" />
-                <line x1="345" y1="300" x2="240" y2="340" />
-            </g>
-            <g fill="currentColor">
-                <circle cx="80" cy="90" r="5" />
-                <circle cx="220" cy="50" r="5" />
-                <circle cx="310" cy="180" r="5" />
-                <circle cx="160" cy="240" r="8" />
-                <circle cx="50" cy="260" r="5" />
-                <circle cx="345" cy="300" r="5" />
-                <circle cx="240" cy="340" r="5" />
-            </g>
-        </svg>
+    <div class="showcase-foot">
+      <span>Free for researchers, always.</span>
+    </div>
+  </aside>
 
-        <div class="panel-body">
-            <p class="panel-quote">
-                One <em>click</em>.<br />
-                Your identity, confirmed.
+  <!-- ── Right status panel ── -->
+  <main class="form-side">
+    <div class="mobile-brand">
+      <ng-container *ngTemplateOutlet="brand" />
+    </div>
+
+    <div class="verify-body">
+      @switch (status()) {
+        @case ("verifying") {
+          <div class="status-block">
+            <p-progress-spinner
+              styleClass="status-spinner"
+              strokeWidth="4"
+              ariaLabel="Verifying"
+            />
+
+            <h1>Verifying your identity</h1>
+            <p class="lede">
+              Checking your confirmation link. This only takes a moment.
             </p>
-            <p class="panel-sub">
-                Email verification keeps your profile trusted across
-                CrossRef, arXiv, and OpenAlex connections.
+
+            <p-tag severity="secondary" value="In progress" [rounded]="true" />
+          </div>
+        }
+
+        @case ("success") {
+          <div class="status-block">
+            <div class="status-icon status-icon--success">
+              <i class="pi pi-check" aria-hidden="true"></i>
+            </div>
+
+            <h1>Email confirmed</h1>
+            <p class="lede">
+              Your scholarNet account is now active. Redirecting you to sign in…
             </p>
-        </div>
 
-        <div class="panel-foot">
-            <div>Free for researchers, always.</div>
-        </div>
-
-    </aside>
-
-    <!-- ── Right status panel ── -->
-    <section class="form-side">
-
-        <div class="form-head">
-            <span class="label">— email verification —</span>
-        </div>
-
-        <div class="form-body verify-body">
-
-            @switch (status()) {
-
-            @case ('verifying') {
-            <div class="status-block">
-                <!-- <sn-spinner [size]="40" /> -->
-                <h2>Verifying your <em>identity</em>.</h2>
-                <p class="lede">
-                    Checking your confirmation link — this only takes a moment.
-                </p>
-                <div class="meta-row">
-                    <span class="meta-pill">in progress</span>
-                </div>
+            <div class="meta-row">
+              <p-tag severity="success" value="Verified" [rounded]="true" />
+              <span class="meta-dim">Redirecting in 3s</span>
             </div>
-            }
 
-            @case ('success') {
-            <div class="status-block">
+            <p-button
+              label="Sign in now"
+              icon="pi pi-arrow-right"
+              iconPos="right"
+              size="large"
+              routerLink="/auth/login"
+            />
+          </div>
+        }
 
-                <div class="status-icon success">
-                    <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
-                        <polyline points="6,16 13,23 26,9" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                            stroke-linejoin="round" />
-                    </svg>
-                </div>
-
-                <h2>Email <em>confirmed</em>.</h2>
-                <p class="lede">
-                    Your scholarNet account is now active. Redirecting you
-                    to sign in…
-                </p>
-
-                <div class="meta-row">
-                    <span class="meta-pill success">verified</span>
-                    <span class="meta-sep">·</span>
-                    <span class="meta-dim">redirecting in 3s</span>
-                </div>
-
-                <a routerLink="/auth/login" class="btn btn-oxblood">
-                    Sign in now <span class="arr">→</span>
-                </a>
-
+        @case ("error") {
+          <div class="status-block">
+            <div class="status-icon status-icon--error">
+              <i class="pi pi-times" aria-hidden="true"></i>
             </div>
-            }
 
-            @case ('error') {
-            <div class="status-block">
+            <h1>Verification failed</h1>
+            <p class="lede">{{ errorMessage() }}</p>
 
-                <div class="status-icon error">
-                    <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
-                        <line x1="8" y1="8" x2="24" y2="24" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" />
-                        <line x1="24" y1="8" x2="8" y2="24" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" />
-                    </svg>
-                </div>
-
-                <h2>Verification <em>failed</em>.</h2>
-                <p class="lede">{{ errorMessage() }}</p>
-
-                <div class="meta-row">
-                    <span class="meta-pill error">error</span>
-                    <span class="meta-sep">·</span>
-                    <span class="meta-dim">link may be expired or already used</span>
-                </div>
-
-                <div class="action-row">
-                    <a routerLink="/auth/login"  class="btn btn-oxblood">
-                        Back to sign in <span class="arr">→</span>
-                    </a>
-                    <a routerLink="/auth/register" class="btn btn-ghost">
-                        Register again
-                    </a>
-                </div>
-
+            <div class="meta-row">
+              <p-tag severity="danger" value="Error" [rounded]="true" />
+              <span class="meta-dim">Link may be expired or already used</span>
             </div>
-            }
 
-            }
+            <div class="action-row">
+              <p-button
+                label="Back to sign in"
+                icon="pi pi-arrow-right"
+                iconPos="right"
+                size="large"
+                routerLink="/auth/login"
+              />
+              <p-button
+                label="Register again"
+                variant="outlined"
+                severity="secondary"
+                size="large"
+                routerLink="/auth/register"
+              />
+            </div>
+          </div>
+        }
+      }
+    </div>
 
-        </div>
-
-        <div class="form-foot">
-            <a routerLink="/privacy">Privacy</a>
-            <a routerLink="/open-principles">Researcher principles</a>
-            <a routerLink="/about">Why we ask · the open paper</a>
-        </div>
-
-    </section>
-
+    <footer class="form-foot">
+      <a routerLink="/privacy">Privacy</a>
+      <a routerLink="/open-principles">Researcher principles</a>
+      <a routerLink="/about">Why we ask: the open paper</a>
+    </footer>
+  </main>
 </div>

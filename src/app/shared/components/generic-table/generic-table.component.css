@@ -1,0 +1,21 @@
+.toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.actions-col {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.row-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.empty {
+  padding: 24px;
+  text-align: center;
+  color: var(--p-text-muted-color);
+}

@@ -20,11 +20,12 @@ import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { Password } from 'primeng/password';
 import { Tag } from 'primeng/tag';
+import { ToastModule } from 'primeng/toast';
 
 // Insides
 import { SpinnerComponent } from '../../../../shared/components/ui/spinner/spinner.component';
 import { AuthService } from '../../../../core/services/auth.service';
-import { ToastService } from '../../../../core/services/toast.service';
+import { MessageService } from 'primeng/api';
 
 @Component({
   selector: 'app-register',
@@ -42,10 +43,11 @@ import { ToastService } from '../../../../core/services/toast.service';
     Password,
     Tag,
     SpinnerComponent,
+    ToastModule,
   ],
   templateUrl: './register.component.html',
   styleUrl: './register.component.css',
-  providers: [HttpClient],
+  providers: [HttpClient, MessageService],
 })
 export class RegisterComponent {
   // variables
@@ -56,7 +58,7 @@ export class RegisterComponent {
 
   // services
   private authService = inject(AuthService);
-  private toastService = inject(ToastService);
+  private messageService = inject(MessageService);
 
   // register form group
   registerForm = new FormGroup(
@@ -101,12 +103,21 @@ export class RegisterComponent {
 
     this.authService.register(registerPayload).subscribe({
       next: (response) => {
-        this.toastService.success('Successfull registration', response.message);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Successfull registration',
+          detail: response.message,
+        });
         this.loading.set(false);
       },
 
       error: (err) => {
-        this.toastService.error('Registration fail', err.error.message);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Registration fail',
+          detail: err.error.message,
+        });
+
         this.loading.set(false);
       },
     });
