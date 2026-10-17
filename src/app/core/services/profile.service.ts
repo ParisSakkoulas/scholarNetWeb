@@ -4,7 +4,12 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 
 import { environment } from '../../../environmets/environment';
-import { CreateProfile, Profile } from '../models/profile.model';
+import {
+  CreateProfile,
+  Profile,
+  ProfileSearchPage,
+  ProfileSectionKey,
+} from '../models/profile.model';
 
 @Injectable({
   providedIn: 'root',
@@ -23,14 +28,40 @@ export class ProfileService {
       .pipe(tap((profile) => this._profile.set(profile)));
   }
 
-  searchProfiles(query: string): Observable<Profile[]> {
-    return this.http.get<Profile[]>(this.apiProfile, {
-      params: { q: query },
+  searchProfiles(
+    query: string,
+    page = 1,
+    limit = 10,
+  ): Observable<ProfileSearchPage> {
+    return this.http.get<ProfileSearchPage>(this.apiProfile, {
+      params: { q: query, page, limit },
     });
   }
 
   updateProfileInfo(profilePayload: CreateProfile) {
     return this.http.patch(`${this.apiProfile}/me`, profilePayload);
+  }
+
+  /** POST /profile/me/{positions|education|skills|interests}. The API returns
+   *  the raw (unpopulated) profile, so callers should reload via getProfile(). */
+  addSection(
+    section: ProfileSectionKey,
+    payload: Record<string, unknown>,
+  ): Observable<unknown> {
+    return this.http.post(`${this.apiProfile}/me/${section}`, payload);
+  }
+
+  /** PATCH /profile/me/{positions|education}/:id — the API has no PATCH for skills/interests. */
+  updateSection(
+    section: ProfileSectionKey,
+    id: string,
+    payload: Record<string, unknown>,
+  ): Observable<unknown> {
+    return this.http.patch(`${this.apiProfile}/me/${section}/${id}`, payload);
+  }
+
+  removeSection(section: ProfileSectionKey, id: string): Observable<unknown> {
+    return this.http.delete(`${this.apiProfile}/me/${section}/${id}`);
   }
 
   // ---------------- OWN PROFILE — UPDATE ----------------

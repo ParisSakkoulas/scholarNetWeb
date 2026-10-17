@@ -1,0 +1,96 @@
+<div class="search-page">
+  <header class="page-head">
+    <h1>Find researchers</h1>
+    <p>Search by name, username, headline, country, skills or interests.</p>
+  </header>
+
+  <p-iconfield class="search-box">
+    <p-inputicon class="pi pi-search" />
+    <input
+      pInputText
+      type="search"
+      class="search-input"
+      aria-label="Search researchers"
+      placeholder="e.g. Jane Doe, machine learning, Greece"
+      [formControl]="query"
+      autofocus
+    />
+  </p-iconfield>
+
+  <div class="status" aria-live="polite">
+    @if (loading()) {
+      <i class="pi pi-spin pi-spinner" aria-hidden="true"></i> Searching…
+    } @else if (error()) {
+      Something went wrong while searching. Please try again.
+    } @else if (searched()) {
+      {{ total() }}
+      {{ total() === 1 ? "result" : "results" }} for
+      “{{ searched() }}”
+    }
+  </div>
+
+  @if (!loading() && !error() && searched() && !results().length) {
+    <div class="empty">
+      <i class="pi pi-users" aria-hidden="true"></i>
+      <p>No researchers found. Try a different name or keyword.</p>
+    </div>
+  }
+
+  <ul class="results">
+    @for (r of results(); track r._id) {
+      <li>
+        <a class="card result" [routerLink]="['/main/profile', r.user._id]">
+          <div class="avatar">
+            @if (r.user.profilePhotoUrl) {
+              <img [src]="r.user.profilePhotoUrl" [alt]="r.user.firstName" />
+            } @else {
+              {{ initials(r) }}
+            }
+          </div>
+
+          <div class="info">
+            <div class="name-row">
+              <span class="name">{{ r.user.firstName }} {{ r.user.lastName }}</span>
+              @if (r.verified) {
+                <i class="pi pi-verified verified" title="Verified" aria-hidden="true"></i>
+              }
+              <span class="username">&#64;{{ r.user.username }}</span>
+            </div>
+
+            @if (r.headline) {
+              <p class="headline">{{ r.headline }}</p>
+            }
+            @if (location(r); as loc) {
+              <p class="location">
+                <i class="pi pi-map-marker" aria-hidden="true"></i>{{ loc }}
+              </p>
+            }
+
+            @if (topics(r).length) {
+              <div class="topics">
+                @for (t of topics(r); track t) {
+                  <p-tag severity="secondary" [value]="t" />
+                }
+              </div>
+            }
+          </div>
+
+          <span class="view">
+            View profile <i class="pi pi-arrow-right" aria-hidden="true"></i>
+          </span>
+        </a>
+      </li>
+    }
+  </ul>
+
+  @if (total() > pageSize) {
+    <p-paginator
+      [rows]="pageSize"
+      [totalRecords]="total()"
+      [first]="(page() - 1) * pageSize"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="{first}–{last} of {totalRecords}"
+      (onPageChange)="onPageChange($event)"
+    />
+  }
+</div>

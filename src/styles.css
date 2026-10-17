@@ -30,7 +30,7 @@ a {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.55);
+  background: color-mix(in oklch, var(--paper) 70%, transparent);
   backdrop-filter: blur(3px);
   border-radius: inherit;
 }

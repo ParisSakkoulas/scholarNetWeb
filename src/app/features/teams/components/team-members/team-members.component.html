@@ -1,67 +1,226 @@
-<div class="max-w-3xl mx-auto p-6">
-  <h1 class="text-xl font-semibold text-gray-900 mb-4">Team Members</h1>
+<p-toast />
+<p-confirmdialog />
 
-  <div class="flex gap-2 mb-6">
-    <input
-      [(ngModel)]="inviteUserId"
-      [ngModelOptions]="{ standalone: true }"
-      placeholder="User ID to invite"
-      class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm"
-    />
-    <select
-      [(ngModel)]="inviteRole"
-      [ngModelOptions]="{ standalone: true }"
-      class="border border-gray-300 rounded-lg px-3 py-2 text-sm"
-    >
-      <option value="member">Member</option>
-      <option value="admin">Admin</option>
-      <option value="viewer">Viewer</option>
-    </select>
-    <button
-      (click)="invite()"
-      class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700"
-    >
-      Invite
-    </button>
+<div class="mx-auto min-h-[calc(100vh-14rem)] max-w-3xl p-6">
+  <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <a
+        [routerLink]="['/main/teams', teamId]"
+        class="text-sm text-blue-700 no-underline hover:underline"
+        ><i class="pi pi-arrow-left mr-1 text-xs" aria-hidden="true"></i>Back to
+        team</a
+      >
+      <h1 class="m-0 mt-1 text-xl font-semibold text-surface-900">
+        Team members
+      </h1>
+    </div>
+
+    @if (canLeave()) {
+      <p-button
+        label="Leave team"
+        icon="pi pi-sign-out"
+        severity="danger"
+        variant="outlined"
+        size="small"
+        (onClick)="confirmLeave()"
+      />
+    }
   </div>
 
-  @if (error()) {
-    <p class="text-sm text-red-600 mb-4">{{ error() }}</p>
+  <!-- Invite box: only owners and admins -->
+  @if (myRole() && !canManage()) {
+    <p class="mb-6 rounded-lg border border-surface-200 bg-surface-50 px-4 py-3 text-sm text-surface-600">
+      <i class="pi pi-lock mr-1" aria-hidden="true"></i>
+      You are a <strong>{{ myRole() }}</strong> of this team. Only the owner and
+      admins can invite people or change roles.
+    </p>
+  }
+  @if (canManage()) {
+    <section
+      class="mb-6 rounded-xl border border-surface-200 bg-white p-4"
+      aria-label="Invite a member"
+    >
+      <h2 class="m-0 mb-1 text-base font-semibold text-surface-900">
+        Invite someone
+      </h2>
+      <p class="m-0 mb-3 text-sm text-surface-500">
+        Search by name, username or email. They get a notification and can
+        accept from their Teams page.
+      </p>
+
+      <div class="flex flex-col gap-2 sm:flex-row">
+        <p-autocomplete
+          class="flex-1"
+          [(ngModel)]="selectedInvitee"
+          [suggestions]="suggestions()"
+          (completeMethod)="searchUsers($event)"
+          optionLabel="fullName"
+          optionDisabled="blockedReason"
+          [minLength]="2"
+          [delay]="300"
+          [forceSelection]="true"
+          [showClear]="true"
+          [fluid]="true"
+          appendTo="body"
+          placeholder="e.g. Jane Doe, @jane or jane@university.edu"
+          emptyMessage="No users found. Check the spelling or try their email."
+        >
+          <ng-template #item let-user>
+            <div class="flex w-full items-center gap-3 py-0.5">
+              <p-avatar
+                [image]="user.profilePhotoUrl"
+                [label]="user.profilePhotoUrl ? undefined : initials(user.fullName)"
+                shape="circle"
+              />
+              <div class="min-w-0 flex-1">
+                <p class="m-0 truncate text-sm font-medium text-surface-900">
+                  {{ user.fullName }}
+                  <span class="font-normal text-surface-500"
+                    >&#64;{{ user.username }}</span
+                  >
+                </p>
+                <p class="m-0 truncate text-xs text-surface-500">
+                  {{ user.email }}
+                </p>
+              </div>
+              @if (user.blockedReason) {
+                <p-tag severity="secondary" [value]="user.blockedReason" />
+              }
+            </div>
+          </ng-template>
+        </p-autocomplete>
+
+        <p-select
+          [(ngModel)]="inviteRole"
+          [options]="inviteRoleOptions"
+          optionLabel="label"
+          optionValue="value"
+          ariaLabel="Role"
+          class="sm:w-36"
+        />
+
+        <p-button
+          label="Invite"
+          icon="pi pi-send"
+          [disabled]="!selectedInvitee || !!selectedInvitee.blockedReason"
+          [loading]="inviting()"
+          (onClick)="invite()"
+        />
+      </div>
+
+      @if (searching()) {
+        <p class="m-0 mt-2 text-xs text-surface-500">
+          <i class="pi pi-spin pi-spinner mr-1" aria-hidden="true"></i>Searching…
+        </p>
+      }
+    </section>
   }
 
   @if (loading()) {
-    <p class="text-gray-500">Loading members...</p>
+    <div class="flex flex-col gap-3">
+      @for (i of [1, 2, 3]; track i) {
+        <p-skeleton height="4rem" />
+      }
+    </div>
   } @else {
-    <div class="border border-gray-200 rounded-xl divide-y">
-      @for (member of members(); track memberUserId(member)) {
-        <div class="flex items-center justify-between px-4 py-3">
-          <div>
-            <p class="text-sm font-medium text-gray-900">
-              {{ memberName(member) }}
-            </p>
-            <p class="text-xs text-gray-500">{{ member.status }}</p>
+    <!-- Pending invitations -->
+    @if (pendingInvites().length && canManage()) {
+      <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-surface-500">
+        Pending invitations ({{ pendingInvites().length }})
+      </h2>
+      <div class="mb-6 divide-y rounded-xl border border-dashed border-surface-300 bg-surface-50">
+        @for (member of pendingInvites(); track member._id) {
+          <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+            <div class="flex min-w-0 items-center gap-3">
+              <p-avatar
+                [image]="memberPhoto(member)"
+                [label]="memberPhoto(member) ? undefined : initials(memberName(member))"
+                shape="circle"
+              />
+              <div class="min-w-0">
+                <p class="m-0 truncate text-sm font-medium text-surface-900">
+                  {{ memberName(member) }}
+                </p>
+                <p class="m-0 truncate text-xs text-surface-500">
+                  {{ memberEmail(member) }}
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <p-tag severity="warn" value="Pending" />
+              <app-role-badge [role]="member.role" />
+              <p-button
+                label="Cancel invite"
+                severity="secondary"
+                variant="text"
+                size="small"
+                (onClick)="cancelInvite(member)"
+              />
+            </div>
           </div>
+        }
+      </div>
+    }
+
+    <!-- Active members -->
+    <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-surface-500">
+      Members ({{ activeMembers().length }})
+    </h2>
+    <div class="divide-y rounded-xl border border-surface-200 bg-white">
+      @for (member of activeMembers(); track member._id) {
+        <div class="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+          <div class="flex min-w-0 items-center gap-3">
+            <p-avatar
+              [image]="memberPhoto(member)"
+              [label]="memberPhoto(member) ? undefined : initials(memberName(member))"
+              shape="circle"
+              size="large"
+            />
+            <div class="min-w-0">
+              <p class="m-0 truncate text-sm font-medium text-surface-900">
+                {{ memberName(member) }}
+                @if (isMe(member)) {
+                  <span class="font-normal text-surface-500">(you)</span>
+                }
+              </p>
+              <p class="m-0 truncate text-xs text-surface-500">
+                &#64;{{ memberUsername(member) }}
+                @if (memberEmail(member); as email) {
+                  · {{ email }}
+                }
+              </p>
+            </div>
+          </div>
+
           <div class="flex items-center gap-3">
-            <app-role-badge [role]="member.role" />
-            @if (member.role !== "owner") {
-              <select
+            @if (canManage() && member.role !== "owner" && !isMe(member)) {
+              <p-select
                 [ngModel]="member.role"
-                (ngModelChange)="changeRole(memberUserId(member), $event)"
-                class="text-xs border border-gray-300 rounded px-2 py-1"
-              >
-                <option value="admin">Admin</option>
-                <option value="member">Member</option>
-                <option value="viewer">Viewer</option>
-              </select>
-              <button
-                (click)="remove(memberUserId(member))"
-                class="text-xs text-red-600 hover:underline"
-              >
-                Remove
-              </button>
+                (ngModelChange)="changeRole(member, $event)"
+                [options]="memberRoleOptions"
+                optionLabel="label"
+                optionValue="value"
+                size="small"
+                ariaLabel="Change role"
+              />
+              <p-button
+                icon="pi pi-user-minus"
+                severity="danger"
+                variant="text"
+                [rounded]="true"
+                size="small"
+                ariaLabel="Remove member"
+                (onClick)="confirmRemove(member)"
+              />
+            } @else {
+              <app-role-badge [role]="member.role" />
             }
           </div>
         </div>
+      } @empty {
+        <p class="m-0 px-4 py-8 text-center text-sm text-surface-500">
+          No members yet.
+        </p>
       }
     </div>
   }

@@ -1,4 +1,3 @@
-// Angular basics
 import {
   FormGroup,
   FormControl,
@@ -6,7 +5,7 @@ import {
   FormsModule,
   Validators,
 } from '@angular/forms';
-import { Component, inject, InjectionToken, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
@@ -16,10 +15,11 @@ import { DividerModule } from 'primeng/divider';
 import { PasswordModule } from 'primeng/password';
 import { MessageModule } from 'primeng/message';
 import { InputTextModule } from 'primeng/inputtext';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 
 import { AuthService } from '../../../../core/services/auth.service';
 import { SpinnerComponent } from '../../../../shared/components/ui/spinner/spinner.component';
-import { ToastService } from '../../../../core/services/toast.service';
 
 @Component({
   selector: 'app-login',
@@ -36,16 +36,17 @@ import { ToastService } from '../../../../core/services/toast.service';
     TagModule,
     MessageModule,
     InputTextModule,
+    ToastModule,
   ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
-  providers: [HttpClient],
+  providers: [HttpClient, MessageService],
 })
 export class LoginComponent {
   // services
   private authService = inject(AuthService);
-  private toastService = inject(ToastService);
   private router = inject(Router);
+  private messageService = inject(MessageService);
 
   // variables
   showPassword = false;
@@ -86,8 +87,13 @@ export class LoginComponent {
       },
 
       error: (err) => {
-        this.toastService.error('Auth Failed', err.error.message);
         this.loading.set(false);
+        console.log(err);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: err.error.message,
+        });
       },
     });
   }

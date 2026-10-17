@@ -1,4 +1,7 @@
 import {
+  AbstractControl,
+  ValidationErrors,
+  ValidatorFn,
   FormArray,
   FormGroup,
   FormsModule,
@@ -37,8 +40,14 @@ import { MessageModule } from 'primeng/message';
 
 import { ProfileLink } from '../../../shared/interfaces/Profile/profile-linkt';
 import { linkTypeOptions } from './link-type-options';
+import { availabilityOptions } from './availability-options';
 
-import { passwordMatchValidator } from '../../../features/auth/utils/helpers';
+function passwordsMatch(a: string, b: string): ValidatorFn {
+  return (group: AbstractControl): ValidationErrors | null =>
+    group.get(a)?.value === group.get(b)?.value
+      ? null
+      : { passwordMismatch: true };
+}
 
 import { Select } from 'primeng/select';
 import { uniqueFieldValidator } from '../../../shared/utils/custom-validators/unique-field.validator';
@@ -46,7 +55,13 @@ import { uniqueFieldValidator } from '../../../shared/utils/custom-validators/un
 // This component's own tab set — distinct from ProfileTab, which belongs
 // to the main profile page (overview/publications/jobs/etc.) and was
 // imported here by mistake.
-type SettingsTab = 'profile' | 'account' | 'email' | 'password' | 'delete';
+type SettingsTab =
+  | 'profile'
+  | 'account'
+  | 'email'
+  | 'password'
+  | 'delete'
+  | 'forgotPassword';
 
 interface SettingsTabDef {
   id: SettingsTab;
@@ -95,6 +110,7 @@ export class EditProfileComponent implements OnInit {
     { id: 'account', label: 'Account Setting' },
     { id: 'email', label: 'Email' },
     { id: 'password', label: 'Change Password' },
+    { id: 'forgotPassword', label: 'Forgot Passowrd' },
     { id: 'delete', label: 'Delete Account' },
   ];
 
@@ -157,6 +173,10 @@ export class EditProfileComponent implements OnInit {
     confirmPassword: ['', Validators.required],
   });
 
+  readonly forgotPasswordForm = this.fb.group({
+    email: ['', [Validators.required, Validators.email]],
+  });
+
   readonly deletAccountForm = this.fb.group({
     username: ['', Validators.required],
     email: ['', [Validators.required, Validators.email]],
@@ -165,25 +185,14 @@ export class EditProfileComponent implements OnInit {
 
   readonly requestEmailForm = this.fb.group(
     {
-      currentPassword: [
-        '',
-        Validators.required,
-        Validators.minLength(8),
-        Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).+$/),
-      ],
-
+      currentPassword: ['', Validators.required],
       confirmPassword: ['', Validators.required],
       newEmail: ['', [Validators.required, Validators.email]],
     },
-    { validators: passwordMatchValidator },
+    { validators: passwordsMatch('currentPassword', 'confirmPassword') },
   );
 
-  readonly availabilityOptions = [
-    { label: 'Available for collaboration', value: 'collaboration' },
-    { label: 'Available for supervision', value: 'supervision' },
-    { label: 'Open to consulting', value: 'consulting' },
-    { label: 'Not currently available', value: 'unavailable' },
-  ];
+  readonly availabilityOptions = availabilityOptions;
 
   toggleAvailability(option: string): void {
     this.availability.update((list) =>
@@ -218,6 +227,12 @@ export class EditProfileComponent implements OnInit {
         lastName: p.user.lastName,
         username: p.user.username,
       });
+
+      this.forgotPasswordForm.patchValue({
+        email: this.currentEmail,
+      });
+
+      this.forgotPasswordForm.controls.email.disable();
     });
   }
 
@@ -283,11 +298,31 @@ export class EditProfileComponent implements OnInit {
       return;
     }
 
-    const userInfoChange = {
-      firstName: this.userForm.value.firstName,
-      lastName: this.userForm.value.lastName,
-      username: this.userForm.value.username,
-    };
+    const { firstName, lastName, username } = this.userForm.getRawValue();
+
+    this.loading.set(true);
+    this.userService
+      .updateUserInfo({ firstName, lastName, username })
+      .subscribe({
+        next: () => {
+          this.loading.set(false);
+          this.currentUsername = username;
+          this.authService.updateCurrentUser({ firstName, lastName, username });
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Account settings updated successfully!',
+          });
+        },
+        error: (err) => {
+          this.loading.set(false);
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: err?.error?.message ?? 'Something went wrong',
+          });
+        },
+      });
   }
 
   saveProfileInfo(): void {
@@ -327,7 +362,7 @@ export class EditProfileComponent implements OnInit {
         console.log('Err', err);
         this.loading.set(false);
         this.messageService.add({
-          severity: 'danger',
+          severity: 'error',
           summary: 'Error',
           detail: 'Something went wrong',
         });
@@ -343,11 +378,46 @@ export class EditProfileComponent implements OnInit {
 
     const { currentPassword, newEmail } = this.requestEmailForm.getRawValue();
 
+    this.loading.set(true);
     this.userService.requestEmailChange(currentPassword, newEmail).subscribe({
-      next: (response) => {
-        console.log(response);
+      next: () => {
+        this.loading.set(false);
+        this.requestEmailForm.reset();
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Check your inbox',
+          detail: `We sent a confirmation link to ${newEmail}. Your email changes once you confirm it.`,
+          life: 8000,
+        });
+      },
+      error: (err) => {
+        this.loading.set(false);
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Could not change email',
+          detail: err?.error?.message ?? 'Something went wrong',
+        });
       },
     });
+  }
+
+  forgotPassowrd() {
+    this.loading.set(true);
+
+    this.authService
+      .forgotPassword(this.forgotPasswordForm.controls.email.value)
+      .subscribe({
+        next: (response) => {
+          this.loading.set(false);
+          this.authService.logout();
+        },
+
+        error: (err) => {
+          this.loading.set(false);
+
+          console.log(err);
+        },
+      });
   }
 
   backToProfile(): void {

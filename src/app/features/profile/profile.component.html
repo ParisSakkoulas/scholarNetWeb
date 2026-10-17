@@ -39,8 +39,21 @@
             />
           } @else {
             <p-button
-              label="Follow"
-              icon="pi pi-user-plus"
+              [label]="
+                followStatus().isFollowing
+                  ? 'Following'
+                  : followStatus().isFollowedBy
+                    ? 'Follow back'
+                    : 'Follow'
+              "
+              [icon]="
+                followStatus().isFollowing
+                  ? 'pi pi-check'
+                  : 'pi pi-user-plus'
+              "
+              [variant]="followStatus().isFollowing ? 'outlined' : undefined"
+              [severity]="followStatus().isFollowing ? 'secondary' : undefined"
+              [loading]="followBusy()"
               (onClick)="followProfile()"
             />
             <p-button
@@ -55,6 +68,30 @@
 
         <div class="identity">
           <h1 class="name">{{ p.user.firstName }} {{ p.user.lastName }}</h1>
+
+          <div class="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+            <button
+              type="button"
+              class="cursor-pointer border-0 bg-transparent p-0 hover:underline"
+              (click)="followList.set('followers')"
+            >
+              <strong>{{ followCounts().followers }}</strong>
+              {{ followCounts().followers === 1 ? "follower" : "followers" }}
+            </button>
+            <button
+              type="button"
+              class="cursor-pointer border-0 bg-transparent p-0 hover:underline"
+              (click)="followList.set('following')"
+            >
+              <strong>{{ followCounts().following }}</strong> following
+            </button>
+            @if (!isOwnProfile() && followStatus().isFollowedBy) {
+              <span
+                class="rounded bg-surface-100 px-2 py-0.5 text-xs text-surface-600"
+                >Follows you</span
+              >
+            }
+          </div>
 
           @if (currentPosition(p); as cp) {
             <p class="position">
@@ -87,6 +124,13 @@
                   <i class="pi pi-user" aria-hidden="true"></i>{{ p.pronouns }}
                 </li>
               }
+
+              @if (p.country && p.city) {
+                <li title="Location">
+                  <i class="pi pi-location" aria-hidden="true"></i
+                  >{{ p.country }}, {{ p.city }}
+                </li>
+              }
               @if (p.timezone) {
                 <li title="Timezone">
                   <i class="pi pi-clock" aria-hidden="true"></i>{{ p.timezone }}
@@ -101,7 +145,7 @@
               @if (p.availability?.length) {
                 <li title="Availability">
                   <i class="pi pi-calendar" aria-hidden="true"></i
-                  >{{ p.availability?.join(", ") }}
+                  >{{ availabilityText(p) }}
                 </li>
               }
               @if (p.websiteUrl) {
@@ -198,13 +242,7 @@
           <div class="section">
             <h2 class="section-title">About</h2>
             <p class="about">
-              Lorem ipsum dolor, sit amet consectetur adipisicing elit. Cum
-              labore deleniti eius quasi tempore eveniet vero unde laudantium
-              dolor magnam iusto, iure ipsum doloribus soluta. Aut corrupti
-              eveniet inventore dolor? Lorem ipsum, dolor sit amet consectetur
-              adipisicing elit. Deleniti maiores quasi labore asperiores cumque
-              amet enim non consectetur, beatae libero doloremque, soluta odit
-              quod, suscipit alias ullam possimus repellendus ducimus.
+              {{ p.bio }}
             </p>
           </div>
 
@@ -225,6 +263,120 @@
               </div>
             </div>
           }
+
+          <sn-profile-section
+            title="Positions"
+            addLabel="Add position"
+            emptyText="No positions added yet"
+            [editable]="isOwnProfile()"
+            [isEmpty]="!p.positions.length"
+            (add)="addItem('positions')"
+          >
+            <ul class="item-list">
+              @for (pos of p.positions; track pos._id) {
+                <li class="item-row">
+                  <div class="item-body">
+                  <span class="item-title">{{ pos.title }}</span>
+                  <span class="item-sub">
+                    {{ pos.institution }} ·
+                    {{ pos.startDate | date: "MMM y" }} –
+                    {{
+                      pos.current || !pos.endDate
+                        ? "Present"
+                        : (pos.endDate | date: "MMM y")
+                    }}
+                  </span>
+                  </div>
+                  @if (isOwnProfile()) {
+                    <span class="item-actions">
+                    @if (canEdit('positions')) {
+                      <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" size="small" severity="secondary" ariaLabel="Edit" (onClick)="editItem('positions', pos)" />
+                    }
+                      <p-button icon="pi pi-trash" [text]="true" [rounded]="true" size="small" severity="danger" ariaLabel="Remove" (onClick)="removeItem('positions', pos._id)" />
+                    </span>
+                  }
+                </li>
+              }
+            </ul>
+          </sn-profile-section>
+
+          <sn-profile-section
+            title="Education"
+            addLabel="Add education"
+            emptyText="No education added yet"
+            [editable]="isOwnProfile()"
+            [isEmpty]="!p.education.length"
+            (add)="addItem('education')"
+          >
+            <ul class="item-list">
+              @for (edu of p.education; track edu._id) {
+                <li class="item-row">
+                  <div class="item-body">
+                  <span class="item-title">
+                    {{ edu.degree }}{{ edu.fieldOfStudy ? ", " + edu.fieldOfStudy : "" }}
+                  </span>
+                  <span class="item-sub">
+                    {{ edu.institution }}
+                    · {{ edu.startYear }} – {{ edu.endYear ?? "Present" }}
+                  </span>
+                  </div>
+                  @if (isOwnProfile()) {
+                    <span class="item-actions">
+                    @if (canEdit('education')) {
+                      <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" size="small" severity="secondary" ariaLabel="Edit" (onClick)="editItem('education', edu)" />
+                    }
+                      <p-button icon="pi pi-trash" [text]="true" [rounded]="true" size="small" severity="danger" ariaLabel="Remove" (onClick)="removeItem('education', edu._id)" />
+                    </span>
+                  }
+                </li>
+              }
+            </ul>
+          </sn-profile-section>
+
+          <sn-profile-section
+            title="Skills"
+            addLabel="Add skill"
+            emptyText="No skills added yet"
+            [editable]="isOwnProfile()"
+            [isEmpty]="!p.skills.length"
+            (add)="addItem('skills')"
+          >
+            <ul class="tag-list">
+              @for (skill of p.skills; track skill._id) {
+                <li class="pill">
+                  <i class="pi pi-bolt pill-icon" aria-hidden="true"></i>
+                  <span class="pill-name">{{ skill.name }}</span>
+                  @if (skill.endorsementCount) {
+                    <span class="pill-count" title="Endorsements">{{ skill.endorsementCount }}</span>
+                  }
+                  @if (isOwnProfile()) {
+                    <button type="button" class="pill-remove" aria-label="Remove skill" title="Remove" (click)="removeItem('skills', skill._id)"><i class="pi pi-times"></i></button>
+                  }
+                </li>
+              }
+            </ul>
+          </sn-profile-section>
+
+          <sn-profile-section
+            title="Interests"
+            addLabel="Add interest"
+            emptyText="No interests added yet"
+            [editable]="isOwnProfile()"
+            [isEmpty]="!p.interests.length"
+            (add)="addItem('interests')"
+          >
+            <ul class="tag-list">
+              @for (interest of p.interests; track interest._id) {
+                <li class="pill pill--interest">
+                  <i class="pi pi-heart pill-icon" aria-hidden="true"></i>
+                  <span class="pill-name">{{ interest.name }}</span>
+                  @if (isOwnProfile()) {
+                    <button type="button" class="pill-remove" aria-label="Remove interest" title="Remove" (click)="removeItem('interests', interest._id)"><i class="pi pi-times"></i></button>
+                  }
+                </li>
+              }
+            </ul>
+          </sn-profile-section>
         }
       </section>
 
@@ -291,10 +443,49 @@
             <i class="pi pi-copy copy" aria-hidden="true"></i>
           </button>
         }
+
+        @if (p.links?.length) {
+          <h3 class="side-title links-title">Links</h3>
+          @for (link of p.links; track link.url) {
+            <a
+              class="link-row"
+              [href]="link.url"
+              target="_blank"
+              rel="noopener"
+            >
+              <i [class]="linkIcon(link.type)" aria-hidden="true"></i>
+              <span class="link-text">
+                <span class="k">{{ linkLabel(link.type) }}</span>
+                <span class="v">{{ displayUrl(link.url) }}</span>
+              </span>
+              <i class="pi pi-external-link" aria-hidden="true"></i>
+            </a>
+          }
+        }
       </aside>
     </div>
   </div>
 }
+
+@if (dialog(); as d) {
+  <sn-profile-item-dialog
+    [section]="d.section"
+    [item]="d.item"
+    (saved)="onItemSaved()"
+    (closed)="dialog.set(null)"
+  />
+}
+
+@if (followList(); as mode) {
+  <sn-follow-list-dialog
+    [userId]="profile()!.user._id"
+    [initialMode]="mode"
+    (closed)="followList.set(null)"
+  />
+}
+
+<p-toast />
+<p-confirmdialog />
 
 <!-- spinner component -->
 @if (loading()) {

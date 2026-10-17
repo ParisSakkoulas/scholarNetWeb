@@ -9,6 +9,8 @@ import {
   ProjectStatus,
 } from '../models/project.model';
 import { environment } from '../../../../environmets/environment';
+import { Observable } from 'rxjs';
+import { PageQuery, Page } from '../../../shared/models/page-query';
 
 @Injectable({ providedIn: 'root' })
 export class ProjectsService {
@@ -22,6 +24,28 @@ export class ProjectsService {
     return this.http.get<Project[]>(`${this.base}/teams/${teamId}/projects`, {
       params,
     });
+  }
+
+  getForTeamPage(teamId: string, query: PageQuery): Observable<Page<Project>> {
+    let params = new HttpParams()
+      .set('page', query.page)
+      .set('pageSize', query.pageSize);
+
+    if (query.sortField) {
+      params = params
+        .set('sortField', query.sortField)
+        .set('sortOrder', query.sortOrder ?? 'asc');
+    }
+    if (query.search) {
+      params = params.set('search', query.search);
+    }
+
+    return this.http.get<Page<Project>>(
+      `${this.base}/teams/${teamId}/projects`,
+      {
+        params,
+      },
+    );
   }
 
   create(teamId: string, payload: CreateProjectPayload) {

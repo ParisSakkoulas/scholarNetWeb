@@ -34,6 +34,23 @@ export const routes: Routes = [
             (m) => m.RegisterComponent,
           ),
       },
+
+      {
+        path: 'forgot-password',
+        loadComponent: () =>
+          import('./features/auth/components/forgot-password/forgot-password.component').then(
+            (m) => m.ForgotPasswordComponent,
+          ),
+      },
+
+      {
+        path: 'reset-password',
+        loadComponent: () =>
+          import('./features/auth/components/reset-password/reset-password.component').then(
+            (m) => m.ResetPasswordComponent,
+          ),
+      },
+
       {
         path: 'verify-email/:token',
         loadComponent: () =>
@@ -41,6 +58,15 @@ export const routes: Routes = [
             (m) => m.VerifyEmailComponent,
           ),
       },
+
+      {
+        path: 'unlock',
+        loadComponent: () =>
+          import('./features/auth/components/unlock-account/unlock-account.component').then(
+            (m) => m.UnlockAccountComponent,
+          ),
+      },
+
       { path: '', redirectTo: 'login', pathMatch: 'full' },
     ],
   },
@@ -70,6 +96,22 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/profile/edit-profile/edit-profile.component').then(
             (m) => m.EditProfileComponent,
+          ),
+      },
+
+      {
+        path: 'search',
+        loadComponent: () =>
+          import('./features/profile/profile-search/profile-search.component').then(
+            (m) => m.ProfileSearchComponent,
+          ),
+      },
+
+      {
+        path: 'notifications',
+        loadComponent: () =>
+          import('./features/notifications/notifications.component').then(
+            (m) => m.NotificationsComponent,
           ),
       },
 

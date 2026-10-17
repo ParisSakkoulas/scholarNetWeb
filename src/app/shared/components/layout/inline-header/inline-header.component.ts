@@ -1,15 +1,22 @@
 import {
   Component,
   computed,
+  DestroyRef,
+  effect,
   ElementRef,
   HostListener,
   inject,
   signal,
   ViewChild,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { interval } from 'rxjs';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../../core/services/auth.service';
+import { AppNotification } from '../../../../core/models/notification.model';
+import { NotificationsService } from '../../../../core/services/notifications.service';
+import { NotificationItemComponent } from '../../../../features/notifications/components/notification-item/notification-item.component';
 import { ClickOutsideDirective } from '../../../directives/click-outside.directive';
 
 import { IconFieldModule } from 'primeng/iconfield';
@@ -20,6 +27,7 @@ import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { AvatarModule } from 'primeng/avatar';
 import { AvatarGroupModule } from 'primeng/avatargroup';
 import { MenuModule } from 'primeng/menu';
+import { OverlayBadgeModule } from 'primeng/overlaybadge';
 import { Popover } from 'primeng/popover';
 import { MenuItem } from 'primeng/api';
 
@@ -37,6 +45,8 @@ import { MenuItem } from 'primeng/api';
     AvatarGroupModule,
     MenuModule,
     Popover,
+    OverlayBadgeModule,
+    NotificationItemComponent,
   ],
   templateUrl: './inline-header.component.html',
   styleUrl: './inline-header.component.css',
@@ -44,6 +54,34 @@ import { MenuItem } from 'primeng/api';
 export class InlineHeaderComponent {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly notificationsService = inject(NotificationsService);
+  private readonly destroyRef = inject(DestroyRef);
+
+  readonly unreadCount = this.notificationsService.unreadCount;
+  readonly unreadLabel = computed(() =>
+    this.unreadCount() > 99 ? '99+' : String(this.unreadCount()),
+  );
+  readonly recent = signal<AppNotification[]>([]);
+  readonly recentLoading = signal(false);
+
+  constructor() {
+    // load the badge once a user is signed in, then keep it fresh
+    effect(() => {
+      if (this.authService.currentUser()) {
+        this.notificationsService.refreshUnreadCount();
+      } else {
+        this.notificationsService.resetUnreadCount();
+      }
+    });
+
+    interval(60_000)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => {
+        if (this.authService.currentUser()) {
+          this.notificationsService.refreshUnreadCount();
+        }
+      });
+  }
 
   @ViewChild('searchInput')
   private readonly searchInputRef?: ElementRef<HTMLInputElement>;
@@ -121,7 +159,42 @@ export class InlineHeaderComponent {
   onSearchSubmit(query: string): void {
     const trimmed = query.trim();
     if (!trimmed) return;
-    this.router.navigate(['/search'], { queryParams: { q: trimmed } });
+    this.router.navigate(['/main/search'], { queryParams: { q: trimmed } });
+  }
+
+  toggleNotificationsPanel(event: Event, panel: Popover): void {
+    panel.toggle(event);
+    this.loadRecent();
+  }
+
+  private loadRecent(): void {
+    this.recentLoading.set(true);
+    this.notificationsService.list({ limit: 8 }).subscribe({
+      next: (res) => {
+        this.recent.set(res.data);
+        this.recentLoading.set(false);
+      },
+      error: () => this.recentLoading.set(false),
+    });
+  }
+
+  openNotification(n: AppNotification, panel: Popover): void {
+    if (!n.isRead) {
+      this.notificationsService.markRead(n._id).subscribe();
+      this.recent.update((list) =>
+        list.map((x) => (x._id === n._id ? { ...x, isRead: true } : x)),
+      );
+    }
+    panel.hide();
+    const target = this.notificationsService.routeFor(n);
+    if (target) this.router.navigate(target);
+  }
+
+  markAllRead(): void {
+    this.notificationsService.markAllRead().subscribe({
+      next: () =>
+        this.recent.update((list) => list.map((x) => ({ ...x, isRead: true }))),
+    });
   }
 
   goToOwnProfile(): void {

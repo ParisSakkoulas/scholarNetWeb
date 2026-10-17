@@ -1,7 +1,64 @@
 <div class="p-6 overflow-x-auto">
-  <span> </span>
   @if (project(); as p) {
-    <h1 class="text-xl font-semibold text-gray-900 mb-6">{{ p.name }} Tasks</h1>
+    <p-button
+      class="back"
+      label="Back to projects"
+      icon="pi pi-arrow-left"
+      variant="text"
+      severity="secondary"
+      size="small"
+      [routerLink]="['/main/teams', p.teamId]"
+    />
+
+    <section class="ph-card">
+      <div class="ph-cover"></div>
+      <div class="ph-body">
+        <div class="ph-avatar">{{ initials(p.name) }}</div>
+
+        <div class="ph-identity">
+          <div class="ph-title-row">
+            <h1 class="ph-name">{{ p.name }}</h1>
+            <p-tag
+              [value]="p.status"
+              [severity]="statusSeverity(p.status)"
+              [rounded]="true"
+            />
+          </div>
+
+          @if (p.description) {
+            <p class="ph-desc">{{ p.description }}</p>
+          }
+
+          @if (p.dueDate) {
+            <div class="ph-meta">
+              <i class="pi pi-calendar" aria-hidden="true"></i>
+              Due {{ p.dueDate | date: "mediumDate" }}
+            </div>
+          }
+        </div>
+      </div>
+    </section>
+
+    <section class="ph-stats">
+      @for (col of columnStats(); track col.id) {
+        <div class="ph-stat">
+          <span class="ph-stat-value">{{ col.count }}</span>
+          <span class="ph-stat-label">{{ col.name }}</span>
+        </div>
+      }
+
+      <div class="ph-stat ph-stat--completion">
+        <span class="ph-stat-value">{{ completion().percent }}%</span>
+        <span class="ph-stat-label">Completion</span>
+        @if (completion().total > 0) {
+          <p-progressbar
+            [value]="completion().percent"
+            [showValue]="false"
+            styleClass="h-1.5 mt-1"
+          />
+        }
+      </div>
+    </section>
   }
 
   @if (loading()) {

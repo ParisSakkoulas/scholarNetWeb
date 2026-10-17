@@ -6,6 +6,26 @@
 
 .sn-spinner {
   display: block;
+  /* same palette as the top toolbar logo */
+  --sn-ink: var(--ink);
+  --sn-accent: var(--oxblood);
+}
+
+.sn-spinner--dark {
+  --sn-ink: #ffffff;
+  --sn-accent: #e87a85;
+}
+
+.sn-line {
+  stroke: var(--sn-ink);
+}
+
+.sn-node {
+  fill: var(--sn-ink);
+}
+
+.sn-hub {
+  fill: var(--sn-accent);
 }
 
 .sn-line {

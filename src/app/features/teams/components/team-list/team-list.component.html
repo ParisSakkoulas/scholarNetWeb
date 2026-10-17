@@ -9,6 +9,8 @@
     />
   </div>
 
+  <app-team-invitations (accepted)="onInvitationAccepted()" />
+
   <app-generic-table
     #teamsTable
     [columns]="columns"
@@ -34,4 +36,5 @@
   }
 
   <p-confirmdialog />
+  <p-toast />
 </div>

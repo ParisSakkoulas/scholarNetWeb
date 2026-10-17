@@ -55,18 +55,61 @@
       >
 
       <!-- Notifications -->
-      <p-button
-        icon="pi pi-bell"
-        variant="text"
-        severity="secondary"
-        rounded
-        ariaLabel="Notifications"
-        (onClick)="notifications.toggle($event)"
-      />
-      <p-popover #notifications>
-        <div class="notif">
-          <h2 class="notif-title">Notifications</h2>
-          <p class="notif-empty">You're all caught up.</p>
+      <p-overlaybadge
+        [value]="unreadLabel()"
+        severity="danger"
+        [badgeDisabled]="unreadCount() === 0"
+      >
+        <p-button
+          icon="pi pi-bell"
+          variant="text"
+          severity="secondary"
+          rounded
+          ariaLabel="Notifications"
+          (onClick)="toggleNotificationsPanel($event, notifications)"
+        />
+      </p-overlaybadge>
+      <p-popover #notifications styleClass="!p-0">
+        <div class="w-[22rem] max-w-[90vw]">
+          <div
+            class="flex items-center justify-between border-b border-surface-200 px-4 py-3"
+          >
+            <h2 class="m-0 text-base font-semibold">Notifications</h2>
+            <p-button
+              label="Mark all read"
+              [text]="true"
+              size="small"
+              [disabled]="unreadCount() === 0"
+              (onClick)="markAllRead()"
+            />
+          </div>
+
+          <div class="max-h-96 divide-y divide-surface-100 overflow-y-auto">
+            @if (recentLoading()) {
+              <p class="px-4 py-6 text-center text-sm text-surface-500">
+                <i class="pi pi-spin pi-spinner mr-1" aria-hidden="true"></i>
+                Loading…
+              </p>
+            } @else {
+              @for (n of recent(); track n._id) {
+                <sn-notification-item
+                  [notification]="n"
+                  (opened)="openNotification($event, notifications)"
+                />
+              } @empty {
+                <p class="px-4 py-8 text-center text-sm text-surface-500">
+                  You're all caught up.
+                </p>
+              }
+            }
+          </div>
+
+          <a
+            routerLink="/main/notifications"
+            class="block border-t border-surface-200 px-4 py-3 text-center text-sm font-medium text-blue-700 hover:bg-surface-100"
+            (click)="notifications.hide()"
+            >See all notifications</a
+          >
         </div>
       </p-popover>
 

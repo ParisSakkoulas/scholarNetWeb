@@ -5,10 +5,37 @@ export interface ProfilePosition {
   title: string;
   institution: string;
   department?: string;
-  startYear: number;
-  endYear: number | null;
+  startDate: string; // ISO date
+  endDate?: string;
   current: boolean;
 }
+
+export interface ProfileEducation {
+  _id: string;
+  degree: string;
+  fieldOfStudy?: string;
+  institution: string;
+  startYear: number;
+  endYear: number | null;
+}
+
+export interface ProfileSkill {
+  _id: string;
+  name: string;
+  endorsementCount: number;
+}
+
+export interface ProfileInterest {
+  _id: string;
+  name: string;
+}
+
+/** Matches the API route segment: /profile/me/{section} */
+export type ProfileSectionKey =
+  | 'positions'
+  | 'education'
+  | 'skills'
+  | 'interests';
 
 export interface ProfileStat {
   value: string;
@@ -70,13 +97,35 @@ export interface Profile {
   positions: ProfilePosition[];
   pinnedItems: PinnedItem[];
 
-  education: unknown[];
-  skills: unknown[];
-  interests: unknown[];
+  education: ProfileEducation[];
+  skills: ProfileSkill[];
+  interests: ProfileInterest[];
   yearlyPublications: YearlyCount[];
 
   createdAt: Date;
   updatedAt: Date;
+}
+
+/** One row of GET /profile?q= — a trimmed profile with the user populated. */
+export interface ProfileSearchResult {
+  _id: string;
+  user: Pick<
+    UserProfile,
+    '_id' | 'firstName' | 'lastName' | 'username' | 'profilePhotoUrl'
+  >;
+  headline?: string;
+  country?: string;
+  city?: string;
+  verified?: boolean;
+  skills?: ProfileSkill[];
+  interests?: ProfileInterest[];
+}
+
+export interface ProfileSearchPage {
+  items: ProfileSearchResult[];
+  total: number;
+  page: number;
+  limit: number;
 }
 
 export interface CreateProfile {

@@ -1,0 +1,31 @@
+<div class="section-head">
+  <h2 class="section-title">{{ title() }}</h2>
+  @if (editable()) {
+    <p-button
+      icon="pi pi-plus"
+      size="small"
+      variant="outlined"
+      [ariaLabel]="addLabel()"
+      [title]="addLabel()"
+      (onClick)="add.emit()"
+    />
+  }
+</div>
+
+@if (isEmpty()) {
+  <div class="empty">
+    <p class="empty-text">{{ emptyText() }}</p>
+    @if (editable()) {
+      <p-button
+        [label]="addLabel()"
+        icon="pi pi-plus"
+        size="small"
+        variant="outlined"
+        severity="secondary"
+        (onClick)="add.emit()"
+      />
+    }
+  </div>
+} @else {
+  <ng-content />
+}

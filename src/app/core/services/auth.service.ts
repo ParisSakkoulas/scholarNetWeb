@@ -52,6 +52,15 @@ export class AuthService {
       );
   }
 
+  /** Keep the cached signed-in user in sync after a profile/account edit. */
+  updateCurrentUser(patch: Partial<User>): void {
+    const current = this._currentUser();
+    if (!current) return;
+    const updated = { ...current, ...patch };
+    this._currentUser.set(updated);
+    localStorage.setItem('user', JSON.stringify(updated));
+  }
+
   logout() {
     this._currentUser.set(null);
     localStorage.removeItem('user');
@@ -62,6 +71,25 @@ export class AuthService {
   verifyEmai(emailVerifyPayload: string) {
     return this.http.get<VerifyEmailResponse>(
       `${this.apiAuth}/verify-email/${emailVerifyPayload}`,
+    );
+  }
+
+  forgotPassword(email: string) {
+    return this.http.post(`${this.apiAuth}/forgot-password`, {
+      email,
+    });
+  }
+
+  unlock(token: string) {
+    return this.http.post<{ message: string }>(`${this.apiAuth}/unlock`, {
+      token,
+    });
+  }
+
+  resetPassword(payload: { token: string; newPassword: string }) {
+    return this.http.post<{ message: string }>(
+      `${this.apiAuth}/reset-password`,
+      payload,
     );
   }
 

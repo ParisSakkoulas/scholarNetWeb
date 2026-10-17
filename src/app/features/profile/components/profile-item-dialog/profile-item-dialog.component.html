@@ -1,0 +1,81 @@
+<p-dialog
+  [visible]="true"
+  [modal]="true"
+  [closable]="true"
+  [draggable]="false"
+  [style]="{ width: '42rem' }"
+  [breakpoints]="{ '768px': '95vw' }"
+  [header]="(isEdit() ? 'Edit ' : 'Add ') + config().noun"
+  (visibleChange)="closed.emit()"
+>
+  <form [formGroup]="form" (ngSubmit)="submit()" class="form">
+    @for (field of config().fields; track field.key) {
+      @switch (field.type) {
+        @case ("checkbox") {
+          <label class="check">
+            <p-checkbox [formControlName]="field.key" [binary]="true" />
+            {{ field.label }}
+          </label>
+        }
+        @default {
+          <div class="field">
+            <label [for]="field.key">
+              {{ field.label }}{{ field.required ? " *" : "" }}
+            </label>
+            @switch (field.type) {
+              @case ("year") {
+                <p-inputnumber
+                  [inputId]="field.key"
+                  [formControlName]="field.key"
+                  [useGrouping]="false"
+                  [min]="1900"
+                  [max]="2100"
+                  styleClass="w-full"
+                />
+              }
+              @case ("date") {
+                <p-datepicker
+                  [inputId]="field.key"
+                  [formControlName]="field.key"
+                  [showIcon]="true"
+                  view="month"
+                  dateFormat="mm/yy"
+                  appendTo="body"
+                  styleClass="w-full"
+                />
+              }
+              @default {
+                <input
+                  pInputText
+                  [id]="field.key"
+                  [formControlName]="field.key"
+                  class="w-full"
+                />
+              }
+            }
+          </div>
+        }
+      }
+    }
+
+    @if (error()) {
+      <p class="error">{{ error() }}</p>
+    }
+
+    <div class="actions">
+      <p-button
+        type="button"
+        label="Cancel"
+        severity="secondary"
+        [text]="true"
+        (onClick)="closed.emit()"
+      />
+      <p-button
+        type="submit"
+        label="Save"
+        [loading]="submitting()"
+        [disabled]="submitting()"
+      />
+    </div>
+  </form>
+</p-dialog>

@@ -350,7 +350,11 @@
             </div>
 
             <div class="form-actions">
-              <p-button type="submit" label="Save changes" />
+              <p-button
+                type="submit"
+                label="Save changes"
+                [loading]="loading()"
+              />
             </div>
           </form>
         }
@@ -364,7 +368,7 @@
                 Your current email is <strong>{{ email }}</strong
                 >.
               }
-              We'll send a verification link to your new address.
+              We'll send a confirmation link to your new address. Your email only changes after you click it, and you'll be signed out everywhere.
             </p>
           </div>
 
@@ -455,12 +459,15 @@
             </div>
 
             <div class="form-actions">
-              <p-button type="submit" label="Change email" />
+              <p-button
+                type="submit"
+                label="Change email"
+                [loading]="loading()"
+              />
             </div>
           </form>
         }
 
-        <!-- ═══════════ CHANGE PASSWORD ═══════════ -->
         @case ("password") {
           <div class="tab-head">
             <h2>Change password</h2>
@@ -543,7 +550,56 @@
           </form>
         }
 
-        <!-- ═══════════ DELETE ACCOUNT ═══════════ -->
+        @case ("forgotPassword") {
+          <div class="tab-head">
+            <h2>Forgot password</h2>
+            <p>
+              Click Send reset link, and you will receive a reset link to change
+              your password. You will logged out automatically after that!
+            </p>
+          </div>
+
+          <form
+            class="stack"
+            [formGroup]="forgotPasswordForm"
+            (ngSubmit)="forgotPassowrd()"
+            novalidate
+          >
+            <div class="field">
+              <label for="city">Email</label>
+              <input
+                pInputText
+                id="email"
+                type="email"
+                formControlName="email"
+                autocomplete="email"
+                fluid
+              />
+              @if (
+                forgotPasswordForm.controls.email.touched &&
+                forgotPasswordForm.controls.email.hasError("required")
+              ) {
+                <p-message severity="error" variant="simple" size="small">
+                  Email is required in order to get Reset Link
+                </p-message>
+              }
+
+              @if (
+                forgotPasswordForm.controls.email.touched &&
+                forgotPasswordForm.controls.email.hasError("email")
+              ) {
+                <p-message severity="error" variant="simple" size="small">
+                  Enter a valid Email in order to get Reset Link
+                </p-message>
+              }
+            </div>
+
+            <div class="form-actions">
+              <p-button type="submit" label="Send Reset Link" />
+            </div>
+          </form>
+        }
+
         @case ("delete") {
           <div class="tab-head">
             <h2>Delete account</h2>

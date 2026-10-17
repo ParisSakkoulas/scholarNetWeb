@@ -4,6 +4,7 @@ import { User } from '../../features/auth/models/auth.model';
 
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environmets/environment';
+import { UserSearchResult } from '../../features/teams/models/user-search.model';
 
 @Injectable({
   providedIn: 'root',
@@ -15,6 +16,14 @@ export class UserService {
 
   getUser(userId: string): Observable<User> {
     return this.http.get<User>(`${this.apiUsers}/${userId}`);
+  }
+
+  /** Matches against email and username, for the team-invite search box. */
+  search(query: string): Observable<UserSearchResult[]> {
+    const params = new HttpParams().set('q', query);
+    return this.http.get<UserSearchResult[]>(`${this.apiUsers}/search`, {
+      params,
+    });
   }
 
   checkUsernameExists(
@@ -40,8 +49,22 @@ export class UserService {
     });
   }
 
-  requestEmailChange(currentPassword: string, newEmail: string) {
-    return this.http.patch(`${this.apiUsers}//me/change-request`, {
+  /** PATCH /users/me — first name, last name and username. */
+  updateUserInfo(payload: {
+    firstName: string;
+    lastName: string;
+    username: string;
+  }): Observable<User> {
+    return this.http.patch<User>(`${this.apiUsers}/me`, payload);
+  }
+
+  /** PATCH /users/change-email: stores a pending email and mails a confirmation
+   *  link to the new address; the current email stays until it is confirmed. */
+  requestEmailChange(
+    currentPassword: string,
+    newEmail: string,
+  ): Observable<{ message: string }> {
+    return this.http.patch<{ message: string }>(`${this.apiUsers}/change-email`, {
       currentPassword,
       newEmail,
     });

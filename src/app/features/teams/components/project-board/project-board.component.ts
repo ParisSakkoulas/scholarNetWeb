@@ -20,9 +20,21 @@ import { ButtonModule } from 'primeng/button';
 import { ConfirmationService } from 'primeng/api';
 import { PriorityBadgeComponent } from '../shared/priority-badge/priority-badge.component';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ProgressBarModule } from 'primeng/progressbar';
+import { TagModule } from 'primeng/tag';
+import { RouterLink } from '@angular/router';
 
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+
+/** The seed column every new project gets — see ProjectsService.create() on the Nest side. */
+const DONE_COLUMN_NAME = 'done';
+
+export interface CompletionStats {
+  done: number;
+  total: number;
+  percent: number;
+}
 
 @Component({
   selector: 'app-project-board',
@@ -36,6 +48,9 @@ import { MessageService } from 'primeng/api';
     ButtonModule,
     ConfirmDialogModule,
     ToastModule,
+    ProgressBarModule,
+    TagModule,
+    RouterLink,
   ],
 
   templateUrl: './project-board.component.html',
@@ -56,6 +71,45 @@ export class ProjectBoardComponent implements OnInit {
     const p = this.project();
     return p?.boards?.[0]?.columns ?? [];
   });
+
+  /** Per-column task counts, for the header's stats strip. */
+  columnStats = computed(() =>
+    this.columns().map((col) => ({
+      id: col._id,
+      name: col.name,
+      count: this.tasksFor(col._id).length,
+    })),
+  );
+
+  /** % of all tasks sitting in the "Done" column, for the header progress bar. */
+  completion = computed<CompletionStats>(() => {
+    const grouped = this.tasksByColumn();
+    const total = Object.values(grouped).reduce(
+      (sum, tasks) => sum + tasks.length,
+      0,
+    );
+
+    const doneColumn = this.columns().find(
+      (c) => c.name.trim().toLowerCase() === DONE_COLUMN_NAME,
+    );
+    const done = doneColumn ? (grouped[doneColumn._id]?.length ?? 0) : 0;
+
+    return {
+      done,
+      total,
+      percent: total ? Math.round((done / total) * 100) : 0,
+    };
+  });
+
+  statusSeverity(status: string): 'success' | 'secondary' | 'info' {
+    if (status === 'active') return 'success';
+    if (status === 'archived') return 'secondary';
+    return 'info';
+  }
+
+  initials(name: string): string {
+    return name.trim().charAt(0).toUpperCase();
+  }
 
   private route = inject(ActivatedRoute);
   private projectsService = inject(ProjectsService);

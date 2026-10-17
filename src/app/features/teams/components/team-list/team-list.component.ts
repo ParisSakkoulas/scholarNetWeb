@@ -13,7 +13,9 @@ import {
 } from '../../../../shared/utils/collection-blueprints-helpers/collection-blueprint.adapters';
 import { teamsBlueprint } from '../../configs/teams.blueprint';
 import { GenericTableComponent } from '../../../../shared/components/generic-table/generic-table.component';
-import { ConfirmationService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
+import { TeamInvitationsComponent } from '../team-invitations/team-invitations.component';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 @Component({
@@ -23,10 +25,12 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
     ButtonModule,
     GenericTableComponent,
     ConfirmDialogModule,
+    ToastModule,
+    TeamInvitationsComponent,
   ],
   templateUrl: './team-list.component.html',
   styleUrl: './team-list.component.css',
-  providers: [ConfirmationService],
+  providers: [ConfirmationService, MessageService],
 })
 export class TeamListComponent {
   private teamsService = inject(TeamsService);
@@ -64,6 +68,11 @@ export class TeamListComponent {
       handler: (row: Team) => this.confirmDelete(row),
     },
   ];
+
+  /** accepting an invite adds a team to the list */
+  onInvitationAccepted(): void {
+    this.table().reload();
+  }
 
   openTeam(teamId: string): void {
     this.router.navigate(['/main/teams', teamId]);
