@@ -1,0 +1,259 @@
+<p-dialog
+  [visible]="true"
+  [modal]="true"
+  [closable]="true"
+  [dismissableMask]="true"
+  [draggable]="false"
+  [style]="{ width: '60rem', maxWidth: '95vw' }"
+  (onShow)="titleInput.focus()"
+  (visibleChange)="$event || cancelled.emit()"
+  [header]="isEdit ? 'Edit publication' : 'New publication'"
+>
+  <p-tabs [value]="tab()" (valueChange)="tab.set($event + '')">
+    <p-tablist>
+      <p-tab value="details">Details</p-tab>
+      <p-tab value="references">
+        References@if (!publication && drafts().length + pendingImports().length) { ({{ drafts().length + pendingImports().length }}) }
+      </p-tab>
+      <p-tab value="files">
+        Files@if (!publication && fileQueue().length) { ({{ fileQueue().length }}) }
+      </p-tab>
+    </p-tablist>
+    <p-tabpanels>
+      <p-tabpanel value="details">
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-col gap-5 pt-4">
+    <div>
+      <label class="mb-2 block text-sm font-medium text-gray-700" for="pub-type">Type</label>
+      <p-select
+        inputId="pub-type"
+        formControlName="type"
+        [options]="typeOptions"
+        optionLabel="label"
+        optionValue="value"
+        styleClass="w-full"
+        appendTo="body"
+      />
+      @if (isEdit) {
+        <p class="m-0 mt-1 text-xs text-gray-500">The type can't be changed after creation.</p>
+      }
+    </div>
+
+    <div>
+      <label class="mb-2 block text-sm font-medium text-gray-700" for="pub-title">Title</label>
+      <input id="pub-title" pInputText #titleInput formControlName="title" class="w-full" maxlength="500" />
+    </div>
+
+    <div>
+      <label class="mb-2 block text-sm font-medium text-gray-700" for="pub-abstract">Abstract</label>
+      <textarea id="pub-abstract" pTextarea formControlName="abstract" rows="8" class="w-full min-h-40"></textarea>
+    </div>
+
+    <!-- Authors -->
+    <fieldset class="m-0 rounded-lg border border-[var(--p-content-border-color)] px-4 pb-4 pt-2">
+      <legend class="px-1 text-sm font-medium text-gray-700">Authors</legend>
+      <div formArrayName="authors" class="flex flex-col gap-2">
+        @for (a of authors.controls; track a; let i = $index) {
+          <div [formGroupName]="i" class="flex flex-wrap items-center gap-2">
+            <input
+              pInputText
+              formControlName="name"
+              class="min-w-40 flex-1"
+              placeholder="Full name"
+              [attr.aria-label]="'Author ' + (i + 1) + ' name'"
+            />
+            <input
+              pInputText
+              formControlName="affiliation"
+              class="min-w-40 flex-1"
+              placeholder="Affiliation"
+              [attr.aria-label]="'Author ' + (i + 1) + ' affiliation'"
+            />
+            <input
+              pInputText
+              formControlName="orcid"
+              class="w-44"
+              placeholder="ORCID 0000-0000-0000-0000"
+              [attr.aria-label]="'Author ' + (i + 1) + ' ORCID'"
+            />
+            <label class="flex items-center gap-1 text-xs text-gray-600">
+              <p-checkbox formControlName="isCorresponding" [binary]="true" />
+              Corresp.
+            </label>
+            <p-button
+              type="button"
+              icon="pi pi-times"
+              severity="secondary"
+              variant="text"
+              rounded
+              size="small"
+              ariaLabel="Remove author"
+              [disabled]="authors.length === 1"
+              (onClick)="removeAuthor(i)"
+            />
+          </div>
+        }
+      </div>
+      <p-button
+        type="button"
+        label="Add author"
+        icon="pi pi-plus"
+        severity="secondary"
+        variant="text"
+        size="small"
+        styleClass="mt-2"
+        (onClick)="addAuthor()"
+      />
+    </fieldset>
+
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="mb-2 block text-sm font-medium text-gray-700" for="pub-year">Year</label>
+        <input id="pub-year" pInputText type="number" formControlName="year" class="w-full" [min]="1800" [max]="maxYear" />
+      </div>
+      <div>
+        <label class="mb-2 block text-sm font-medium text-gray-700" for="pub-lang">Language (ISO, e.g. en)</label>
+        <input id="pub-lang" pInputText formControlName="language" class="w-full" maxlength="2" />
+      </div>
+    </div>
+
+    <!-- Type-specific -->
+    <fieldset class="m-0 rounded-lg border border-[var(--p-content-border-color)] px-4 pb-4 pt-2" [formGroup]="extra">
+      <legend class="px-1 text-sm font-medium text-gray-700">Details</legend>
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        @for (f of typeFields(); track f.key) {
+          <div [class.sm:col-span-2]="f.kind === 'boolean'">
+            @if (f.kind === 'boolean') {
+              <label class="flex items-center gap-2 text-sm text-gray-700">
+                <p-checkbox [formControlName]="f.key" [binary]="true" />
+                {{ f.label }}
+              </label>
+            } @else {
+              <label class="mb-2 block text-sm font-medium text-gray-700" [for]="'pub-x-' + f.key">
+                {{ f.label }}@if (f.required) { <span class="text-red-600"> *</span> }
+              </label>
+              @switch (f.kind) {
+                @case ('select') {
+                  <p-select
+                    [inputId]="'pub-x-' + f.key"
+                    [formControlName]="f.key"
+                    [options]="f.options ?? []"
+                    optionLabel="label"
+                    optionValue="value"
+                    [showClear]="!f.required"
+                    styleClass="w-full"
+                    appendTo="body"
+                  />
+                }
+                @case ('number') {
+                  <input pInputText type="number" min="0" [id]="'pub-x-' + f.key" [formControlName]="f.key" class="w-full" />
+                }
+                @case ('date') {
+                  <p-datepicker
+                    [inputId]="'pub-x-' + f.key"
+                    [formControlName]="f.key"
+                    dateFormat="yy-mm-dd"
+                    [showIcon]="true"
+                    [showClear]="true"
+                    [showButtonBar]="true"
+                    styleClass="w-full"
+                    appendTo="body"
+                  />
+                }
+                @default {
+                  <input pInputText [id]="'pub-x-' + f.key" [formControlName]="f.key" class="w-full" />
+                }
+              }
+            }
+          </div>
+        }
+      </div>
+    </fieldset>
+
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div class="sm:col-span-2">
+        <label class="mb-2 block text-sm font-medium text-gray-700" for="pub-kw">Keywords</label>
+        <p-chips inputId="pub-kw" formControlName="keywords" separator="," [addOnBlur]="true" [allowDuplicate]="false" placeholder="Type and press Enter" styleClass="!flex w-full [&_ul]:!min-h-28 [&_ul]:!w-full [&_ul]:content-start" />
+      </div>
+      <div class="sm:col-span-2">
+        <label class="mb-2 block text-sm font-medium text-gray-700" for="pub-fields">Research fields</label>
+        <p-chips inputId="pub-fields" formControlName="fields" separator="," [addOnBlur]="true" [allowDuplicate]="false" placeholder="Type and press Enter" styleClass="!flex w-full [&_ul]:!min-h-28 [&_ul]:!w-full [&_ul]:content-start" />
+      </div>
+      <div>
+        <label class="mb-2 block text-sm font-medium text-gray-700" for="pub-doi">DOI</label>
+        <input id="pub-doi" pInputText formControlName="doi" class="w-full" placeholder="10.1000/xyz123" />
+      </div>
+      <div>
+        <label class="mb-2 block text-sm font-medium text-gray-700" for="pub-oa">OpenAlex ID</label>
+        <input id="pub-oa" pInputText formControlName="openalexId" class="w-full" placeholder="W2741809807" />
+      </div>
+      <div>
+        <label class="mb-2 block text-sm font-medium text-gray-700" for="pub-url">URL</label>
+        <input id="pub-url" pInputText formControlName="url" class="w-full" placeholder="https://…" />
+      </div>
+      <div>
+        <label class="mb-2 block text-sm font-medium text-gray-700" for="pub-license">License</label>
+        <input id="pub-license" pInputText formControlName="license" class="w-full" placeholder="CC-BY-4.0" />
+      </div>
+      <div>
+        <label class="mb-2 block text-sm font-medium text-gray-700" for="pub-vis">Visibility</label>
+        <p-select
+          inputId="pub-vis"
+          formControlName="visibility"
+          [options]="visibilityOptions"
+          optionLabel="label"
+          optionValue="value"
+          styleClass="w-full"
+          appendTo="body"
+        />
+      </div>
+    </div>
+
+  </form>
+      </p-tabpanel>
+      <p-tabpanel value="references">
+        <div class="pt-4">
+          @if (!publication) {
+            <p class="m-0 mb-4 rounded-lg bg-surface-50 px-3 py-2 text-sm text-gray-600">
+              References are saved together with the publication when you press Create.
+            </p>
+          }
+          <app-publication-references
+            [publicationId]="publication?._id ?? null"
+            [(drafts)]="drafts"
+            [(imports)]="pendingImports"
+          />
+        </div>
+      </p-tabpanel>
+      <p-tabpanel value="files">
+        <div class="pt-4">
+          @if (!publication) {
+            <p class="m-0 mb-4 rounded-lg bg-surface-50 px-3 py-2 text-sm text-gray-600">
+              Files are uploaded right after the publication is created.
+            </p>
+          }
+          <app-publication-files-manager
+            [publicationId]="publication?._id ?? null"
+            [(queue)]="fileQueue"
+          />
+        </div>
+      </p-tabpanel>
+    </p-tabpanels>
+  </p-tabs>
+
+  <ng-template #footer>
+    <div class="flex w-full flex-col gap-3">
+      @if (error()) {
+        <p class="m-0 text-left text-sm text-red-600" role="alert">{{ error() }}</p>
+      }
+      <div class="flex justify-end gap-2">
+        <p-button type="button" label="Close" severity="secondary" [text]="true" (onClick)="cancelled.emit()" />
+        <p-button
+          [label]="submitting() ? 'Saving...' : isEdit ? 'Save details' : 'Create'"
+          [disabled]="form.invalid || submitting()"
+          [loading]="submitting()"
+          (onClick)="onSubmit()"
+        />
+      </div>
+    </div>
+  </ng-template>
+</p-dialog>

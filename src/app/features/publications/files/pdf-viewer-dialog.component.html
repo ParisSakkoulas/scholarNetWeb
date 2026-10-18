@@ -1,0 +1,66 @@
+<p-dialog
+  [visible]="true"
+  [modal]="true"
+  [maximizable]="true"
+  [dismissableMask]="true"
+  [draggable]="false"
+  [closeOnEscape]="true"
+  [style]="{ width: '70rem', maxWidth: '96vw', height: '92vh' }"
+  [contentStyle]="{ padding: '0', display: 'flex', flexDirection: 'column', minHeight: '0', flex: '1' }"
+  [header]="file().name"
+  (visibleChange)="$event || closed.emit()"
+>
+  <!-- toolbar -->
+  <div class="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--p-content-border-color)] px-4 py-2">
+    <div class="flex items-center gap-1" role="group" aria-label="Page navigation">
+      <p-button icon="pi pi-chevron-up" severity="secondary" variant="text" rounded size="small" ariaLabel="Previous page" [disabled]="loading() || current() <= 1" (onClick)="goTo(current() - 1)" />
+      <label class="flex items-center gap-1 text-sm text-gray-700">
+        <span class="sr-only">Page</span>
+        <input
+          type="number"
+          class="w-14 rounded border border-[var(--p-content-border-color)] px-2 py-1 text-center text-sm"
+          min="1"
+          [max]="pages().length"
+          [value]="current()"
+          [disabled]="loading()"
+          (change)="onPageInput($event)"
+        />
+        / {{ pages().length || '–' }}
+      </label>
+      <p-button icon="pi pi-chevron-down" severity="secondary" variant="text" rounded size="small" ariaLabel="Next page" [disabled]="loading() || current() >= pages().length" (onClick)="goTo(current() + 1)" />
+    </div>
+
+    <div class="flex items-center gap-1" role="group" aria-label="Zoom">
+      <p-button icon="pi pi-search-minus" severity="secondary" variant="text" rounded size="small" ariaLabel="Zoom out" [disabled]="loading()" (onClick)="zoomOut()" />
+      <span class="w-12 text-center text-sm text-gray-700" aria-live="polite">{{ percent() }}%</span>
+      <p-button icon="pi pi-search-plus" severity="secondary" variant="text" rounded size="small" ariaLabel="Zoom in" [disabled]="loading()" (onClick)="zoomIn()" />
+      <p-button label="Fit width" severity="secondary" variant="text" size="small" [disabled]="loading()" (onClick)="fit()" />
+    </div>
+
+    <p-button label="Download" icon="pi pi-download" size="small" severity="secondary" variant="outlined" [disabled]="loading() || !!error()" (onClick)="download()" />
+  </div>
+
+  <!-- pages -->
+  <div #scroller class="min-h-0 flex-1 overflow-auto bg-surface-100 p-4" (scroll)="onScroll()" tabindex="0" aria-label="PDF pages">
+    @if (loading()) {
+      <p class="py-20 text-center text-sm text-gray-500">
+        <i class="pi pi-spin pi-spinner mr-1" aria-hidden="true"></i> Opening the PDF…
+      </p>
+    } @else if (error()) {
+      <p class="py-20 text-center text-sm text-red-600" role="alert">{{ error() }}</p>
+    } @else {
+      <div class="mx-auto flex w-max flex-col gap-4">
+        @for (p of pages(); track p.num) {
+          <div
+            class="relative bg-white shadow"
+            [attr.data-page]="p.num"
+            [style.width.px]="p.width"
+            [style.height.px]="p.height"
+          >
+            <canvas class="block" [attr.aria-label]="'Page ' + p.num"></canvas>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</p-dialog>

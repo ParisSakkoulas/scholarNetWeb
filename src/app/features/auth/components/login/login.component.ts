@@ -83,7 +83,7 @@ export class LoginComponent {
         // this.toastService.success("Welcome back!");
         // console.log(response)
         this.loading.set(false);
-        this.router.navigate(['/main/profile/' + response.user.id]);
+        this.router.navigate(['/main/feed']);
       },
 
       error: (err) => {

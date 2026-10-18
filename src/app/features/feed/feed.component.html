@@ -1,0 +1,74 @@
+<p-toast />
+<p-confirmdialog />
+
+<div class="mx-auto min-h-[calc(100vh-12rem)] max-w-2xl px-4 py-8">
+  <h1 class="mb-4 mt-0 text-2xl font-semibold text-surface-900">Your feed</h1>
+
+  <sn-post-composer (posted)="onPosted($event)" />
+
+  <div class="mt-6 flex flex-col gap-4">
+    @for (post of posts(); track post._id) {
+      <sn-post-card [post]="post" (deleted)="onDeleted($event)" />
+    }
+
+    @if (loading()) {
+      @for (i of [1, 2]; track i) {
+        <div class="rounded-2xl border border-[var(--p-content-border-color)] bg-[var(--p-content-background)] p-4">
+          <div class="flex items-center gap-3">
+            <p-skeleton shape="circle" size="3rem" />
+            <div class="flex-1">
+              <p-skeleton width="35%" height="1rem" styleClass="mb-2" />
+              <p-skeleton width="20%" height="0.75rem" />
+            </div>
+          </div>
+          <p-skeleton width="100%" height="3.5rem" styleClass="mt-4" />
+        </div>
+      }
+    }
+
+    @if (failed()) {
+      <div class="rounded-xl border border-red-200 bg-red-50 p-4 text-center text-sm text-red-700">
+        Could not load your feed.
+        <button
+          type="button"
+          class="ml-1 cursor-pointer border-0 bg-transparent p-0 font-medium text-red-700 underline"
+          (click)="loadMore()"
+        >
+          Try again
+        </button>
+      </div>
+    }
+
+    @if (!loading() && !failed() && !posts().length) {
+      <div
+        class="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-[var(--p-content-border-color)] px-4 py-14 text-center text-surface-500"
+      >
+        <i class="pi pi-comments text-4xl" aria-hidden="true"></i>
+        <p class="m-0 font-medium text-surface-700">Your feed is empty</p>
+        <p class="m-0 text-sm">
+          Write your first post above, or follow researchers to see their
+          updates here.
+        </p>
+        <p-button
+          label="Find researchers"
+          icon="pi pi-search"
+          size="small"
+          variant="outlined"
+          routerLink="/main/search"
+        />
+      </div>
+    }
+
+    @if (hasMore() && !loading()) {
+      <div class="text-center">
+        <p-button
+          label="Load more posts"
+          icon="pi pi-chevron-down"
+          variant="outlined"
+          severity="secondary"
+          (onClick)="loadMore()"
+        />
+      </div>
+    }
+  </div>
+</div>

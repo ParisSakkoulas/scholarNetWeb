@@ -1,0 +1,90 @@
+<div class="border-t border-surface-200 pt-3">
+  <form
+    class="mb-3 flex items-center gap-2"
+    (submit)="$event.preventDefault(); submit()"
+  >
+    <p-avatar [label]="myInitials()" shape="circle" />
+    <input
+      pInputText
+      class="flex-1"
+      [formControl]="text"
+      placeholder="Write a comment…"
+      aria-label="Write a comment"
+      [maxlength]="maxLength"
+    />
+    <p-button
+      type="submit"
+      icon="pi pi-send"
+      [rounded]="true"
+      [text]="true"
+      ariaLabel="Send comment"
+      [disabled]="!text.value.trim() || sending()"
+      [loading]="sending()"
+    />
+  </form>
+
+  <ul class="m-0 flex list-none flex-col gap-3 p-0">
+    @for (c of comments(); track c._id) {
+      <li class="group flex gap-2">
+        <a
+          [routerLink]="['/main/profile', c.author._id]"
+          class="shrink-0 no-underline"
+        >
+          <p-avatar
+            [image]="c.author.profilePhotoUrl"
+            [label]="c.author.profilePhotoUrl ? undefined : initials(c.author)"
+            shape="circle"
+          />
+        </a>
+        <div class="min-w-0 flex-1 rounded-lg bg-surface-50 px-3 py-2">
+          <div class="flex items-baseline justify-between gap-2">
+            <a
+              [routerLink]="['/main/profile', c.author._id]"
+              class="truncate text-sm font-semibold text-surface-900 no-underline hover:underline"
+              >{{ name(c.author) }}</a
+            >
+            <span class="shrink-0 text-xs text-surface-500">{{
+              timeAgo(c.createdAt)
+            }}</span>
+          </div>
+          <p
+            class="m-0 mt-0.5 whitespace-pre-wrap break-words text-sm text-surface-800"
+          >
+            {{ c.content }}
+          </p>
+        </div>
+        @if (canDelete(c)) {
+          <p-button
+            icon="pi pi-trash"
+            [text]="true"
+            [rounded]="true"
+            size="small"
+            severity="secondary"
+            ariaLabel="Delete comment"
+            styleClass="opacity-0 group-hover:opacity-100 focus:opacity-100"
+            (onClick)="remove(c)"
+          />
+        }
+      </li>
+    } @empty {
+      @if (!loading()) {
+        <li class="py-2 text-center text-sm text-surface-500">
+          No comments yet. Be the first to comment.
+        </li>
+      }
+    }
+  </ul>
+
+  @if (loading()) {
+    <p class="m-0 mt-2 text-center text-sm text-surface-500">
+      <i class="pi pi-spin pi-spinner mr-1" aria-hidden="true"></i>Loading…
+    </p>
+  } @else if (hasMore()) {
+    <p-button
+      label="Show more comments"
+      [text]="true"
+      size="small"
+      (onClick)="loadMore()"
+    />
+  }
+</div>

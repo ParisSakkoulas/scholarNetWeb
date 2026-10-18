@@ -35,7 +35,7 @@
               icon="pi pi-file"
               variant="outlined"
               severity="secondary"
-              routerLink="/profile/cv"
+              [routerLink]="['/main/profile', p.user._id, 'cv']"
             />
           } @else {
             <p-button
@@ -61,6 +61,12 @@
               icon="pi pi-envelope"
               variant="outlined"
               severity="secondary"
+              [disabled]="!followStatus().isFollowing || !followStatus().isFollowedBy"
+              [title]="
+                followStatus().isFollowing && followStatus().isFollowedBy
+                  ? ''
+                  : 'You can message people you follow and who follow you back'
+              "
               (onClick)="messageProfile()"
             />
           }
@@ -116,7 +122,8 @@
             p.timezone ||
             p.languages?.length ||
             p.availability?.length ||
-            p.websiteUrl
+            p.website ||
+            p.phone
           ) {
             <ul class="meta">
               @if (p.pronouns) {
@@ -148,15 +155,21 @@
                   >{{ availabilityText(p) }}
                 </li>
               }
-              @if (p.websiteUrl) {
+              @if (p.phone) {
+                <li title="Phone">
+                  <i class="pi pi-phone" aria-hidden="true"></i>
+                  <a class="link" [href]="'tel:' + p.phone">{{ p.phone }}</a>
+                </li>
+              }
+              @if (p.website) {
                 <li title="Website">
                   <i class="pi pi-link" aria-hidden="true"></i>
                   <a
                     class="link"
-                    [href]="p.websiteUrl"
+                    [href]="p.website"
                     target="_blank"
                     rel="noopener"
-                    >{{ displayUrl(p.websiteUrl) }}</a
+                    >{{ displayUrl(p.website) }}</a
                   >
                 </li>
               }
@@ -263,6 +276,10 @@
               </div>
             </div>
           }
+
+          <div class="section" id="publications">
+            <sn-profile-publications [userId]="p.user._id" [isOwn]="isOwnProfile()" />
+          </div>
 
           <sn-profile-section
             title="Positions"

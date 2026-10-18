@@ -1,0 +1,155 @@
+<div class="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+  <p-button
+    label="Back to profile"
+    icon="pi pi-arrow-left"
+    variant="text"
+    severity="secondary"
+    size="small"
+    [routerLink]="['/main/profile', userId]"
+  />
+
+  <div class="mb-5 mt-2 flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="m-0 text-2xl font-semibold text-gray-900">Generate CV</h1>
+      <p class="m-0 text-sm text-gray-500">
+        Built from your profile and publications. Choose what to include; the preview updates as you go.
+      </p>
+    </div>
+    <p-button
+      label="Download PDF"
+      icon="pi pi-download"
+      [loading]="generating()"
+      [disabled]="loading() || !profile()"
+      (onClick)="download()"
+    />
+  </div>
+
+  @if (loading()) {
+    <p class="py-16 text-center text-sm text-gray-500">
+      <i class="pi pi-spin pi-spinner mr-1" aria-hidden="true"></i> Loading your data…
+    </p>
+  } @else if (error() && !profile()) {
+    <p class="py-16 text-center text-sm text-red-600" role="alert">{{ error() }}</p>
+  } @else {
+    <div class="grid grid-cols-1 items-start gap-5 lg:grid-cols-[20rem_minmax(0,1fr)]">
+      <!-- Options -->
+      <aside
+        class="flex flex-col gap-6 rounded-2xl border border-[var(--p-content-border-color)] bg-[var(--p-content-background)] p-5"
+      >
+        <fieldset class="m-0 border-0 p-0">
+          <legend class="mb-3 p-0 text-sm font-semibold text-gray-900">Sections</legend>
+          <div class="flex flex-col gap-3">
+            @for (s of sections; track s.key) {
+              <label class="flex items-center gap-2 text-sm text-gray-700">
+                <p-checkbox
+                  [binary]="true"
+                  [ngModel]="options().sections[s.key]"
+                  (ngModelChange)="toggleSection(s.key, $event)"
+                />
+                {{ s.label }}
+              </label>
+            }
+          </div>
+        </fieldset>
+
+        @if (options().sections.publications) {
+          <fieldset class="m-0 flex flex-col gap-4 border-0 p-0">
+            <legend class="mb-3 p-0 text-sm font-semibold text-gray-900">
+              Publications ({{ pubs().length }} found)
+            </legend>
+            <div>
+              <span class="mb-2 block text-sm text-gray-700">Citation style</span>
+              <p-selectbutton
+                [options]="styleOptions"
+                optionLabel="label"
+                optionValue="value"
+                [allowEmpty]="false"
+                size="small"
+                [ngModel]="options().citationStyle"
+                (ngModelChange)="update({ citationStyle: $event })"
+              />
+            </div>
+            <div>
+              <span class="mb-2 block text-sm text-gray-700">Group</span>
+              <p-selectbutton
+                [options]="groupOptions"
+                optionLabel="label"
+                optionValue="value"
+                [allowEmpty]="false"
+                size="small"
+                [ngModel]="options().groupBy"
+                (ngModelChange)="update({ groupBy: $event })"
+              />
+            </div>
+            <label class="flex items-center gap-2 text-sm text-gray-700">
+              <p-checkbox
+                [binary]="true"
+                [ngModel]="options().includeNonPublic"
+                (ngModelChange)="update({ includeNonPublic: $event })"
+              />
+              Include private and followers-only
+            </label>
+          </fieldset>
+        }
+
+        <fieldset class="m-0 flex flex-col gap-3 border-0 p-0">
+          <legend class="mb-3 p-0 text-sm font-semibold text-gray-900">Header</legend>
+          <label class="flex items-center gap-2 text-sm text-gray-700">
+            <p-checkbox
+              [binary]="true"
+              [ngModel]="options().showMetrics"
+              (ngModelChange)="update({ showMetrics: $event })"
+            />
+            Show h-index, i10 and citations
+          </label>
+          <label class="flex items-center gap-2 text-sm text-gray-700">
+            <p-checkbox
+              [binary]="true"
+              [ngModel]="options().showEmail"
+              (ngModelChange)="update({ showEmail: $event })"
+            />
+            Show email
+          </label>
+          @for (c of contactToggles; track c.key) {
+            <label class="flex items-center gap-2 text-sm text-gray-700">
+              <p-checkbox
+                [binary]="true"
+                [ngModel]="options()[c.key]"
+                (ngModelChange)="updateContact(c.key, $event)"
+              />
+              {{ c.label }}
+            </label>
+          }
+        </fieldset>
+
+        <p class="m-0 text-xs text-gray-500">
+          Contact details only appear when your profile has them and your visibility settings allow it
+          for you. Edit them in profile settings.
+        </p>
+
+        <p-button
+          label="Reset options"
+          icon="pi pi-refresh"
+          severity="secondary"
+          variant="text"
+          size="small"
+          (onClick)="reset()"
+        />
+      </aside>
+
+      <!-- Preview -->
+      <section
+        class="overflow-hidden rounded-2xl border border-[var(--p-content-border-color)] bg-[var(--p-content-background)]"
+        aria-label="CV preview"
+      >
+        @if (previewUrl(); as url) {
+          <iframe [src]="url" title="CV preview" class="block h-[80vh] min-h-[32rem] w-full border-0"></iframe>
+        } @else {
+          <p class="py-20 text-center text-sm text-gray-500">
+            <i class="pi pi-spin pi-spinner mr-1" aria-hidden="true"></i> Building preview…
+          </p>
+        }
+      </section>
+    </div>
+  }
+</div>

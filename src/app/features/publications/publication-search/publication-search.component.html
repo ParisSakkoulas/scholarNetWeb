@@ -1,0 +1,163 @@
+<div class="mx-auto flex min-h-[calc(100vh-12rem)] max-w-3xl flex-col px-4 pb-24 pt-12">
+  <header class="mb-6">
+    <h1 class="m-0 text-3xl font-semibold text-surface-900">Find publications</h1>
+    <p class="m-0 mt-1 text-surface-500">
+      Search titles, abstracts and keywords across everything you can see.
+    </p>
+    <nav class="mt-3 flex gap-4 text-sm" aria-label="Search type">
+      <a routerLink="/main/search" class="text-surface-500 no-underline hover:text-surface-900">Researchers</a>
+      <span class="border-b-2 border-blue-600 font-medium text-surface-900" aria-current="page">Publications</span>
+      <a routerLink="/main/publications" class="ml-auto text-blue-700 no-underline hover:underline">Manage mine</a>
+    </nav>
+  </header>
+
+  <form [formGroup]="form" (submit)="$event.preventDefault()">
+    <div class="flex items-center gap-2">
+      <p-iconfield class="block flex-1">
+        <p-inputicon class="pi pi-search" />
+        <input
+          pInputText
+          type="search"
+          class="w-full"
+          aria-label="Search publications"
+          placeholder="e.g. graph neural networks, climate dataset"
+          formControlName="q"
+        />
+      </p-iconfield>
+      <p-button
+        icon="pi pi-sliders-h"
+        [label]="activeFilters() ? 'Filters (' + activeFilters() + ')' : 'Filters'"
+        severity="secondary"
+        [variant]="filtersOpen() ? undefined : 'outlined'"
+        [attr.aria-expanded]="filtersOpen()"
+        (onClick)="filtersOpen.set(!filtersOpen())"
+      />
+    </div>
+
+    @if (filtersOpen()) {
+      <div
+        class="mt-3 grid grid-cols-1 gap-4 rounded-2xl border border-[var(--p-content-border-color)] bg-[var(--p-content-background)] p-4 sm:grid-cols-2"
+      >
+        <div>
+          <label class="mb-2 block text-sm font-medium text-surface-700" for="f-type">Type</label>
+          <p-select
+            inputId="f-type"
+            formControlName="type"
+            [options]="typeOptions"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Any type"
+            [showClear]="true"
+            styleClass="w-full"
+            appendTo="body"
+          />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="mb-2 block text-sm font-medium text-surface-700" for="f-from">Year from</label>
+            <input id="f-from" pInputText type="number" min="1800" formControlName="yearFrom" class="w-full" placeholder="2015" />
+          </div>
+          <div>
+            <label class="mb-2 block text-sm font-medium text-surface-700" for="f-to">Year to</label>
+            <input id="f-to" pInputText type="number" min="1800" formControlName="yearTo" class="w-full" placeholder="2025" />
+          </div>
+        </div>
+        <div>
+          <label class="mb-2 block text-sm font-medium text-surface-700" for="f-field">Research field</label>
+          <input id="f-field" pInputText formControlName="field" class="w-full" placeholder="Exact field name" />
+        </div>
+        <div>
+          <label class="mb-2 block text-sm font-medium text-surface-700" for="f-kw">Keyword</label>
+          <input id="f-kw" pInputText formControlName="keyword" class="w-full" placeholder="Exact keyword" />
+        </div>
+        <div class="flex justify-end sm:col-span-2">
+          <p-button
+            label="Clear filters"
+            icon="pi pi-filter-slash"
+            severity="secondary"
+            variant="text"
+            size="small"
+            [disabled]="!activeFilters()"
+            (onClick)="clearFilters()"
+          />
+        </div>
+      </div>
+    }
+  </form>
+
+  <div class="my-4 min-h-6 text-sm text-surface-500" aria-live="polite">
+    @if (loading()) {
+      <i class="pi pi-spin pi-spinner mr-1" aria-hidden="true"></i> Searching…
+    } @else if (error()) {
+      <span class="text-red-600">Something went wrong while searching. Please try again.</span>
+    } @else if (searched()) {
+      <strong class="text-surface-900">{{ total() }}</strong>
+      {{ total() === 1 ? "publication" : "publications" }}
+    }
+  </div>
+
+  @if (loading() && !results().length) {
+    <ul class="m-0 flex list-none flex-col gap-3 p-0">
+      @for (i of [1, 2, 3]; track i) {
+        <li class="rounded-2xl border border-[var(--p-content-border-color)] bg-[var(--p-content-background)] p-4">
+          <p-skeleton width="70%" height="1.1rem" styleClass="mb-2" />
+          <p-skeleton width="40%" height="0.85rem" styleClass="mb-3" />
+          <p-skeleton width="95%" height="0.85rem" />
+        </li>
+      }
+    </ul>
+  }
+
+  @if (!loading() && !error() && searched() && !results().length) {
+    <div class="flex flex-col items-center gap-2 py-16 text-center text-surface-500">
+      <i class="pi pi-book text-4xl" aria-hidden="true"></i>
+      <p class="m-0 font-medium text-surface-700">No publications found</p>
+      <p class="m-0 text-sm">Try different words or loosen the filters.</p>
+    </div>
+  }
+
+  @if (results().length) {
+    <ul class="m-0 flex list-none flex-col gap-3 p-0" [class.opacity-60]="loading()">
+      @for (p of results(); track p._id) {
+        <li>
+          <a
+            class="block rounded-2xl border border-[var(--p-content-border-color)] bg-[var(--p-content-background)] p-4 text-inherit no-underline transition-colors hover:border-[var(--p-primary-color)]"
+            [routerLink]="['/main/publications', p._id]"
+          >
+            <div class="mb-1 flex flex-wrap items-center gap-2 text-xs text-surface-500">
+              <p-tag [value]="typeLabel[p.type]" [rounded]="true" />
+              <span>{{ p.year }}</span>
+              @if (p.visibility !== 'public') {
+                <p-tag [value]="p.visibility" severity="secondary" [rounded]="true" />
+              }
+            </div>
+            <h2 class="m-0 text-lg font-semibold text-surface-900">{{ p.title }}</h2>
+            <p class="m-0 mt-0.5 text-sm text-surface-600">{{ authors(p) }}</p>
+            @if (p.abstract) {
+              <p class="m-0 mt-2 line-clamp-2 text-sm text-surface-700">{{ p.abstract }}</p>
+            }
+            @if (p.keywords.length) {
+              <div class="mt-2 flex flex-wrap gap-1.5">
+                @for (k of p.keywords.slice(0, 5); track k) {
+                  <p-tag severity="secondary" [value]="k" [rounded]="true" />
+                }
+              </div>
+            }
+          </a>
+        </li>
+      }
+    </ul>
+  }
+
+  @if (total() > pageSize) {
+    <p-paginator
+      styleClass="mt-auto pt-8"
+      [rows]="pageSize"
+      [totalRecords]="total()"
+      [first]="(page() - 1) * pageSize"
+      [showCurrentPageReport]="true"
+      currentPageReportTemplate="{first}–{last} of {totalRecords}"
+      (onPageChange)="onPageChange($event)"
+    />
+  }
+</div>

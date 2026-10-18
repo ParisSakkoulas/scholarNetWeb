@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { PublicLayoutComponent } from './layouts/public-layout/public-layout.component';
 import { MainLayoutComponent } from './layouts/main-layout/main-layout.component';
+import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -74,6 +75,7 @@ export const routes: Routes = [
   {
     path: 'main',
     component: MainLayoutComponent,
+    canActivate: [authGuard],
     children: [
       {
         path: 'profile',
@@ -92,6 +94,14 @@ export const routes: Routes = [
       },
 
       {
+        path: 'profile/:userId/cv',
+        loadComponent: () =>
+          import('./features/profile/cv/cv.component').then(
+            (m) => m.CvComponent,
+          ),
+      },
+
+      {
         path: 'profile/:userId/edit',
         loadComponent: () =>
           import('./features/profile/edit-profile/edit-profile.component').then(
@@ -100,6 +110,18 @@ export const routes: Routes = [
       },
 
       {
+        path: 'feed',
+        loadComponent: () =>
+          import('./features/feed/feed.component').then((m) => m.FeedComponent),
+      },
+      {
+        path: 'posts/:postId',
+        loadComponent: () =>
+          import('./features/feed/post-detail/post-detail.component').then(
+            (m) => m.PostDetailComponent,
+          ),
+      },
+      {
         path: 'search',
         loadComponent: () =>
           import('./features/profile/profile-search/profile-search.component').then(
@@ -107,6 +129,42 @@ export const routes: Routes = [
           ),
       },
 
+      {
+        path: 'publications',
+        loadComponent: () =>
+          import('./features/publications/publication-list/publication-list.component').then(
+            (m) => m.PublicationListComponent,
+          ),
+      },
+      {
+        path: 'file-requests',
+        loadComponent: () =>
+          import('./features/publications/file-requests/file-requests.component').then(
+            (m) => m.FileRequestsComponent,
+          ),
+      },
+      // must stay above :publicationId or "search" would be read as an id
+      {
+        path: 'publications/search',
+        loadComponent: () =>
+          import('./features/publications/publication-search/publication-search.component').then(
+            (m) => m.PublicationSearchComponent,
+          ),
+      },
+      {
+        path: 'publications/:publicationId',
+        loadComponent: () =>
+          import('./features/publications/publication-detail/publication-detail.component').then(
+            (m) => m.PublicationDetailComponent,
+          ),
+      },
+      {
+        path: 'messages',
+        loadComponent: () =>
+          import('./features/messages/messages.component').then(
+            (m) => m.MessagesComponent,
+          ),
+      },
       {
         path: 'notifications',
         loadComponent: () =>

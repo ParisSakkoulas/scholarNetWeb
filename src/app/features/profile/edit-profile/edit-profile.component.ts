@@ -21,7 +21,9 @@ import {
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Title } from '@angular/platform-browser';
-import { Profile } from '../../../core/models/profile.model';
+import {
+  CONTACT_VISIBILITY_OPTIONS,
+  ContactVisibilityLevel, Profile } from '../../../core/models/profile.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { ProfileService } from '../../../core/services/profile.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -157,7 +159,13 @@ export class EditProfileComponent implements OnInit {
     city: [''],
     country: [''],
     timezone: [''],
-    websiteUrl: [''],
+    website: [''],
+    phone: ['', Validators.pattern(/^(\+?[0-9\s\-().]{6,24})?$/)],
+    contactVisibility: this.fb.group({
+      location: ['public' as ContactVisibilityLevel],
+      website: ['public' as ContactVisibilityLevel],
+      phone: ['private' as ContactVisibilityLevel],
+    }),
     orcidId: [''],
     googleScholarId: [''],
     scopusId: [''],
@@ -166,6 +174,8 @@ export class EditProfileComponent implements OnInit {
     languages: this.fb.control<string[]>([]),
     links: this.fb.array<FormGroup>([]),
   });
+
+  readonly visibilityOptions = CONTACT_VISIBILITY_OPTIONS;
 
   readonly changePasswordForm = this.fb.group({
     currentPassword: ['', Validators.required],
@@ -337,7 +347,9 @@ export class EditProfileComponent implements OnInit {
       city: this.profileForm.value.city,
       country: this.profileForm.value.country,
       timezone: this.profileForm.value.timezone,
-      websiteUrl: this.profileForm.value.websiteUrl,
+      website: this.profileForm.value.website?.trim() ?? '',
+      phone: this.profileForm.value.phone?.trim() ?? '',
+      contactVisibility: this.profileForm.getRawValue().contactVisibility,
       orcidId: this.profileForm.value.orcidId,
       googleScholarId: this.profileForm.value.googleScholarId,
       scopusId: this.profileForm.value.scopusId,

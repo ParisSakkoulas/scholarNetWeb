@@ -1,0 +1,37 @@
+<form
+  class="rounded-2xl border border-[var(--p-content-border-color)] bg-[var(--p-content-background)] p-4"
+  (submit)="$event.preventDefault(); submit()"
+>
+  <div class="flex gap-3">
+    <p-avatar [label]="initials()" shape="circle" size="large" />
+
+    <div class="min-w-0 flex-1">
+      <textarea
+        pTextarea
+        [formControl]="content"
+        [autoResize]="true"
+        rows="3"
+        class="w-full"
+        placeholder="Share an update with your network…"
+        aria-label="Write a post"
+        (keydown.control.enter)="submit()"
+      ></textarea>
+
+      <div class="mt-2 flex items-center justify-between">
+        <span
+          class="text-xs"
+          [class]="length > maxLength ? 'text-red-600' : 'text-surface-500'"
+          >{{ length }} / {{ maxLength }}</span
+        >
+        <p-button
+          type="submit"
+          label="Post"
+          icon="pi pi-send"
+          size="small"
+          [disabled]="!canPost"
+          [loading]="sending()"
+        />
+      </div>
+    </div>
+  </div>
+</form>

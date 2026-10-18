@@ -73,8 +73,16 @@ export class NotificationsService {
   routeFor(n: AppNotification): string[] | null {
     // an invite is answered from the teams list, the invited user is not a member yet
     if (n.type === 'TEAM_INVITE') return ['/main/teams'];
+    // the uploader answers access requests from the inbox
+    if (n.type === 'FILE_ACCESS_REQUEST') return ['/main/file-requests'];
     if (n.type === 'TEAM_INVITE_ACCEPTED' && n.entityId) {
       return ['/main/teams', n.entityId, 'members'];
+    }
+    if (n.entityType === 'post' && n.entityId) {
+      return ['/main/posts', n.entityId];
+    }
+    if (n.entityType === 'publication' && n.entityId) {
+      return ['/main/publications', n.entityId];
     }
     if (n.entityType === 'user' && n.entityId) {
       return ['/main/profile', n.entityId];

@@ -3,10 +3,15 @@ import { PagedResult } from './follow.model';
 /** Same values as the API's NotificationType enum. */
 export type NotificationType =
   | 'NEW_FOLLOWER'
+  | 'POST_LIKED'
+  | 'POST_COMMENTED'
   | 'TEAM_INVITE'
   | 'TEAM_INVITE_ACCEPTED'
   | 'TASK_ASSIGNED'
   | 'MENTION'
+  | 'FILE_ACCESS_REQUEST'
+  | 'FILE_ACCESS_APPROVED'
+  | 'FILE_ACCESS_REJECTED'
   | 'SYSTEM';
 
 export interface AppNotification {
@@ -49,6 +54,16 @@ export const NOTIFICATION_TYPE_META: Record<
     icon: 'pi pi-user-plus',
     color: 'bg-blue-100 text-blue-700',
   },
+  POST_LIKED: {
+    label: 'Likes',
+    icon: 'pi pi-thumbs-up-fill',
+    color: 'bg-rose-100 text-rose-700',
+  },
+  POST_COMMENTED: {
+    label: 'Comments',
+    icon: 'pi pi-comment',
+    color: 'bg-sky-100 text-sky-700',
+  },
   TEAM_INVITE: {
     label: 'Team invites',
     icon: 'pi pi-users',
@@ -68,6 +83,21 @@ export const NOTIFICATION_TYPE_META: Record<
     label: 'Mentions',
     icon: 'pi pi-at',
     color: 'bg-violet-100 text-violet-700',
+  },
+  FILE_ACCESS_REQUEST: {
+    label: 'File requests',
+    icon: 'pi pi-key',
+    color: 'bg-amber-100 text-amber-700',
+  },
+  FILE_ACCESS_APPROVED: {
+    label: 'File access',
+    icon: 'pi pi-lock-open',
+    color: 'bg-emerald-100 text-emerald-700',
+  },
+  FILE_ACCESS_REJECTED: {
+    label: 'File access',
+    icon: 'pi pi-lock',
+    color: 'bg-rose-100 text-rose-700',
   },
   SYSTEM: {
     label: 'System',

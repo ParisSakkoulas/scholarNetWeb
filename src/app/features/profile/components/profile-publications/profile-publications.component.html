@@ -1,0 +1,104 @@
+<div class="flex flex-col gap-4">
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <h2 class="m-0 text-lg font-semibold">
+      Publications
+      @if (!loading() || items().length) {
+        <span class="font-normal text-[var(--p-text-muted-color)]">({{ total() }})</span>
+      }
+    </h2>
+    <div class="flex flex-wrap items-center gap-2">
+      @if (isOwn()) {
+        <p-button label="Add publication" icon="pi pi-plus" size="small" (onClick)="showForm.set(true)" />
+        <p-button label="Manage" icon="pi pi-cog" size="small" severity="secondary" variant="outlined" routerLink="/main/publications" />
+      }
+    </div>
+  </div>
+
+  @if (total() > FIRST_PAGE_HINT || filtered()) {
+    <div class="flex flex-wrap items-center gap-2">
+      <input
+        pInputText
+        type="search"
+        class="min-w-48 flex-1"
+        placeholder="Search these publications"
+        aria-label="Search publications"
+        [formControl]="search"
+      />
+      <p-select
+        [options]="typeOptions"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="All types"
+        [showClear]="true"
+        [formControl]="type"
+        appendTo="body"
+        aria-label="Filter by type"
+      />
+    </div>
+  }
+
+  @if (error()) {
+    <p class="m-0 text-sm text-red-600" role="alert">Could not load publications.</p>
+  } @else if (loading() && !items().length) {
+    @for (i of [1, 2, 3]; track i) {
+      <div class="rounded-xl border border-[var(--p-content-border-color)] p-4">
+        <p-skeleton width="70%" height="1rem" styleClass="mb-2" />
+        <p-skeleton width="45%" height="0.8rem" />
+      </div>
+    }
+  } @else if (!items().length) {
+    <p class="m-0 rounded-xl border border-dashed border-[var(--p-content-border-color)] px-4 py-8 text-center text-sm text-[var(--p-text-muted-color)]">
+      @if (filtered()) {
+        No publications match your search.
+      } @else if (isOwn()) {
+        You haven't added any publications yet.
+      } @else {
+        No publications to show.
+      }
+    </p>
+  } @else {
+    <ul class="m-0 flex list-none flex-col gap-3 p-0" [class.opacity-60]="loading()">
+      @for (p of items(); track p._id) {
+        <li>
+          <a
+            [routerLink]="['/main/publications', p._id]"
+            class="block rounded-xl border border-[var(--p-content-border-color)] p-4 text-inherit no-underline transition-colors hover:border-[var(--p-primary-color)]"
+          >
+            <div class="mb-1 flex flex-wrap items-center gap-2 text-xs text-[var(--p-text-muted-color)]">
+              <p-tag [value]="typeLabel[p.type]" severity="secondary" [rounded]="true" />
+              <span>{{ p.year }}</span>
+              @if (isOwn() && p.visibility !== 'public') {
+                <p-tag [value]="p.visibility === 'private' ? 'Private' : 'Followers only'" severity="warn" [rounded]="true" />
+              }
+              @if (p.metrics?.citations) {
+                <span>· {{ p.metrics!.citations }} citations</span>
+              }
+            </div>
+            <h3 class="m-0 text-base font-semibold">{{ p.title }}</h3>
+            <p class="m-0 mt-0.5 text-sm text-[var(--p-text-muted-color)]">{{ authors(p) }}</p>
+            @if (venueLabel(p); as venue) {
+              <p class="m-0 mt-0.5 text-sm italic">{{ venue }}</p>
+            }
+          </a>
+        </li>
+      }
+    </ul>
+
+    @if (items().length < total()) {
+      <div class="text-center">
+        <p-button
+          label="Show more"
+          severity="secondary"
+          variant="outlined"
+          size="small"
+          [loading]="loading()"
+          (onClick)="showMore()"
+        />
+      </div>
+    }
+  }
+</div>
+
+@if (showForm()) {
+  <app-publication-form (saved)="onSaved()" (changed)="reload()" (cancelled)="showForm.set(false)" />
+}

@@ -1,0 +1,199 @@
+<section aria-label="Files" class="flex flex-col gap-4">
+  <div>
+    <h3 class="m-0 text-base font-semibold text-gray-900">
+      Files
+      @if (live()) { <span class="font-normal text-gray-500">({{ files().length }})</span> }
+    </h3>
+    <p class="m-0 mt-1 text-sm text-gray-500">
+      PDF, PPT or PPTX, up to {{ maxMb }} MB each. Choose who may download every file.
+    </p>
+  </div>
+
+  @if (notice(); as n) {
+    <p
+      class="m-0 rounded-lg px-3 py-2 text-sm"
+      [class]="n.kind === 'ok' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-700'"
+      [attr.role]="n.kind === 'error' ? 'alert' : 'status'"
+    >
+      {{ n.text }}
+    </p>
+  }
+
+  <!-- Drop zone -->
+  <label
+    class="flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed px-4 py-8 text-center transition-colors"
+    [class]="dragging() ? 'border-[var(--p-primary-color)] bg-blue-50' : 'border-[var(--p-content-border-color)] hover:border-[var(--p-primary-color)]'"
+    (dragover)="$event.preventDefault(); dragging.set(true)"
+    (dragleave)="dragging.set(false)"
+    (drop)="onDrop($event)"
+  >
+    <i class="pi pi-cloud-upload text-3xl text-gray-400" aria-hidden="true"></i>
+    <span class="text-sm font-medium text-gray-700">Drop files here or click to choose</span>
+    <span class="text-xs text-gray-500">{{ accept }}</span>
+    <input type="file" class="sr-only" multiple [accept]="accept" (change)="onPick($event)" />
+  </label>
+
+  <!-- Staged files + options -->
+  @if (staged().length) {
+    <div class="flex flex-col gap-4 rounded-xl border border-[var(--p-content-border-color)] p-4">
+      <ul class="m-0 flex list-none flex-col gap-2 p-0">
+        @for (f of staged(); track f; let i = $index) {
+          <li class="flex flex-col gap-1">
+            <div class="flex items-center gap-3 text-sm">
+              <i [class]="fileIcon(f.name)" class="text-gray-500" aria-hidden="true"></i>
+              <span class="min-w-0 flex-1 break-all">{{ f.name }}</span>
+              <span class="shrink-0 text-xs text-gray-500">{{ formatSize(f.size) }}</span>
+              @if (!uploading()) {
+                <p-button icon="pi pi-times" severity="secondary" variant="text" rounded size="small" ariaLabel="Remove from selection" (onClick)="unstage(i)" />
+              }
+            </div>
+            @if (progress()[f.name] !== undefined) {
+              <p-progressbar [value]="progress()[f.name]" [showValue]="false" styleClass="!h-1.5" />
+            }
+          </li>
+        }
+      </ul>
+
+      <form [formGroup]="options" class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div class="sm:col-span-2">
+          <label class="mb-2 block text-sm font-medium text-gray-700" for="up-access">Who can download</label>
+          <p-select inputId="up-access" formControlName="accessMode" [options]="accessOptions" optionLabel="label" optionValue="value" styleClass="w-full" appendTo="body" />
+          <p class="m-0 mt-1 text-xs text-gray-500">{{ accessHint[options.controls.accessMode.value] }}</p>
+        </div>
+        <div>
+          <label class="mb-2 block text-sm font-medium text-gray-700" for="up-role">Type of file</label>
+          <p-select inputId="up-role" formControlName="role" [options]="roleOptions" optionLabel="label" optionValue="value" styleClass="w-full" appendTo="body" />
+        </div>
+        <div>
+          <label class="mb-2 block text-sm font-medium text-gray-700" for="up-version">Version</label>
+          <p-select inputId="up-version" formControlName="version" [options]="versionOptions" optionLabel="label" optionValue="value" styleClass="w-full" appendTo="body" />
+        </div>
+        <div class="sm:col-span-2">
+          <label class="mb-2 block text-sm font-medium text-gray-700" for="up-embargo">
+            Embargo until <span class="font-normal text-gray-500">(optional, nobody but you can download before this date)</span>
+          </label>
+          <p-datepicker inputId="up-embargo" formControlName="embargo" dateFormat="yy-mm-dd" [minDate]="today" [showIcon]="true" [showClear]="true" styleClass="w-full" appendTo="body" />
+        </div>
+      </form>
+
+      <div class="flex justify-end gap-2">
+        @if (!uploading()) {
+          <p-button type="button" label="Clear" severity="secondary" [text]="true" (onClick)="staged.set([])" />
+        }
+        <p-button
+          [label]="live() ? (uploading() ? 'Uploading…' : 'Upload ' + staged().length + (staged().length === 1 ? ' file' : ' files')) : 'Add to publication'"
+          [icon]="live() ? 'pi pi-upload' : 'pi pi-plus'"
+          [loading]="uploading()"
+          (onClick)="addStaged()"
+        />
+      </div>
+    </div>
+  }
+
+  <!-- Queued (create dialog) -->
+  @if (!live() && queue().length) {
+    <ul class="m-0 flex list-none flex-col gap-2 p-0">
+      @for (q of queue(); track q; let i = $index) {
+        <li class="flex items-center gap-3 rounded-xl border border-[var(--p-content-border-color)] px-4 py-3 text-sm">
+          <i [class]="fileIcon(q.file.name)" class="text-gray-500" aria-hidden="true"></i>
+          <div class="min-w-0 flex-1">
+            <div class="break-all font-medium text-gray-900">{{ q.file.name }}</div>
+            <div class="text-xs text-gray-500">
+              {{ formatSize(q.file.size) }} · {{ accessLabel[q.options.accessMode ?? 'public'] }}
+              @if (q.options.embargoUntil) { · embargo until {{ q.options.embargoUntil }} }
+            </div>
+          </div>
+          <p-tag value="Queued" severity="secondary" [rounded]="true" />
+          <p-button icon="pi pi-times" severity="secondary" variant="text" rounded size="small" ariaLabel="Remove queued file" (onClick)="removeQueued(i)" />
+        </li>
+      }
+    </ul>
+  }
+
+  <!-- Edit panel -->
+  @if (editingId()) {
+    <form [formGroup]="editForm" (ngSubmit)="saveEdit()" class="grid grid-cols-1 gap-4 rounded-xl border border-[var(--p-content-border-color)] p-4 sm:grid-cols-2">
+      <p class="m-0 text-sm font-medium text-gray-700 sm:col-span-2">Edit file settings</p>
+      <div class="sm:col-span-2">
+        <label class="mb-2 block text-sm font-medium text-gray-700" for="ed-access">Who can download</label>
+        <p-select inputId="ed-access" formControlName="accessMode" [options]="accessOptions" optionLabel="label" optionValue="value" styleClass="w-full" appendTo="body" />
+        @if (editForm.controls.accessMode.value === 'restricted') {
+          <p class="m-0 mt-1 text-xs text-amber-700">Switching to "Only me" rejects any pending access requests for this file.</p>
+        }
+      </div>
+      <div>
+        <label class="mb-2 block text-sm font-medium text-gray-700" for="ed-role">Type of file</label>
+        <p-select inputId="ed-role" formControlName="role" [options]="editRoleOptions" optionLabel="label" optionValue="value" styleClass="w-full" appendTo="body" />
+      </div>
+      <div>
+        <label class="mb-2 block text-sm font-medium text-gray-700" for="ed-version">Version</label>
+        <p-select inputId="ed-version" formControlName="version" [options]="versionOptions" optionLabel="label" optionValue="value" styleClass="w-full" appendTo="body" />
+      </div>
+      <div class="sm:col-span-2">
+        <label class="mb-2 block text-sm font-medium text-gray-700" for="ed-embargo">Embargo until</label>
+        <p-datepicker inputId="ed-embargo" formControlName="embargo" dateFormat="yy-mm-dd" [showIcon]="true" [showClear]="true" styleClass="w-full" appendTo="body" />
+      </div>
+      <div class="flex justify-end gap-2 sm:col-span-2">
+        <p-button type="button" label="Cancel" severity="secondary" [text]="true" (onClick)="editingId.set(null)" />
+        <p-button type="submit" label="Save" [loading]="saving()" />
+      </div>
+    </form>
+  }
+
+  <!-- Uploaded files -->
+  @if (live()) {
+    @if (loading()) {
+      <p class="m-0 py-4 text-center text-sm text-gray-500">
+        <i class="pi pi-spin pi-spinner mr-1" aria-hidden="true"></i> Loading files…
+      </p>
+    } @else if (!files().length) {
+      <p class="m-0 rounded-xl border border-dashed border-[var(--p-content-border-color)] px-4 py-6 text-center text-sm text-gray-500">
+        No files uploaded yet.
+      </p>
+    } @else {
+      <ul class="m-0 flex list-none flex-col gap-2 p-0">
+        @for (f of files(); track f._id) {
+          <li class="flex items-center gap-3 rounded-xl border border-[var(--p-content-border-color)] px-4 py-3">
+            <i [class]="fileIcon(f.name)" class="text-xl text-gray-500" aria-hidden="true"></i>
+            <div class="min-w-0 flex-1">
+              <div class="break-all text-sm font-medium text-gray-900">{{ f.name }}</div>
+              <div class="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-500">
+                <span>{{ formatSize(f.size) }}</span>
+                <p-tag [value]="roleLabel[f.role]" severity="secondary" [rounded]="true" />
+                <p-tag
+                  [value]="accessLabel[f.accessMode]"
+                  [severity]="f.accessMode === 'public' ? 'success' : f.accessMode === 'restricted' ? 'danger' : 'warn'"
+                  [rounded]="true"
+                />
+                @if (f.version) { <span>{{ versionLabel[f.version] }}</span> }
+                @if (f.embargoUntil) {
+                  <span [class.text-amber-700]="embargoActive(f)">
+                    {{ embargoActive(f) ? 'Embargo until' : 'Embargo ended' }} {{ f.embargoUntil.slice(0, 10) }}
+                  </span>
+                }
+              </div>
+            </div>
+            <div class="flex shrink-0 items-center gap-1">
+              @if (confirmingId() === f._id) {
+                <p-button label="Delete" size="small" severity="danger" (onClick)="remove(f)" />
+                <p-button label="Keep" size="small" severity="secondary" variant="text" (onClick)="confirmingId.set(null)" />
+              } @else {
+                @if (isPdf(f)) {
+                  <p-button icon="pi pi-eye" severity="secondary" variant="text" rounded size="small" ariaLabel="View PDF" (onClick)="viewing.set(f)" />
+                }
+                <p-button icon="pi pi-pencil" severity="secondary" variant="text" rounded size="small" ariaLabel="Edit file settings" (onClick)="startEdit(f)" />
+                <p-button icon="pi pi-trash" severity="secondary" variant="text" rounded size="small" ariaLabel="Delete file" (onClick)="remove(f)" />
+              }
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  }
+</section>
+
+@if (viewing(); as v) {
+  @if (publicationId(); as id) {
+    <app-pdf-viewer-dialog [publicationId]="id" [file]="v" (closed)="viewing.set(null)" />
+  }
+}

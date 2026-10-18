@@ -37,6 +37,7 @@ import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ProfileService } from '../../core/services/profile.service';
 
+import { ProfilePublicationsComponent } from './components/profile-publications/profile-publications.component';
 import { UserService } from '../../core/services/user.service';
 import {
   Profile,
@@ -76,6 +77,7 @@ interface ProfileTabDef {
     ProfileSectionComponent,
     ProfileItemDialogComponent,
     FollowListDialogComponent,
+    ProfilePublicationsComponent,
     ToastModule,
     ConfirmDialogModule,
   ],
@@ -282,7 +284,11 @@ export class ProfileComponent implements OnInit {
   }
 
   messageProfile(): void {
-    // this.router.navigate(['/messages', this.profile()!.user._id]);
+    const p = this.profile();
+    if (!p) return;
+    this.router.navigate(['/main/messages'], {
+      queryParams: { user: p.user._id },
+    });
   }
 
   readonly linkIcon = linkIcon;

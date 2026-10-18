@@ -1,7 +1,16 @@
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { tap } from 'rxjs';
+import {
+  catchError,
+  finalize,
+  firstValueFrom,
+  from,
+  Observable,
+  of,
+  shareReplay,
+  tap,
+} from 'rxjs';
 
 import { environment } from '../../../environmets/environment';
 import {
@@ -22,6 +31,7 @@ export class AuthService {
   private router = inject(Router);
 
   private readonly apiAuth = `${environment.apiUrl}/auth`;
+  private refresh$?: Observable<string>;
 
   // Curent user states
   private _currentUser = signal<User | null>(null);
@@ -41,15 +51,60 @@ export class AuthService {
   }
 
   login(loginPayload: Login) {
-    return this.http
-      .post<LoginResponse>(`${this.apiAuth}/login`, loginPayload)
-      .pipe(
-        tap((response) => {
-          this._currentUser.set(response.user);
-          localStorage.setItem('user', JSON.stringify(response.user));
-          localStorage.setItem('accessToken', response.accessToken);
+    return (
+      this.http
+        // withCredentials: lets the browser store the httpOnly refresh-token cookie
+        .post<LoginResponse>(`${this.apiAuth}/login`, loginPayload, {
+          withCredentials: true,
+        })
+        .pipe(
+          tap((response) => {
+            this._currentUser.set(response.user);
+            localStorage.setItem('user', JSON.stringify(response.user));
+            localStorage.setItem('accessToken', response.accessToken);
+          }),
+        )
+    );
+  }
+
+  /**
+   * Gets a new access token using the refresh-token cookie.
+   *
+   * - One request at a time: calls made while a refresh is running share its result.
+   * - Across browser tabs: the API rotates the refresh token and treats a replayed old one as
+   *   theft (it ends the session), so tabs take a lock and, if another tab already refreshed,
+   *   reuse that token instead of sending the old cookie again.
+   *
+   * @param failedToken the access token that just got a 401 (to detect "someone already refreshed")
+   */
+  refreshAccessToken(failedToken: string | null): Observable<string> {
+    if (!this.refresh$) {
+      this.refresh$ = from(
+        this.withTabLock(async () => {
+          const current = this.getToken();
+          if (current && current !== failedToken) return current;
+
+          const res = await firstValueFrom(
+            this.http.post<{ accessToken: string }>(
+              `${this.apiAuth}/refresh`,
+              {},
+              { withCredentials: true },
+            ),
+          );
+          localStorage.setItem('accessToken', res.accessToken);
+          return res.accessToken;
         }),
+      ).pipe(
+        finalize(() => (this.refresh$ = undefined)),
+        shareReplay({ bufferSize: 1, refCount: false }),
       );
+    }
+    return this.refresh$;
+  }
+
+  private withTabLock<T>(task: () => Promise<T>): Promise<T> {
+    const locks = (navigator as Navigator & { locks?: LockManager }).locks;
+    return locks ? locks.request('scholarnet-token-refresh', task) : task();
   }
 
   /** Keep the cached signed-in user in sync after a profile/account edit. */
@@ -61,11 +116,27 @@ export class AuthService {
     localStorage.setItem('user', JSON.stringify(updated));
   }
 
+  /** Ends the session on the server (revokes the refresh token), then clears it locally. */
   logout() {
+    const hasSession = !!this.getToken();
+    const done = () => {
+      this.clearSession();
+      this.router.navigate(['/auth/login']);
+    };
+    if (!hasSession) return done();
+
+    // the local session is cleared even if the server is unreachable or the token already expired
+    this.http
+      .post(`${this.apiAuth}/logout`, {}, { withCredentials: true })
+      .pipe(catchError(() => of(null)))
+      .subscribe(done);
+  }
+
+  /** Forgets the session in this browser only (no server call). Used when a refresh fails. */
+  clearSession() {
     this._currentUser.set(null);
     localStorage.removeItem('user');
     localStorage.removeItem('accessToken');
-    this.router.navigate(['/auth/login']);
   }
 
   verifyEmai(emailVerifyPayload: string) {

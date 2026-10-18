@@ -1,0 +1,115 @@
+@if (loading()) {
+  <p class="m-0 py-3 text-sm text-gray-500">
+    <i class="pi pi-spin pi-spinner mr-1" aria-hidden="true"></i> Loading files…
+  </p>
+} @else if (error()) {
+  <p class="m-0 text-sm text-red-600" role="alert">{{ error() }}</p>
+} @else if (hasFiles()) {
+  @if (notice(); as n) {
+    <p
+      class="mb-3 mt-0 rounded-lg px-3 py-2 text-sm"
+      [class]="n.kind === 'ok' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-700'"
+      [attr.role]="n.kind === 'error' ? 'alert' : 'status'"
+    >
+      {{ n.text }}
+    </p>
+  }
+
+  <ul class="m-0 flex list-none flex-col gap-3 p-0">
+    @for (f of files(); track f._id) {
+      <li class="rounded-xl border border-[var(--p-content-border-color)] p-4">
+        <div class="flex items-start gap-3">
+          <i [class]="fileIcon(f.name)" class="mt-0.5 text-2xl text-gray-500" aria-hidden="true"></i>
+          <div class="min-w-0 flex-1">
+            <div class="break-words text-sm font-medium text-gray-900 [overflow-wrap:anywhere]">{{ f.name }}</div>
+            <div class="mt-1 flex flex-wrap items-center gap-2 text-xs text-gray-500">
+              <span>{{ formatSize(f.size) }}</span>
+              <p-tag [value]="roleLabel[f.role]" severity="secondary" [rounded]="true" />
+              @if (f.version) { <span>{{ versionLabel[f.version] }}</span> }
+              @if (isOwner()) {
+                <p-tag
+                  [value]="accessLabel[f.accessMode]"
+                  [severity]="f.accessMode === 'public' ? 'success' : f.accessMode === 'restricted' ? 'danger' : 'warn'"
+                  [rounded]="true"
+                />
+              }
+            </div>
+          </div>
+
+        </div>
+
+        @if (f.canDownload) {
+          <div class="mt-3 flex flex-wrap gap-2">
+            @if (isPdf(f)) {
+              <p-button label="View" icon="pi pi-eye" size="small" severity="secondary" variant="outlined" (onClick)="viewing.set(f)" />
+            }
+            <p-button
+              label="Download"
+              icon="pi pi-download"
+              size="small"
+              [loading]="busyId() === f._id"
+              (onClick)="download(f)"
+            />
+          </div>
+        }
+
+        <!-- why it can't be downloaded, and what the viewer can do about it -->
+        @if (!f.canDownload) {
+          <div class="mt-3 flex flex-wrap items-center gap-2 border-t border-[var(--p-content-border-color)] pt-3 text-sm">
+            @if (embargoActive(f)) {
+              <i class="pi pi-clock text-amber-600" aria-hidden="true"></i>
+              <span class="text-gray-700">Under embargo until {{ f.embargoUntil!.slice(0, 10) }}.</span>
+            } @else if (f.accessMode === 'restricted') {
+              <i class="pi pi-lock text-gray-500" aria-hidden="true"></i>
+              <span class="text-gray-700">Only the uploader can download this file.</span>
+            } @else if (f.request?.status === 'pending') {
+              <p-tag value="Request pending" severity="warn" [rounded]="true" />
+              <span class="text-gray-600">Waiting for the uploader.</span>
+              <p-button label="Withdraw" size="small" severity="secondary" variant="text" [loading]="busyId() === f._id" (onClick)="cancelRequest(f)" />
+            } @else {
+              @if (f.request?.status === 'rejected') {
+                <p-tag value="Request declined" severity="danger" [rounded]="true" />
+              }
+              @if (requestingId() === f._id) {
+                <div class="flex w-full flex-col gap-2">
+                  <label class="text-sm font-medium text-gray-700" [for]="'req-' + f._id">
+                    Message to the uploader <span class="font-normal text-gray-500">(optional)</span>
+                  </label>
+                  <textarea
+                    pTextarea
+                    [id]="'req-' + f._id"
+                    rows="3"
+                    maxlength="500"
+                    class="w-full"
+                    placeholder="e.g. I'm preparing a review on this topic"
+                    [(ngModel)]="message"
+                  ></textarea>
+                  <div class="flex justify-end gap-2">
+                    <p-button label="Cancel" size="small" severity="secondary" variant="text" (onClick)="requestingId.set(null)" />
+                    <p-button label="Send request" icon="pi pi-send" size="small" [loading]="busyId() === f._id" (onClick)="sendRequest(f)" />
+                  </div>
+                </div>
+              } @else {
+                <span class="text-gray-700">This file is available on request.</span>
+                <p-button
+                  [label]="f.request?.status === 'rejected' ? 'Request again' : 'Request access'"
+                  icon="pi pi-key"
+                  size="small"
+                  severity="secondary"
+                  variant="outlined"
+                  (onClick)="openRequest(f)"
+                />
+              }
+            }
+          </div>
+        }
+      </li>
+    }
+  </ul>
+} @else {
+  <p class="m-0 text-sm text-gray-500">No files attached.</p>
+}
+
+@if (viewing(); as v) {
+  <app-pdf-viewer-dialog [publicationId]="publicationId()" [file]="v" (closed)="viewing.set(null)" />
+}

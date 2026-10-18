@@ -1,6 +1,10 @@
 <header class="app-header">
   <!-- Brand -->
-  <a class="brand" routerLink="/" aria-label="scholarNet home">
+  <a
+    class="brand"
+    [routerLink]="currentUser() ? '/main/feed' : '/'"
+    aria-label="scholarNet home"
+  >
     <svg class="mark" viewBox="0 0 100 100" aria-hidden="true">
       <g transform="translate(0,4)">
         <g stroke="currentColor" stroke-width="1.1" opacity="0.55" fill="none">
@@ -44,8 +48,11 @@
 
   @if (currentUser(); as user) {
     <nav class="actions" aria-label="Main">
-      <a routerLink="/library" routerLinkActive="is-active" class="nav-link"
-        >My library</a
+      <a routerLink="/main/feed" routerLinkActive="is-active" class="nav-link"
+        >Feed</a
+      >
+      <a routerLink="/main/publications" routerLinkActive="is-active" class="nav-link"
+        >Publications</a
       >
       <a routerLink="/network" routerLinkActive="is-active" class="nav-link"
         >Network</a
@@ -53,6 +60,22 @@
       <a routerLink="/main/teams" routerLinkActive="is-active" class="nav-link"
         >Teams</a
       >
+
+      <!-- Messages -->
+      <p-overlaybadge
+        [value]="messagesUnreadLabel()"
+        severity="danger"
+        [badgeDisabled]="messagesUnread() === 0"
+      >
+        <p-button
+          icon="pi pi-comments"
+          variant="text"
+          severity="secondary"
+          rounded
+          ariaLabel="Messages"
+          routerLink="/main/messages"
+        />
+      </p-overlaybadge>
 
       <!-- Notifications -->
       <p-overlaybadge

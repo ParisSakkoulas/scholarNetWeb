@@ -22,6 +22,11 @@
             "tsConfig": "tsconfig.app.json",
             "assets": [
               {
+                "glob": "pdf.worker.min.mjs",
+                "input": "node_modules/pdfjs-dist/build",
+                "output": "/pdfjs"
+              },
+              {
                 "glob": "**/*",
                 "input": "public"
               }
@@ -86,6 +91,11 @@
             ],
             "tsConfig": "tsconfig.spec.json",
             "assets": [
+              {
+                "glob": "pdf.worker.min.mjs",
+                "input": "node_modules/pdfjs-dist/build",
+                "output": "/pdfjs"
+              },
               {
                 "glob": "**/*",
                 "input": "public"

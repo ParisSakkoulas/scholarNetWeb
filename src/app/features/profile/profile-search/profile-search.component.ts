@@ -11,11 +11,12 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import { ButtonModule } from 'primeng/button';
+import { AvatarModule } from 'primeng/avatar';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
 import { PaginatorModule, PaginatorState } from 'primeng/paginator';
+import { SkeletonModule } from 'primeng/skeleton';
 import { TagModule } from 'primeng/tag';
 
 import {
@@ -32,7 +33,8 @@ import { ProfileService } from '../../../core/services/profile.service';
     InputTextModule,
     IconFieldModule,
     InputIconModule,
-    ButtonModule,
+    AvatarModule,
+    SkeletonModule,
     TagModule,
     PaginatorModule,
   ],

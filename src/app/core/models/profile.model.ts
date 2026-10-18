@@ -1,5 +1,24 @@
 import { ProfileLink } from '../../shared/interfaces/Profile/profile-linkt';
 
+/** Who can see a contact detail on a profile. */
+export type ContactVisibilityLevel = 'public' | 'connections' | 'private';
+
+export interface ContactVisibility {
+  /** city, country and timezone */
+  location: ContactVisibilityLevel;
+  website: ContactVisibilityLevel;
+  phone: ContactVisibilityLevel;
+}
+
+export const CONTACT_VISIBILITY_OPTIONS: {
+  label: string;
+  value: ContactVisibilityLevel;
+}[] = [
+  { label: 'Everyone', value: 'public' },
+  { label: 'Connections only', value: 'connections' },
+  { label: 'Only me', value: 'private' },
+];
+
 export interface ProfilePosition {
   _id: string;
   title: string;
@@ -87,7 +106,11 @@ export interface Profile {
   googleScholarId?: string;
   arxivId?: string;
   researcherId?: string;
-  websiteUrl?: string;
+  /** Only present when the owner's visibility setting lets this viewer see it. */
+  website?: string;
+  phone?: string;
+  /** Sent to the owner only. */
+  contactVisibility?: ContactVisibility;
   pronouns?: string;
   languages?: string[];
   availability?: string[];
@@ -133,7 +156,9 @@ export interface CreateProfile {
   bio?: string;
   city?: string;
   timezone?: string;
-  websiteUrl?: string;
+  website?: string | null;
+  phone?: string | null;
+  contactVisibility?: Partial<ContactVisibility>;
   country?: string;
   orcidId?: string;
 }

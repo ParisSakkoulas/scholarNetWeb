@@ -1,0 +1,117 @@
+<div class="mx-auto max-w-3xl px-4 py-8">
+  <header class="mb-5">
+    <h1 class="m-0 text-2xl font-semibold text-gray-900">File access requests</h1>
+    <p class="m-0 mt-1 text-sm text-gray-500">
+      Requests for your files, and the ones you sent to other researchers.
+    </p>
+  </header>
+
+  <div class="mb-4 flex flex-wrap items-center gap-3">
+    <p-selectbutton
+      [options]="boxOptions"
+      optionLabel="label"
+      optionValue="value"
+      [allowEmpty]="false"
+      [ngModel]="box()"
+      (ngModelChange)="setBox($event)"
+    />
+    @if (box() === 'incoming') {
+      <p-selectbutton
+        [options]="statusOptions"
+        optionLabel="label"
+        optionValue="value"
+        [allowEmpty]="false"
+        size="small"
+        [ngModel]="status()"
+        (ngModelChange)="setStatus($event)"
+      />
+    }
+  </div>
+
+  @if (error()) {
+    <p class="mb-3 mt-0 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700" role="alert">{{ error() }}</p>
+  }
+
+  @if (loading() && !items().length) {
+    @for (i of [1, 2, 3]; track i) {
+      <div class="mb-3 rounded-2xl border border-[var(--p-content-border-color)] bg-[var(--p-content-background)] p-4">
+        <p-skeleton width="60%" height="1rem" styleClass="mb-2" />
+        <p-skeleton width="35%" height="0.8rem" />
+      </div>
+    }
+  } @else if (!items().length) {
+    <div class="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-[var(--p-content-border-color)] px-4 py-14 text-center text-gray-500">
+      <i class="pi pi-key text-4xl" aria-hidden="true"></i>
+      <p class="m-0 font-medium text-gray-700">
+        @if (box() === 'incoming') { No requests {{ status() === 'all' ? '' : status() === 'rejected' ? 'declined' : status() }} } @else { You haven't requested any files }
+      </p>
+    </div>
+  } @else {
+    <ul class="m-0 flex list-none flex-col gap-3 p-0" [class.opacity-60]="loading()">
+      @for (r of items(); track r._id) {
+        <li class="rounded-2xl border border-[var(--p-content-border-color)] bg-[var(--p-content-background)] p-4">
+          <div class="flex items-start gap-3">
+            <p-avatar
+              [image]="person(r)?.profilePhotoUrl"
+              [label]="person(r)?.profilePhotoUrl ? undefined : initials(r)"
+              shape="circle"
+            />
+            <div class="min-w-0 flex-1">
+              <div class="text-sm text-gray-900">
+                @if (person(r); as u) {
+                  <a [routerLink]="['/main/profile', u._id]" class="font-semibold hover:underline">{{ u.firstName }} {{ u.lastName }}</a>
+                }
+                @if (box() === 'incoming') { asked for access to } @else { You asked for access to }
+                <strong>{{ r.fileName }}</strong>
+              </div>
+              <div class="mt-0.5 text-sm text-gray-600">
+                in <a [routerLink]="['/main/publications', r.publication]" class="hover:underline">{{ r.publicationTitle }}</a>
+              </div>
+              @if (r.message) {
+                <p class="m-0 mt-2 whitespace-pre-line rounded-lg bg-surface-50 px-3 py-2 text-sm text-gray-700">“{{ r.message }}”</p>
+              }
+              <div class="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-500">
+                <p-tag [value]="label(r.status)" [severity]="severity(r.status)" [rounded]="true" />
+                <span>{{ timeAgo(r.createdAt) }}</span>
+                @if (box() === 'mine' && r.status === 'approved') {
+                  <a [routerLink]="['/main/publications', r.publication]" class="text-blue-700 hover:underline">Open to download</a>
+                }
+              </div>
+            </div>
+
+            <div class="flex shrink-0 flex-col gap-2 sm:flex-row">
+              @if (box() === 'incoming') {
+                @if (r.status !== 'approved') {
+                  <p-button label="Approve" icon="pi pi-check" size="small" [loading]="busyId() === r._id" (onClick)="decide(r, 'approve')" />
+                }
+                @if (r.status !== 'rejected') {
+                  <p-button
+                    [label]="r.status === 'approved' ? 'Revoke' : 'Decline'"
+                    icon="pi pi-times"
+                    size="small"
+                    severity="secondary"
+                    variant="outlined"
+                    [loading]="busyId() === r._id"
+                    (onClick)="decide(r, 'reject')"
+                  />
+                }
+              } @else {
+                <p-button label="Withdraw" size="small" severity="secondary" variant="text" [loading]="busyId() === r._id" (onClick)="withdraw(r)" />
+              }
+            </div>
+          </div>
+        </li>
+      }
+    </ul>
+
+    @if (total() > pageSize) {
+      <p-paginator
+        styleClass="mt-4"
+        [rows]="pageSize"
+        [totalRecords]="total()"
+        [first]="(page() - 1) * pageSize"
+        (onPageChange)="onPage($event)"
+      />
+    }
+  }
+</div>

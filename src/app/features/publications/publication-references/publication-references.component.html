@@ -1,0 +1,251 @@
+<section aria-label="References">
+  <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+    <h3 class="m-0 text-base font-semibold text-gray-900">
+      References <span class="font-normal text-gray-500">({{ rows().length }})</span>
+    </h3>
+    @if (!readonly()) {
+      <div class="flex flex-wrap gap-2">
+        @if (live()) {
+          <p-button
+            label="Sync from OpenAlex"
+            icon="pi pi-sync"
+            severity="secondary"
+            variant="outlined"
+            size="small"
+            [loading]="busy()"
+            title="Adds references OpenAlex knows about; your edits and removals are kept"
+            (onClick)="sync()"
+          />
+        }
+        <p-button label="Add reference" icon="pi pi-plus" size="small" (onClick)="openAdd()" />
+      </div>
+    }
+  </div>
+
+  @if (notice(); as n) {
+    <p
+      class="mb-3 mt-0 rounded-lg px-3 py-2 text-sm"
+      [class]="n.kind === 'ok' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-700'"
+      [attr.role]="n.kind === 'error' ? 'alert' : 'status'"
+    >
+      {{ n.text }}
+    </p>
+  }
+
+  <!-- Add / edit panel -->
+  @if (addOpen() && !readonly()) {
+    <div class="mb-4 flex flex-col gap-4 rounded-xl border border-[var(--p-content-border-color)] p-4">
+      @if (editingId() === null) {
+        <p-selectbutton
+          [options]="modeOptions"
+          optionLabel="label"
+          optionValue="value"
+          [allowEmpty]="false"
+          [ngModel]="mode()"
+          (ngModelChange)="mode.set($event)"
+          [ngModelOptions]="{ standalone: true }"
+          size="small"
+        />
+      } @else {
+        <p class="m-0 text-sm font-medium text-gray-700">Edit reference</p>
+      }
+
+      @switch (mode()) {
+        @case ('library') {
+          <div>
+            <label class="mb-2 block text-sm font-medium text-gray-700" for="ref-lib">
+              Search publications on scholarNet
+            </label>
+            <div class="flex gap-2">
+              <p-autocomplete
+                inputId="ref-lib"
+                [(ngModel)]="picked"
+                [ngModelOptions]="{ standalone: true }"
+                [suggestions]="suggestions"
+                (completeMethod)="searchLibrary($event)"
+                optionLabel="title"
+                [minLength]="2"
+                [forceSelection]="true"
+                placeholder="Type a title or keyword"
+                styleClass="w-full"
+                inputStyleClass="w-full"
+                appendTo="body"
+                class="flex-1"
+              >
+                <ng-template #item let-p>
+                  <div class="min-w-0">
+                    <div class="truncate text-sm font-medium">{{ p.title }}</div>
+                    <div class="truncate text-xs text-gray-500">
+                      {{ p.year }} · {{ p.authors[0]?.name }}
+                    </div>
+                  </div>
+                </ng-template>
+              </p-autocomplete>
+              <p-button
+                label="Add"
+                icon="pi pi-plus"
+                [disabled]="!picked"
+                [loading]="busy()"
+                (onClick)="addFromLibrary()"
+              />
+            </div>
+          </div>
+        }
+
+        @case ('manual') {
+          <form [formGroup]="manual" (ngSubmit)="submitManual()" class="flex flex-col gap-4">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label class="mb-2 block text-sm font-medium text-gray-700" for="ref-doi">DOI</label>
+                <input id="ref-doi" pInputText formControlName="doi" class="w-full" placeholder="10.1000/xyz123" />
+              </div>
+              <div>
+                <label class="mb-2 block text-sm font-medium text-gray-700" for="ref-year">Year</label>
+                <input id="ref-year" pInputText type="number" formControlName="year" class="w-full" min="1000" />
+              </div>
+            </div>
+            <div>
+              <label class="mb-2 block text-sm font-medium text-gray-700" for="ref-title">Title</label>
+              <input id="ref-title" pInputText formControlName="title" class="w-full" maxlength="500" />
+            </div>
+            <div>
+              <label class="mb-2 block text-sm font-medium text-gray-700" for="ref-authors">Authors</label>
+              <p-chips
+                inputId="ref-authors"
+                formControlName="authors"
+                separator=","
+                [addOnBlur]="true"
+                placeholder="Type a name and press Enter"
+                styleClass="!flex w-full [&_ul]:!w-full"
+              />
+            </div>
+            <div>
+              <label class="mb-2 block text-sm font-medium text-gray-700" for="ref-venue">Journal / venue</label>
+              <input id="ref-venue" pInputText formControlName="venue" class="w-full" />
+            </div>
+            <div>
+              <label class="mb-2 block text-sm font-medium text-gray-700" for="ref-raw">
+                Full citation text <span class="font-normal text-gray-500">(optional)</span>
+              </label>
+              <textarea id="ref-raw" pTextarea formControlName="raw" rows="3" class="w-full"></textarea>
+            </div>
+            <div class="flex justify-end gap-2">
+              <p-button type="button" label="Cancel" severity="secondary" [text]="true" (onClick)="closeAdd()" />
+              <p-button
+                type="submit"
+                [label]="editingId() === null ? 'Add reference' : 'Save reference'"
+                [loading]="busy()"
+              />
+            </div>
+          </form>
+        }
+
+        @case ('import') {
+          <form [formGroup]="importForm" (ngSubmit)="submitImport()" class="flex flex-col gap-4">
+            <div>
+              <label class="mb-2 block text-sm font-medium text-gray-700" for="ref-format">Format</label>
+              <p-select
+                inputId="ref-format"
+                formControlName="format"
+                [options]="formatOptions"
+                optionLabel="label"
+                optionValue="value"
+                styleClass="w-full sm:w-72"
+                appendTo="body"
+              />
+            </div>
+            <div>
+              <label class="mb-2 block text-sm font-medium text-gray-700" for="ref-content">
+                Paste your references
+              </label>
+              <textarea
+                id="ref-content"
+                pTextarea
+                formControlName="content"
+                rows="9"
+                class="w-full font-mono text-xs"
+                placeholder="@article{key, title={...}, author={...}, year={2024}}"
+              ></textarea>
+              @if (!live()) {
+                <p class="m-0 mt-1 text-xs text-gray-500">
+                  The pasted text is read when you save the publication.
+                </p>
+              }
+            </div>
+            <div class="flex justify-end gap-2">
+              <p-button type="button" label="Cancel" severity="secondary" [text]="true" (onClick)="closeAdd()" />
+              <p-button type="submit" label="Import" icon="pi pi-upload" [disabled]="importForm.invalid" [loading]="busy()" />
+            </div>
+          </form>
+        }
+      }
+    </div>
+  }
+
+  <!-- Queued imports (create dialog only) -->
+  @for (imp of imports(); track $index) {
+    <div class="mb-2 flex items-center justify-between rounded-lg bg-surface-50 px-3 py-2 text-sm text-gray-700">
+      <span><i class="pi pi-upload mr-2 text-gray-500" aria-hidden="true"></i>
+        {{ imp.format === 'bibtex' ? 'BibTeX' : 'Text' }} import queued ({{ imp.content.length }} characters)</span>
+      <p-button icon="pi pi-times" severity="secondary" variant="text" rounded size="small" ariaLabel="Remove queued import" (onClick)="removeImport($index)" />
+    </div>
+  }
+
+  <!-- List -->
+  @if (loading()) {
+    <p class="py-6 text-center text-sm text-gray-500">
+      <i class="pi pi-spin pi-spinner mr-1" aria-hidden="true"></i> Loading references…
+    </p>
+  } @else if (!rows().length && !imports().length) {
+    <p class="rounded-xl border border-dashed border-[var(--p-content-border-color)] px-4 py-8 text-center text-sm text-gray-500">
+      No references yet.
+      @if (!readonly()) { Add them one by one, paste BibTeX, or sync from OpenAlex. }
+    </p>
+  } @else {
+    <ol class="m-0 flex list-none flex-col gap-2 p-0">
+      @for (r of rows(); track r.id; let i = $index) {
+        <li class="flex gap-3 rounded-xl border border-[var(--p-content-border-color)] px-4 py-3">
+          <span class="mt-0.5 w-6 shrink-0 text-right text-xs text-gray-400">{{ i + 1 }}</span>
+          <div class="min-w-0 flex-1">
+            <div class="text-sm font-medium text-gray-900">
+              @if (r.citedId) {
+                <a [routerLink]="['/main/publications', r.citedId]" class="hover:underline">{{ r.title }}</a>
+              } @else {
+                {{ r.title }}
+              }
+            </div>
+            @if (r.authors || r.year || r.venue) {
+              <div class="text-xs text-gray-600">
+                {{ r.authors }}@if (r.authors && (r.year || r.venue)) { · }{{ r.year }}@if (r.year && r.venue) { · }{{ r.venue }}
+              </div>
+            }
+            <div class="mt-1 flex flex-wrap items-center gap-2">
+              @if (r.citedId) {
+                <p-tag value="On scholarNet" severity="success" [rounded]="true" />
+              }
+              @if (r.doi) {
+                <a [href]="'https://doi.org/' + r.doi" target="_blank" rel="noopener noreferrer" class="text-xs text-blue-700 hover:underline">DOI {{ r.doi }}</a>
+              }
+              @if (r.source && r.source !== 'manual' && live()) {
+                <span class="text-xs text-gray-400">{{ r.source }}</span>
+              }
+            </div>
+          </div>
+          @if (!readonly()) {
+            <div class="flex shrink-0 items-start gap-1">
+              @if (confirmingId() === r.id) {
+                <p-button label="Remove" size="small" severity="danger" (onClick)="remove(r)" />
+                <p-button label="Keep" size="small" severity="secondary" variant="text" (onClick)="confirmingId.set(null)" />
+              } @else {
+                @if (r.editable) {
+                  <p-button icon="pi pi-pencil" severity="secondary" variant="text" rounded size="small" ariaLabel="Edit reference" (onClick)="startEdit(r)" />
+                }
+                <p-button icon="pi pi-trash" severity="secondary" variant="text" rounded size="small" ariaLabel="Remove reference" (onClick)="remove(r)" />
+              }
+            </div>
+          }
+        </li>
+      }
+    </ol>
+  }
+</section>

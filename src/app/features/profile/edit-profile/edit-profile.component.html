@@ -71,49 +71,46 @@
             </div>
 
             <div class="section">
-              <h3 class="section-title">Location and website</h3>
+              <h3 class="section-title">Contact details</h3>
+              <p class="hint" style="margin: 0 0 16px">
+                Choose who can see each detail. They are also available when you generate your CV.
+                "Connections only" means people you follow and who follow you back.
+              </p>
               <div class="form-grid">
                 <div class="field">
                   <label for="city">City</label>
-                  <input
-                    pInputText
-                    id="city"
-                    formControlName="city"
-                    autocomplete="address-level2"
-                    fluid
-                  />
+                  <input pInputText id="city" formControlName="city" autocomplete="address-level2" fluid />
                 </div>
                 <div class="field">
                   <label for="country">Country</label>
-                  <input
-                    pInputText
-                    id="country"
-                    formControlName="country"
-                    autocomplete="country-name"
-                    fluid
-                  />
+                  <input pInputText id="country" formControlName="country" autocomplete="country-name" fluid />
                 </div>
                 <div class="field">
                   <label for="timezone">Timezone</label>
-                  <input
-                    pInputText
-                    id="timezone"
-                    formControlName="timezone"
-                    placeholder="Europe/Athens"
-                    fluid
-                  />
+                  <input pInputText id="timezone" formControlName="timezone" placeholder="Europe/Athens" fluid />
                 </div>
                 <div class="field">
-                  <label for="websiteUrl">Website</label>
-                  <input
-                    pInputText
-                    id="websiteUrl"
-                    type="url"
-                    formControlName="websiteUrl"
-                    placeholder="https://"
-                    autocomplete="url"
-                    fluid
-                  />
+                  <label for="vis-location">Location (city, country, timezone) visible to</label>
+                  <div [formGroup]="profileForm.controls.contactVisibility" style="display: contents"><p-select id="vis-location" inputId="vis-location" formControlName="location" [options]="visibilityOptions" optionLabel="label" optionValue="value" appendTo="body" fluid /></div>
+                </div>
+                <div class="field">
+                  <label for="website">Website</label>
+                  <input pInputText id="website" type="url" formControlName="website" placeholder="https://" autocomplete="url" fluid />
+                </div>
+                <div class="field">
+                  <label for="vis-website">Website visible to</label>
+                  <div [formGroup]="profileForm.controls.contactVisibility" style="display: contents"><p-select inputId="vis-website" formControlName="website" [options]="visibilityOptions" optionLabel="label" optionValue="value" appendTo="body" fluid /></div>
+                </div>
+                <div class="field">
+                  <label for="phone">Mobile phone</label>
+                  <input pInputText id="phone" type="tel" formControlName="phone" placeholder="+30 691 234 5678" autocomplete="tel" fluid />
+                  @if (profileForm.controls.phone.invalid && profileForm.controls.phone.touched) {
+                    <small class="hint" style="color: var(--p-red-500)">Enter a valid phone number, e.g. +30 691 234 5678.</small>
+                  }
+                </div>
+                <div class="field">
+                  <label for="vis-phone">Phone visible to</label>
+                  <div [formGroup]="profileForm.controls.contactVisibility" style="display: contents"><p-select inputId="vis-phone" formControlName="phone" [options]="visibilityOptions" optionLabel="label" optionValue="value" appendTo="body" fluid /></div>
                 </div>
               </div>
             </div>

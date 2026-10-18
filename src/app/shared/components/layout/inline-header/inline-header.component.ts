@@ -15,6 +15,7 @@ import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../../core/services/auth.service';
 import { AppNotification } from '../../../../core/models/notification.model';
+import { ChatService } from '../../../../core/services/chat.service';
 import { NotificationsService } from '../../../../core/services/notifications.service';
 import { NotificationItemComponent } from '../../../../features/notifications/components/notification-item/notification-item.component';
 import { ClickOutsideDirective } from '../../../directives/click-outside.directive';
@@ -61,6 +62,12 @@ export class InlineHeaderComponent {
   readonly unreadLabel = computed(() =>
     this.unreadCount() > 99 ? '99+' : String(this.unreadCount()),
   );
+  // injecting ChatService here opens the live chat connection once a user signs in
+  private readonly chat = inject(ChatService);
+  readonly messagesUnread = this.chat.unreadTotal;
+  readonly messagesUnreadLabel = computed(() =>
+    this.messagesUnread() > 99 ? '99+' : String(this.messagesUnread()),
+  );
   readonly recent = signal<AppNotification[]>([]);
   readonly recentLoading = signal(false);
 
@@ -97,6 +104,7 @@ export class InlineHeaderComponent {
       command: () => this.goToOwnProfile(),
     },
     { label: 'My teams', icon: 'pi pi-users', routerLink: '/main/teams' },
+    { label: 'File requests', icon: 'pi pi-key', routerLink: '/main/file-requests' },
     { label: 'Settings', icon: 'pi pi-cog', routerLink: '/settings' },
     { label: 'Activity', icon: 'pi pi-history', routerLink: '/settings' },
     { separator: true },

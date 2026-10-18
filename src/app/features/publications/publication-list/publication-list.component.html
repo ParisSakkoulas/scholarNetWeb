@@ -1,0 +1,56 @@
+<div class="mx-auto max-w-5xl p-6">
+  <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+    <h1 class="m-0 text-2xl font-semibold text-gray-900">Publications</h1>
+    <div class="flex gap-2">
+      <p-button label="Search all" icon="pi pi-search" severity="secondary" variant="outlined" routerLink="/main/publications/search" />
+      <p-button label="New publication" icon="pi pi-plus" (onClick)="showCreate.set(true)" />
+    </div>
+  </div>
+
+  <div class="mb-4 flex flex-wrap items-center gap-3">
+    <p-selectbutton
+      [options]="scopeOptions"
+      optionLabel="label"
+      optionValue="value"
+      [allowEmpty]="false"
+      [ngModel]="scope()"
+      (ngModelChange)="onScopeChange($event)"
+      ariaLabelledBy="Publication scope"
+    />
+    <p-select
+      [options]="typeOptions"
+      optionLabel="label"
+      optionValue="value"
+      placeholder="All types"
+      [showClear]="true"
+      [ngModel]="typeFilter()"
+      (ngModelChange)="onTypeChange($event)"
+      appendTo="body"
+    />
+  </div>
+
+  @for (key of [tableKey()]; track key) {
+    <app-generic-table
+      [columns]="columns"
+      [config]="config"
+      storageKey="publication"
+      [fetchPage]="fetchPage"
+      [actions]="actions()"
+    />
+  }
+
+  @if (showCreate()) {
+    <app-publication-form (changed)="refreshTable()" (saved)="onCreated($event)" (cancelled)="showCreate.set(false)" />
+  }
+
+  @if (editing(); as pub) {
+    <app-publication-form
+      [publication]="pub"
+      (saved)="onUpdated($event)"
+      (cancelled)="editing.set(null)"
+    />
+  }
+
+  <p-confirmdialog />
+  <p-toast />
+</div>

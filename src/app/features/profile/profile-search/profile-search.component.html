@@ -1,15 +1,21 @@
-<div class="search-page">
-  <header class="page-head">
-    <h1>Find researchers</h1>
-    <p>Search by name, username, headline, country, skills or interests.</p>
+<div class="mx-auto flex min-h-[calc(100vh-12rem)] max-w-3xl flex-col px-4 pb-24 pt-12">
+  <header class="mb-6">
+    <h1 class="m-0 text-3xl font-semibold text-surface-900">Find researchers</h1>
+    <p class="m-0 mt-1 text-surface-500">
+      Search by name, username, headline, country, skills or interests.
+    </p>
+    <nav class="mt-3 flex gap-4 text-sm" aria-label="Search type">
+      <span class="border-b-2 border-blue-600 font-medium text-surface-900" aria-current="page">Researchers</span>
+      <a routerLink="/main/publications/search" class="text-surface-500 no-underline hover:text-surface-900">Publications</a>
+    </nav>
   </header>
 
-  <p-iconfield class="search-box">
+  <p-iconfield class="block">
     <p-inputicon class="pi pi-search" />
     <input
       pInputText
       type="search"
-      class="search-input"
+      class="w-full"
       aria-label="Search researchers"
       placeholder="e.g. Jane Doe, machine learning, Greece"
       [formControl]="query"
@@ -17,74 +23,120 @@
     />
   </p-iconfield>
 
-  <div class="status" aria-live="polite">
+  <div class="my-4 min-h-6 text-sm text-surface-500" aria-live="polite">
     @if (loading()) {
-      <i class="pi pi-spin pi-spinner" aria-hidden="true"></i> Searching…
+      <i class="pi pi-spin pi-spinner mr-1" aria-hidden="true"></i> Searching…
     } @else if (error()) {
-      Something went wrong while searching. Please try again.
+      <span class="text-red-600"
+        >Something went wrong while searching. Please try again.</span
+      >
     } @else if (searched()) {
-      {{ total() }}
+      <strong class="text-surface-900">{{ total() }}</strong>
       {{ total() === 1 ? "result" : "results" }} for
-      “{{ searched() }}”
+      <strong class="text-surface-900">“{{ searched() }}”</strong>
     }
   </div>
 
+  <!-- loading placeholders -->
+  @if (loading() && !results().length) {
+    <ul class="m-0 list-none divide-y divide-surface-200 border-y border-surface-200 p-0">
+      @for (i of [1, 2, 3, 4]; track i) {
+        <li class="flex items-center gap-4 py-5">
+          <p-skeleton shape="circle" size="4rem" />
+          <div class="flex-1">
+            <p-skeleton width="45%" height="1.1rem" styleClass="mb-2" />
+            <p-skeleton width="30%" height="0.85rem" />
+          </div>
+        </li>
+      }
+    </ul>
+  }
+
   @if (!loading() && !error() && searched() && !results().length) {
-    <div class="empty">
-      <i class="pi pi-users" aria-hidden="true"></i>
-      <p>No researchers found. Try a different name or keyword.</p>
+    <div class="flex flex-col items-center gap-2 py-16 text-center text-surface-500">
+      <i class="pi pi-users text-4xl" aria-hidden="true"></i>
+      <p class="m-0 font-medium text-surface-700">No researchers found</p>
+      <p class="m-0 text-sm">Try a different name or keyword.</p>
     </div>
   }
 
-  <ul class="results">
-    @for (r of results(); track r._id) {
-      <li>
-        <a class="card result" [routerLink]="['/main/profile', r.user._id]">
-          <div class="avatar">
-            @if (r.user.profilePhotoUrl) {
-              <img [src]="r.user.profilePhotoUrl" [alt]="r.user.firstName" />
-            } @else {
-              {{ initials(r) }}
-            }
-          </div>
+  @if (!searched() && !loading() && !error()) {
+    <div class="flex flex-col items-center gap-2 py-16 text-center text-surface-500">
+      <i class="pi pi-search text-4xl" aria-hidden="true"></i>
+      <p class="m-0 text-sm">Type a name or topic to find researchers.</p>
+    </div>
+  }
 
-          <div class="info">
-            <div class="name-row">
-              <span class="name">{{ r.user.firstName }} {{ r.user.lastName }}</span>
-              @if (r.verified) {
-                <i class="pi pi-verified verified" title="Verified" aria-hidden="true"></i>
+  <!-- results: a plain list, one row per person -->
+  @if (results().length) {
+    <ul
+      class="m-0 list-none divide-y divide-surface-200 border-y border-surface-200 p-0"
+      [class.opacity-60]="loading()"
+    >
+      @for (r of results(); track r._id) {
+        <li>
+          <a
+            class="flex items-center gap-4 py-5 text-inherit no-underline hover:bg-surface-50"
+            [routerLink]="['/main/profile', r.user._id]"
+          >
+            <p-avatar
+              [image]="r.user.profilePhotoUrl"
+              [label]="r.user.profilePhotoUrl ? undefined : initials(r)"
+              shape="circle"
+              size="xlarge"
+            />
+
+            <div class="min-w-0 flex-1">
+              <div class="flex flex-wrap items-baseline gap-x-2">
+                <span class="text-lg font-semibold text-surface-900"
+                  >{{ r.user.firstName }} {{ r.user.lastName }}</span
+                >
+                @if (r.verified) {
+                  <i
+                    class="pi pi-verified text-sm text-blue-600"
+                    title="Verified"
+                    aria-label="Verified"
+                  ></i>
+                }
+                <span class="text-sm text-surface-500"
+                  >&#64;{{ r.user.username }}</span
+                >
+              </div>
+
+              @if (r.headline) {
+                <p class="m-0 mt-0.5 text-sm text-surface-700">
+                  {{ r.headline }}
+                </p>
               }
-              <span class="username">&#64;{{ r.user.username }}</span>
+              @if (location(r); as loc) {
+                <p class="m-0 mt-0.5 text-sm text-surface-500">
+                  <i class="pi pi-map-marker mr-1.5 text-xs" aria-hidden="true"></i
+                  >{{ loc }}
+                </p>
+              }
+
+              @if (topics(r).length) {
+                <div class="mt-2 flex flex-wrap gap-1.5">
+                  @for (t of topics(r); track t) {
+                    <p-tag severity="secondary" [value]="t" [rounded]="true" />
+                  }
+                </div>
+              }
             </div>
 
-            @if (r.headline) {
-              <p class="headline">{{ r.headline }}</p>
-            }
-            @if (location(r); as loc) {
-              <p class="location">
-                <i class="pi pi-map-marker" aria-hidden="true"></i>{{ loc }}
-              </p>
-            }
-
-            @if (topics(r).length) {
-              <div class="topics">
-                @for (t of topics(r); track t) {
-                  <p-tag severity="secondary" [value]="t" />
-                }
-              </div>
-            }
-          </div>
-
-          <span class="view">
-            View profile <i class="pi pi-arrow-right" aria-hidden="true"></i>
-          </span>
-        </a>
-      </li>
-    }
-  </ul>
+            <i
+              class="pi pi-angle-right shrink-0 text-surface-400"
+              aria-hidden="true"
+            ></i>
+          </a>
+        </li>
+      }
+    </ul>
+  }
 
   @if (total() > pageSize) {
     <p-paginator
+      styleClass="mt-auto pt-8"
       [rows]="pageSize"
       [totalRecords]="total()"
       [first]="(page() - 1) * pageSize"

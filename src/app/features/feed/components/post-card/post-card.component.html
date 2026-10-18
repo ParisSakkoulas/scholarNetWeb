@@ -1,0 +1,102 @@
+<article
+  class="rounded-2xl border border-[var(--p-content-border-color)] bg-[var(--p-content-background)] p-4"
+  [attr.aria-label]="'Post by ' + authorName()"
+>
+  <header class="flex items-start gap-3">
+    <a
+      [routerLink]="['/main/profile', view().author._id]"
+      class="shrink-0 no-underline"
+    >
+      <p-avatar
+        [image]="view().author.profilePhotoUrl"
+        [label]="view().author.profilePhotoUrl ? undefined : initials()"
+        shape="circle"
+        size="large"
+      />
+    </a>
+
+    <div class="min-w-0 flex-1">
+      <a
+        [routerLink]="['/main/profile', view().author._id]"
+        class="block truncate font-semibold text-surface-900 no-underline hover:underline"
+        >{{ authorName() }}</a
+      >
+      <a
+        [routerLink]="['/main/posts', view()._id]"
+        class="text-xs text-surface-500 no-underline hover:underline"
+        >&#64;{{ view().author.username }} · {{ timeAgo() }}</a
+      >
+    </div>
+
+    @if (isMine()) {
+      <p-button
+        icon="pi pi-trash"
+        [text]="true"
+        [rounded]="true"
+        size="small"
+        severity="secondary"
+        ariaLabel="Delete post"
+        title="Delete post"
+        (onClick)="confirmDelete()"
+      />
+    }
+  </header>
+
+  <p
+    class="m-0 mt-3 whitespace-pre-wrap break-words text-[15px] leading-relaxed text-surface-900"
+  >
+    {{ view().content }}
+  </p>
+
+  @if (view().likesCount || view().commentsCount) {
+    <div class="mt-3 flex items-center justify-between text-xs text-surface-500">
+      <span>
+        @if (view().likesCount) {
+          <i class="pi pi-thumbs-up-fill mr-1 text-blue-600" aria-hidden="true"></i>
+          {{ view().likesCount }}
+        }
+      </span>
+      @if (view().commentsCount) {
+        <button
+          type="button"
+          class="cursor-pointer border-0 bg-transparent p-0 text-xs text-surface-500 hover:underline"
+          (click)="showComments.set(!showComments())"
+        >
+          {{ view().commentsCount }}
+          {{ view().commentsCount === 1 ? "comment" : "comments" }}
+        </button>
+      }
+    </div>
+  }
+
+  <div class="mt-3 flex gap-1 border-t border-[var(--p-content-border-color)] pt-2">
+    <p-button
+      [label]="view().likedByMe ? 'Liked' : 'Like'"
+      [icon]="view().likedByMe ? 'pi pi-thumbs-up-fill' : 'pi pi-thumbs-up'"
+      [text]="true"
+      size="small"
+      [severity]="view().likedByMe ? 'primary' : 'secondary'"
+      [attr.aria-pressed]="view().likedByMe"
+      (onClick)="toggleLike()"
+    />
+    <p-button
+      label="Comment"
+      icon="pi pi-comment"
+      [text]="true"
+      size="small"
+      [severity]="showComments() ? 'primary' : 'secondary'"
+      [attr.aria-expanded]="showComments()"
+      (onClick)="showComments.set(!showComments())"
+    />
+  </div>
+
+  @if (showComments()) {
+    <div class="mt-2">
+      <sn-post-comments
+        [postId]="view()._id"
+        [postAuthorId]="view().author._id"
+        (countChanged)="onCommentCountChanged($event)"
+      />
+    </div>
+  }
+</article>

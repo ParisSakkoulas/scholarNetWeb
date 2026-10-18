@@ -1,0 +1,221 @@
+<p-toast />
+
+<div class="mx-auto min-h-[calc(100vh-14rem)] max-w-6xl px-4 py-6">
+  <div
+    class="flex h-[calc(100vh-12rem)] min-h-[28rem] overflow-hidden rounded-2xl border border-[var(--p-content-border-color)] bg-[var(--p-content-background)]"
+  >
+    <!-- Conversation list -->
+    <aside
+      class="w-full shrink-0 flex-col border-r border-[var(--p-content-border-color)] md:flex md:w-80"
+      [class.hidden]="selected()"
+      [class.flex]="!selected()"
+    >
+      <header class="flex items-center justify-between border-b border-[var(--p-content-border-color)] px-4 py-3">
+        <h1 class="m-0 text-lg font-semibold text-surface-900">Messages</h1>
+        <span
+          class="inline-flex items-center gap-1.5 text-xs text-surface-500"
+          [title]="connected() ? 'Live' : 'Reconnecting…'"
+        >
+          <span
+            class="h-2 w-2 rounded-full"
+            [class.bg-green-500]="connected()"
+            [class.bg-amber-400]="!connected()"
+          ></span>
+          {{ connected() ? "Live" : "Offline" }}
+        </span>
+      </header>
+
+      <div class="min-h-0 flex-1 overflow-y-auto">
+        @if (listLoading()) {
+          @for (i of [1, 2, 3, 4]; track i) {
+            <div class="flex items-center gap-3 px-4 py-3">
+              <p-skeleton shape="circle" size="2.5rem" />
+              <div class="flex-1">
+                <p-skeleton width="60%" height="0.9rem" styleClass="mb-2" />
+                <p-skeleton width="90%" height="0.75rem" />
+              </div>
+            </div>
+          }
+        } @else {
+          @for (c of conversations(); track c._id) {
+            <button
+              type="button"
+              class="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-surface-100"
+              [class.bg-blue-50]="selected()?._id === c._id"
+              (click)="select(c)"
+            >
+              <p-avatar
+                [image]="c.user?.profilePhotoUrl"
+                [label]="c.user?.profilePhotoUrl ? undefined : initials(c.user)"
+                shape="circle"
+                size="large"
+              />
+              <span class="min-w-0 flex-1">
+                <span class="flex items-baseline justify-between gap-2">
+                  <span
+                    class="truncate text-sm text-surface-900"
+                    [class.font-semibold]="c.unreadCount > 0"
+                    >{{ fullName(c.user) }}</span
+                  >
+                  <span class="shrink-0 text-xs text-surface-400">{{
+                    timeAgo(c.lastMessageAt)
+                  }}</span>
+                </span>
+                <span class="flex items-center justify-between gap-2">
+                  <span
+                    class="truncate text-sm"
+                    [class.text-surface-500]="c.unreadCount === 0"
+                    [class.text-surface-900]="c.unreadCount > 0"
+                    [class.font-medium]="c.unreadCount > 0"
+                    >{{ preview(c) }}</span
+                  >
+                  @if (c.unreadCount > 0) {
+                    <span
+                      class="inline-flex min-w-5 shrink-0 items-center justify-center rounded-full bg-blue-600 px-1.5 text-xs font-medium text-white"
+                      >{{ c.unreadCount > 99 ? "99+" : c.unreadCount }}</span
+                    >
+                  }
+                </span>
+              </span>
+            </button>
+          } @empty {
+            <div class="px-6 py-12 text-center text-sm text-surface-500">
+              <i class="pi pi-comments mb-2 block text-3xl text-surface-300" aria-hidden="true"></i>
+              No conversations yet. Open a connection's profile and choose
+              <strong>Send message</strong> to start one.
+            </div>
+          }
+        }
+      </div>
+    </aside>
+
+    <!-- Thread -->
+    <section class="min-w-0 flex-1 flex-col md:flex" [class.hidden]="!selected()" [class.flex]="selected()">
+      @if (selected(); as convo) {
+        <header class="flex items-center gap-3 border-b border-[var(--p-content-border-color)] px-4 py-3">
+          <p-button
+            icon="pi pi-arrow-left"
+            variant="text"
+            severity="secondary"
+            rounded
+            ariaLabel="Back to conversations"
+            styleClass="md:!hidden"
+            (onClick)="back()"
+          />
+          <button type="button" class="flex min-w-0 items-center gap-3 text-left" (click)="openProfile(convo.user)">
+            <p-avatar
+              [image]="convo.user?.profilePhotoUrl"
+              [label]="convo.user?.profilePhotoUrl ? undefined : initials(convo.user)"
+              shape="circle"
+            />
+            <span class="min-w-0">
+              <span class="block truncate text-sm font-semibold text-surface-900">{{
+                fullName(convo.user)
+              }}</span>
+              <span class="block truncate text-xs text-surface-500">
+                @if (otherTyping()) {
+                  <span class="text-blue-600">typing…</span>
+                } @else {
+                  &#64;{{ convo.user?.username }}
+                }
+              </span>
+            </span>
+          </button>
+        </header>
+
+        <div
+          #scroller
+          class="min-h-0 flex-1 overflow-y-auto bg-surface-50 px-4 py-4"
+          (scroll)="onScroll()"
+          aria-live="polite"
+        >
+          @if (threadLoading()) {
+            <p class="py-6 text-center text-sm text-surface-500">
+              <i class="pi pi-spin pi-spinner mr-1" aria-hidden="true"></i> Loading…
+            </p>
+          } @else {
+            @if (thread()?.hasMore) {
+              <div class="mb-3 text-center">
+                <p-button
+                  label="Load earlier messages"
+                  size="small"
+                  variant="text"
+                  severity="secondary"
+                  [loading]="loadingOlder()"
+                  (onClick)="loadOlder()"
+                />
+              </div>
+            }
+
+            @for (m of messages(); track m._id; let i = $index) {
+              @if (showTime(i)) {
+                <p class="mb-1 mt-3 text-center text-xs text-surface-400">
+                  {{ timeAgo(m.createdAt) }}
+                </p>
+              }
+              <div class="mb-1 flex" [class.justify-end]="isMine(m)">
+                <div
+                  class="max-w-[75%] whitespace-pre-wrap break-words rounded-2xl px-3 py-2 text-sm"
+                  [class]="
+                    isMine(m)
+                      ? 'bg-blue-600 text-white'
+                      : 'border border-[var(--p-content-border-color)] bg-[var(--p-content-background)] text-surface-900'
+                  "
+                >
+                  {{ m.text }}
+                </div>
+              </div>
+              @if (m._id === lastMineId()) {
+                <p class="mb-1 text-right text-xs text-surface-400">
+                  {{ m.readAt ? "Seen" : "Sent" }}
+                </p>
+              }
+            } @empty {
+              <p class="py-10 text-center text-sm text-surface-500">
+                Say hello to {{ convo.user?.firstName }}.
+              </p>
+            }
+
+            @if (otherTyping()) {
+              <div class="mt-2 flex">
+                <span class="rounded-2xl border border-[var(--p-content-border-color)] bg-[var(--p-content-background)] px-3 py-2 text-sm text-surface-400">
+                  <i class="pi pi-ellipsis-h" aria-hidden="true"></i>
+                  <span class="sr-only">{{ convo.user?.firstName }} is typing</span>
+                </span>
+              </div>
+            }
+          }
+        </div>
+
+        <form
+          class="flex items-end gap-2 border-t border-[var(--p-content-border-color)] bg-[var(--p-content-background)] px-4 py-3"
+          (ngSubmit)="send()"
+        >
+          <textarea
+            name="draft"
+            rows="1"
+            class="max-h-32 min-h-[2.5rem] flex-1 resize-none rounded-lg border border-surface-300 px-3 py-2 text-sm outline-none focus:border-blue-500"
+            placeholder="Write a message…"
+            aria-label="Message"
+            [maxLength]="maxLength"
+            [(ngModel)]="draft"
+            (ngModelChange)="onInput()"
+            (keydown.enter)="onEnter($event)"
+          ></textarea>
+          <p-button
+            type="submit"
+            icon="pi pi-send"
+            ariaLabel="Send"
+            [loading]="sending()"
+            [disabled]="!draft.trim()"
+          />
+        </form>
+      } @else {
+        <div class="m-auto text-center text-surface-500">
+          <i class="pi pi-comments mb-2 block text-4xl text-surface-300" aria-hidden="true"></i>
+          Select a conversation to start chatting.
+        </div>
+      }
+    </section>
+  </div>
+</div>
