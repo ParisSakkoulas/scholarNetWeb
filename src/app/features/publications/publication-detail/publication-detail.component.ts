@@ -21,6 +21,7 @@ import { ReferencesService } from '../../../core/services/references.service';
 import { PublicationFilesViewerComponent } from '../files/publication-files-viewer.component';
 import { PublicationReferencesComponent } from '../publication-references/publication-references.component';
 import { PublicationFormComponent } from '../publication-form/publication-form.component';
+import { RatingComponent } from '../../../shared/components/ui/rating/rating.component';
 
 @Component({
   selector: 'app-publication-detail',
@@ -35,6 +36,7 @@ import { PublicationFormComponent } from '../publication-form/publication-form.c
     PublicationFormComponent,
     PublicationReferencesComponent,
     PublicationFilesViewerComponent,
+    RatingComponent,
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './publication-detail.component.html',
@@ -79,18 +81,35 @@ export class PublicationDetailComponent implements OnInit {
     const p = this.publication();
     if (!p) return [];
     return TYPE_FIELDS[p.type]
-      .map((f) => ({ label: f.label, value: this.display(p[f.key], f.kind, f.options) }))
+      .map((f) => ({
+        label: f.label,
+        value: this.display(p[f.key], f.kind, f.options),
+      }))
       .filter((d) => d.value !== '');
   });
 
   ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('publicationId');
-    if (!id) return;
+    // the route is reused when navigating between publications (e.g. via a reference),
+    // so react to param changes instead of reading the snapshot once
+    this.route.paramMap.subscribe((params) => {
+      const id = params.get('publicationId');
+      if (id) this.load(id);
+    });
+  }
+
+  private load(id: string): void {
+    this.loading.set(true);
+    this.error.set(null);
+    this.publication.set(null);
+    this.citedBy.set([]);
+    this.citedByTotal.set(0);
+    this.editing.set(false);
     this.service.get(id).subscribe({
       next: (p) => {
         this.publication.set(p);
         this.loading.set(false);
         this.loadCitedBy(p._id);
+        window.scrollTo({ top: 0 });
       },
       error: (err) => {
         this.error.set(err?.error?.message ?? 'Publication not found.');

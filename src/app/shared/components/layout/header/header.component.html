@@ -1,74 +1,81 @@
-<nav class="nav">
-    <div class="container nav-inner">
+<header class="sticky top-0 z-50 border-b border-[var(--p-content-border-color)] bg-[var(--p-content-background)]/90 backdrop-blur">
+  <nav class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-6 px-4 sm:px-6" aria-label="Main">
+    <!-- Brand -->
+    <a routerLink="/" class="flex shrink-0 items-center gap-2.5 text-surface-900 no-underline" aria-label="scholarNet home">
+      <svg class="h-8 w-8" viewBox="0 0 100 100" aria-hidden="true">
+        <g transform="translate(0,4)">
+          <g stroke="currentColor" stroke-width="1.1" opacity="0.55" fill="none">
+            <line x1="22" y1="26" x2="56" y2="14" />
+            <line x1="22" y1="26" x2="40" y2="60" />
+            <line x1="56" y1="14" x2="78" y2="46" />
+            <line x1="78" y1="46" x2="40" y2="60" />
+            <line x1="40" y1="60" x2="14" y2="64" />
+            <line x1="40" y1="60" x2="60" y2="86" />
+            <line x1="78" y1="46" x2="86" y2="76" />
+            <line x1="86" y1="76" x2="60" y2="86" />
+          </g>
+          <circle cx="22" cy="26" r="3.2" fill="currentColor" />
+          <circle cx="56" cy="14" r="3.2" fill="currentColor" />
+          <circle cx="78" cy="46" r="3.2" fill="currentColor" />
+          <circle cx="40" cy="60" r="5" class="fill-[var(--p-primary-color)]" />
+          <circle cx="14" cy="64" r="3.2" fill="currentColor" />
+          <circle cx="86" cy="76" r="3.2" fill="currentColor" />
+          <circle cx="60" cy="86" r="3.2" fill="currentColor" />
+        </g>
+      </svg>
+      <span class="text-xl font-semibold tracking-tight">scholar<span class="text-[var(--p-primary-color)]">Net</span></span>
+    </a>
 
-        <!-- Brand -->
-        <a class="brand" routerLink="/">
-            <svg class="mark" viewBox="0 0 100 100" aria-hidden="true">
-                <g transform="translate(0,4)">
-                    <g stroke="currentColor" stroke-width="1.1" opacity="0.55" fill="none">
-                        <line x1="22" y1="26" x2="56" y2="14" />
-                        <line x1="22" y1="26" x2="40" y2="60" />
-                        <line x1="56" y1="14" x2="78" y2="46" />
-                        <line x1="78" y1="46" x2="40" y2="60" />
-                        <line x1="40" y1="60" x2="14" y2="64" />
-                        <line x1="40" y1="60" x2="60" y2="86" />
-                        <line x1="78" y1="46" x2="86" y2="76" />
-                        <line x1="86" y1="76" x2="60" y2="86" />
-                    </g>
-                    <circle cx="22" cy="26" r="3.2" fill="currentColor" />
-                    <circle cx="56" cy="14" r="3.2" fill="currentColor" />
-                    <circle cx="78" cy="46" r="3.2" fill="currentColor" />
-                    <circle cx="40" cy="60" r="5.0" class="accent" />
-                    <circle cx="14" cy="64" r="3.2" fill="currentColor" />
-                    <circle cx="86" cy="76" r="3.2" fill="currentColor" />
-                    <circle cx="60" cy="86" r="3.2" fill="currentColor" />
-                </g>
-            </svg>
-            <span class="wm">scholar<i>N</i>et</span>
-        </a>
-
-        <!-- Desktop nav links -->
-        <div class="nav-links">
-            <a routerLink="/features" routerLinkActive="active">Features</a>
-            <a routerLink="/how-it-works" routerLinkActive="active">How it works</a>
-            <a routerLink="/researchers" routerLinkActive="active">For researchers</a>
-            <a routerLink="/institutions" routerLinkActive="active">Institutions</a>
-            <a routerLink="/pricing" routerLinkActive="active">Pricing</a>
-        </div>
-
-        <!-- Desktop CTA -->
-        <div class="nav-cta">
-            <a routerLink="/auth/login" class="signin-link">Sign in</a>
-            <a routerLink="/auth/register" class="btn">
-                Claim your profile <span class="arrow">→</span>
-            </a>
-        </div>
-
-        <!-- Mobile hamburger -->
-        <button class="hamburger" [class.open]="mobileMenuOpen()" (click)="toggleMenu()"
-            aria-label="Toggle navigation menu" [attr.aria-expanded]="mobileMenuOpen()">
-            <span></span>
-            <span></span>
-            <span></span>
-        </button>
+    <!-- Desktop links -->
+    <div class="hidden items-center gap-1 md:flex">
+      @for (l of links; track l.fragment) {
+        <a
+          routerLink="/"
+          [fragment]="l.fragment"
+          class="rounded-lg px-3 py-2 text-sm font-medium text-surface-600 no-underline transition-colors hover:bg-surface-100 hover:text-surface-900"
+          >{{ l.label }}</a
+        >
+      }
     </div>
 
-    <!-- Mobile menu -->
-    @if (mobileMenuOpen()) {
-    <div class="mobile-menu">
-        <div class="container">
-            <a routerLink="/features" (click)="closeMobileMenu()">Features</a>
-            <a routerLink="/how-it-works" (click)="closeMobileMenu()">How it works</a>
-            <a routerLink="/researchers" (click)="closeMobileMenu()">For researchers</a>
-            <a routerLink="/institutions" (click)="closeMobileMenu()">Institutions</a>
-            <a routerLink="/pricing" (click)="closeMobileMenu()">Pricing</a>
-            <div class="mobile-cta">
-                <a routerLink="/auth/login" class="signin-link" (click)="closeMobileMenu()">Sign in</a>
-                <a routerLink="/auth/register" class="btn" (click)="closeMobileMenu()">
-                    Claim your profile <span class="arrow">→</span>
-                </a>
-            </div>
-        </div>
+    <!-- Desktop actions -->
+    <div class="hidden items-center gap-2 md:flex">
+      <p-button label="Sign in" severity="secondary" variant="text" routerLink="/auth/login" />
+      <p-button label="Claim your profile" icon="pi pi-arrow-right" iconPos="right" routerLink="/auth/register" />
     </div>
-    }
-</nav>
+
+    <!-- Mobile menu button -->
+    <p-button
+      class="md:hidden"
+      [icon]="mobileMenuOpen() ? 'pi pi-times' : 'pi pi-bars'"
+      severity="secondary"
+      variant="text"
+      rounded
+      ariaLabel="Toggle navigation menu"
+      [attr.aria-expanded]="mobileMenuOpen()"
+      aria-controls="mobile-menu"
+      (onClick)="toggleMenu()"
+    />
+  </nav>
+
+  <!-- Mobile menu -->
+  @if (mobileMenuOpen()) {
+    <div id="mobile-menu" class="border-t border-[var(--p-content-border-color)] bg-[var(--p-content-background)] px-4 pb-4 pt-2 md:hidden">
+      <div class="flex flex-col">
+        @for (l of links; track l.fragment) {
+          <a
+            routerLink="/"
+            [fragment]="l.fragment"
+            class="rounded-lg px-3 py-3 text-base font-medium text-surface-700 no-underline hover:bg-surface-100"
+            (click)="closeMobileMenu()"
+            >{{ l.label }}</a
+          >
+        }
+      </div>
+      <div class="mt-3 flex flex-col gap-2 border-t border-[var(--p-content-border-color)] pt-4">
+        <p-button label="Sign in" severity="secondary" variant="outlined" styleClass="w-full" routerLink="/auth/login" (onClick)="closeMobileMenu()" />
+        <p-button label="Claim your profile" icon="pi pi-arrow-right" iconPos="right" styleClass="w-full" routerLink="/auth/register" (onClick)="closeMobileMenu()" />
+      </div>
+    </div>
+  }
+</header>

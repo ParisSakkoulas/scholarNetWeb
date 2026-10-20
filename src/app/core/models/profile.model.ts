@@ -91,6 +91,7 @@ export interface Profile {
   bio: string;
   verified: boolean;
   profileViews: number;
+  publicationCount: number;
   citationCount: number;
   hIndex: number;
   i10Index: number;

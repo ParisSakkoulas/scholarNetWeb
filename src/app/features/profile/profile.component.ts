@@ -303,7 +303,7 @@ export class ProfileComponent implements OnInit {
   }
 
   publicationCount(p: Profile): number {
-    return p.yearlyPublications.reduce((sum, y) => sum + y.count, 0);
+    return p.publicationCount ?? p.yearlyPublications.reduce((sum, y) => sum + y.count, 0);
   }
 
   stats(p: Profile): ProfileStat[] {

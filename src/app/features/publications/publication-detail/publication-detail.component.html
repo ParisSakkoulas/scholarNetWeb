@@ -16,45 +16,78 @@
       <i class="pi pi-spin pi-spinner mr-1" aria-hidden="true"></i> Loading…
     </p>
   } @else if (error()) {
-    <p class="py-16 text-center text-sm text-red-600" role="alert">{{ error() }}</p>
+    <p class="py-16 text-center text-sm text-red-600" role="alert">
+      {{ error() }}
+    </p>
   } @else {
     @if (publication(); as p) {
-      <div class="mt-4 grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]">
+      <div
+        class="mt-4 grid grid-cols-1 items-start gap-5 lg:grid-cols-[minmax(0,1fr)_20rem]"
+      >
         <!-- Main column -->
         <article
           class="rounded-2xl border border-[var(--p-content-border-color)] bg-[var(--p-content-background)] p-6 sm:p-8"
         >
           <div class="mb-3 flex flex-wrap items-center gap-2">
             <p-tag [value]="typeLabel[p.type]" [rounded]="true" />
-            <p-tag [value]="visibilityLabel[p.visibility]" severity="secondary" [rounded]="true" />
+            <p-tag
+              [value]="visibilityLabel[p.visibility]"
+              severity="secondary"
+              [rounded]="true"
+            />
             <span class="text-sm text-gray-500">{{ p.year }}</span>
           </div>
 
-          <h1 class="m-0 text-3xl font-semibold leading-tight text-gray-900">{{ p.title }}</h1>
+          <h1 class="m-0 text-3xl font-semibold leading-tight text-gray-900">
+            {{ p.title }}
+          </h1>
 
           <p class="m-0 mt-3 text-base text-gray-700">
             @for (a of p.authors; track $index; let last = $last) {
               @if (a.user) {
-                <a [routerLink]="['/main/profile', a.user]" class="font-medium text-gray-900 hover:underline">{{ a.name }}</a>
+                <a
+                  [routerLink]="['/main/profile', a.user]"
+                  class="font-medium text-gray-900 hover:underline"
+                  >{{ a.name }}</a
+                >
               } @else {
                 <span>{{ a.name }}</span>
               }
               @if (a.isCorresponding) {
-                <i class="pi pi-envelope ml-1 text-xs text-gray-500" title="Corresponding author" aria-label="Corresponding author"></i>
-              }@if (!last) {<span>, </span>}
+                <i
+                  class="pi pi-envelope ml-1 text-xs text-gray-500"
+                  title="Corresponding author"
+                  aria-label="Corresponding author"
+                ></i>
+              }
+              @if (!last) {
+                <span>, </span>
+              }
             }
           </p>
 
           @if (p.abstract) {
-            <h2 class="mb-3 mt-8 text-sm font-semibold uppercase tracking-wide text-gray-500">Abstract</h2>
-            <p class="m-0 whitespace-pre-line text-justify indent-10 text-[17px] leading-8 text-gray-900 hyphens-none">{{ p.abstract.trim() }}</p>
+            <h2
+              class="mb-3 mt-8 text-sm font-semibold uppercase tracking-wide text-gray-500"
+            >
+              Abstract
+            </h2>
+            <p
+              class="m-0 whitespace-pre-line text-justify indent-10 text-[17px] leading-8 text-gray-900 hyphens-none"
+            >
+              {{ p.abstract.trim() }}
+            </p>
           }
 
           @if (p.fields.length || p.keywords.length) {
             <div class="mt-8 flex flex-col gap-4">
               @if (p.fields.length) {
                 <div>
-                  <h2 class="mb-2 mt-0 text-sm font-semibold uppercase tracking-wide text-gray-500">Research fields</h2>
+                  <h2
+                    class="mb-2 mt-0 text-sm font-semibold uppercase tracking-wide text-gray-500"
+                  >
+                    Research fields
+                  </h2>
                   <div class="flex flex-wrap gap-2">
                     @for (f of p.fields; track f) {
                       <p-tag [value]="f" severity="info" [rounded]="true" />
@@ -64,10 +97,18 @@
               }
               @if (p.keywords.length) {
                 <div>
-                  <h2 class="mb-2 mt-0 text-sm font-semibold uppercase tracking-wide text-gray-500">Keywords</h2>
+                  <h2
+                    class="mb-2 mt-0 text-sm font-semibold uppercase tracking-wide text-gray-500"
+                  >
+                    Keywords
+                  </h2>
                   <div class="flex flex-wrap gap-2">
                     @for (k of p.keywords; track k) {
-                      <p-tag [value]="k" severity="secondary" [rounded]="true" />
+                      <p-tag
+                        [value]="k"
+                        severity="secondary"
+                        [rounded]="true"
+                      />
                     }
                   </div>
                 </div>
@@ -76,15 +117,23 @@
           }
 
           @if (p.authors.length) {
-            <h2 class="mb-3 mt-8 text-sm font-semibold uppercase tracking-wide text-gray-500">
+            <h2
+              class="mb-3 mt-8 text-sm font-semibold uppercase tracking-wide text-gray-500"
+            >
               Authors ({{ p.authors.length }})
             </h2>
             <ul class="m-0 grid list-none grid-cols-1 gap-3 p-0 sm:grid-cols-2">
               @for (a of p.authors; track $index) {
-                <li class="rounded-xl border border-[var(--p-content-border-color)] px-4 py-3">
+                <li
+                  class="rounded-xl border border-[var(--p-content-border-color)] px-4 py-3"
+                >
                   <div class="text-sm font-medium text-gray-900">
                     @if (a.user) {
-                      <a [routerLink]="['/main/profile', a.user]" class="hover:underline">{{ a.name }}</a>
+                      <a
+                        [routerLink]="['/main/profile', a.user]"
+                        class="hover:underline"
+                        >{{ a.name }}</a
+                      >
                     } @else {
                       {{ a.name }}
                     }
@@ -108,7 +157,10 @@
 
           <div class="mt-10"></div>
           @for (v of [refsVersion()]; track v) {
-            <app-publication-references [publicationId]="p._id" [readonly]="true" />
+            <app-publication-references
+              [publicationId]="p._id"
+              [readonly]="true"
+            />
           }
           @if (isOwner()) {
             <p-button
@@ -123,14 +175,30 @@
           }
 
           @if (citedByTotal()) {
-            <h2 class="mb-3 mt-10 text-sm font-semibold uppercase tracking-wide text-gray-500">
+            <h2
+              class="mb-3 mt-10 text-sm font-semibold uppercase tracking-wide text-gray-500"
+            >
               Cited by ({{ citedByTotal() }})
             </h2>
             <ul class="m-0 flex list-none flex-col gap-2 p-0">
               @for (c of citedBy(); track c._id) {
-                <li class="rounded-xl border border-[var(--p-content-border-color)] px-4 py-3">
-                  <a [routerLink]="['/main/publications', c._id]" class="text-sm font-medium text-gray-900 hover:underline">{{ c.title }}</a>
-                  <div class="text-xs text-gray-600">{{ c.year }}@if (c.authors?.length) { · {{ c.authors![0].name }}@if (c.authors!.length > 1) { et al. } }</div>
+                <li
+                  class="rounded-xl border border-[var(--p-content-border-color)] px-4 py-3"
+                >
+                  <a
+                    [routerLink]="['/main/publications', c._id]"
+                    class="text-sm font-medium text-gray-900 hover:underline"
+                    >{{ c.title }}</a
+                  >
+                  <div class="text-xs text-gray-600">
+                    {{ c.year }}
+                    @if (c.authors?.length) {
+                      · {{ c.authors![0].name }}
+                      @if (c.authors!.length > 1) {
+                        et al.
+                      }
+                    }
+                  </div>
                 </li>
               }
             </ul>
@@ -143,8 +211,19 @@
             <section
               class="flex gap-2 rounded-2xl border border-[var(--p-content-border-color)] bg-[var(--p-content-background)] p-4"
             >
-              <p-button label="Edit" icon="pi pi-pencil" styleClass="flex-1" (onClick)="openEditor('details')" />
-              <p-button label="Delete" icon="pi pi-trash" severity="danger" variant="outlined" (onClick)="confirmDelete()" />
+              <p-button
+                label="Edit"
+                icon="pi pi-pencil"
+                styleClass="flex-1"
+                (onClick)="openEditor('details')"
+              />
+              <p-button
+                label="Delete"
+                icon="pi pi-trash"
+                severity="danger"
+                variant="outlined"
+                (onClick)="confirmDelete()"
+              />
             </section>
           }
 
@@ -152,13 +231,27 @@
             class="rounded-2xl border border-[var(--p-content-border-color)] bg-[var(--p-content-background)] p-4"
           >
             <div class="mb-3 flex items-center justify-between gap-2">
-              <h2 class="m-0 text-sm font-semibold uppercase tracking-wide text-gray-500">Files</h2>
+              <h2
+                class="m-0 text-sm font-semibold uppercase tracking-wide text-gray-500"
+              >
+                Files
+              </h2>
               @if (isOwner()) {
-                <p-button label="Manage" icon="pi pi-upload" size="small" severity="secondary" variant="text" (onClick)="openEditor('files')" />
+                <p-button
+                  label="Manage"
+                  icon="pi pi-upload"
+                  size="small"
+                  severity="secondary"
+                  variant="text"
+                  (onClick)="openEditor('files')"
+                />
               }
             </div>
             @for (v of [filesVersion()]; track v) {
-              <app-publication-files-viewer [publicationId]="p._id" [isOwner]="isOwner()" />
+              <app-publication-files-viewer
+                [publicationId]="p._id"
+                [isOwner]="isOwner()"
+              />
             }
           </section>
 
@@ -172,7 +265,8 @@
                   target="_blank"
                   rel="noopener noreferrer"
                   class="inline-flex items-center gap-2 text-sm font-medium text-blue-700 hover:underline"
-                  ><i class="pi pi-external-link" aria-hidden="true"></i> Open via DOI</a
+                  ><i class="pi pi-external-link" aria-hidden="true"></i> Open
+                  via DOI</a
                 >
               }
               @if (p.url) {
@@ -190,7 +284,11 @@
           <section
             class="rounded-2xl border border-[var(--p-content-border-color)] bg-[var(--p-content-background)] p-4"
           >
-            <h2 class="mb-3 mt-0 text-sm font-semibold uppercase tracking-wide text-gray-500">Details</h2>
+            <h2
+              class="mb-3 mt-0 text-sm font-semibold uppercase tracking-wide text-gray-500"
+            >
+              Details
+            </h2>
             <dl class="m-0 flex flex-col gap-3 text-sm">
               @for (d of details(); track d.label) {
                 <div>
@@ -199,17 +297,30 @@
                 </div>
               }
               @if (p.identifiers?.doi) {
-                <div><dt class="text-gray-500">DOI</dt><dd class="m-0 break-all text-gray-900">{{ p.identifiers!.doi }}</dd></div>
+                <div>
+                  <dt class="text-gray-500">DOI</dt>
+                  <dd class="m-0 break-all text-gray-900">
+                    {{ p.identifiers!.doi }}
+                  </dd>
+                </div>
               }
               @if (p.language) {
-                <div><dt class="text-gray-500">Language</dt><dd class="m-0 uppercase text-gray-900">{{ p.language }}</dd></div>
+                <div>
+                  <dt class="text-gray-500">Language</dt>
+                  <dd class="m-0 uppercase text-gray-900">{{ p.language }}</dd>
+                </div>
               }
               @if (p.license) {
-                <div><dt class="text-gray-500">License</dt><dd class="m-0 text-gray-900">{{ p.license }}</dd></div>
+                <div>
+                  <dt class="text-gray-500">License</dt>
+                  <dd class="m-0 text-gray-900">{{ p.license }}</dd>
+                </div>
               }
               <div>
                 <dt class="text-gray-500">Added</dt>
-                <dd class="m-0 text-gray-900">{{ p.createdAt | date: 'mediumDate' }}</dd>
+                <dd class="m-0 text-gray-900">
+                  {{ p.createdAt | date: "mediumDate" }}
+                </dd>
               </div>
             </dl>
           </section>
@@ -218,29 +329,70 @@
             <section
               class="grid grid-cols-3 gap-2 rounded-2xl border border-[var(--p-content-border-color)] bg-[var(--p-content-background)] p-4 text-center"
             >
-              <div><div class="text-xl font-semibold text-gray-900">{{ p.metrics.views }}</div><div class="text-xs text-gray-500">Views</div></div>
-              <div><div class="text-xl font-semibold text-gray-900">{{ p.metrics.downloads }}</div><div class="text-xs text-gray-500">Downloads</div></div>
-              <div><div class="text-xl font-semibold text-gray-900">{{ p.metrics.citations }}</div><div class="text-xs text-gray-500">Citations</div></div>
+              <div>
+                <div class="text-xl font-semibold text-gray-900">
+                  {{ p.metrics.views }}
+                </div>
+                <div class="text-xs text-gray-500">Views</div>
+              </div>
+              <div>
+                <div class="text-xl font-semibold text-gray-900">
+                  {{ p.metrics.downloads }}
+                </div>
+                <div class="text-xs text-gray-500">Downloads</div>
+              </div>
+              <div>
+                <div class="text-xl font-semibold text-gray-900">
+                  {{ p.metrics.citations }}
+                </div>
+                <div class="text-xs text-gray-500">Citations</div>
+              </div>
             </section>
           }
 
           <section
             class="rounded-2xl border border-[var(--p-content-border-color)] bg-[var(--p-content-background)] p-4"
           >
-            <h2 class="mb-3 mt-0 text-sm font-semibold uppercase tracking-wide text-gray-500">Uploaded by</h2>
+            <h2
+              class="mb-3 mt-0 text-sm font-semibold uppercase tracking-wide text-gray-500"
+            >
+              Rating
+            </h2>
+            <sn-rating
+              targetType="publication"
+              [targetId]="p._id"
+              [canRate]="!isOwner()"
+            />
+          </section>
+
+          <section
+            class="rounded-2xl border border-[var(--p-content-border-color)] bg-[var(--p-content-background)] p-4"
+          >
+            <h2
+              class="mb-3 mt-0 text-sm font-semibold uppercase tracking-wide text-gray-500"
+            >
+              Uploaded by
+            </h2>
             <a
               [routerLink]="['/main/profile', p.uploadedBy._id]"
               class="flex items-center gap-3 text-inherit no-underline hover:opacity-80"
             >
               <p-avatar
                 [image]="p.uploadedBy.profilePhotoUrl"
-                [label]="p.uploadedBy.profilePhotoUrl ? undefined : uploaderInitials()"
+                [label]="
+                  p.uploadedBy.profilePhotoUrl ? undefined : uploaderInitials()
+                "
                 shape="circle"
                 size="large"
               />
               <span class="min-w-0">
-                <span class="block truncate text-sm font-semibold text-gray-900">{{ p.uploadedBy.firstName }} {{ p.uploadedBy.lastName }}</span>
-                <span class="block truncate text-xs text-gray-500">&#64;{{ p.uploadedBy.username }}</span>
+                <span class="block truncate text-sm font-semibold text-gray-900"
+                  >{{ p.uploadedBy.firstName }}
+                  {{ p.uploadedBy.lastName }}</span
+                >
+                <span class="block truncate text-xs text-gray-500"
+                  >&#64;{{ p.uploadedBy.username }}</span
+                >
               </span>
             </a>
           </section>
@@ -250,6 +402,11 @@
   }
 
   @if (editing() && publication(); as p) {
-    <app-publication-form [publication]="p" [startTab]="editTab()" (saved)="onSaved($event)" (cancelled)="onEditorClosed()" />
+    <app-publication-form
+      [publication]="p"
+      [startTab]="editTab()"
+      (saved)="onSaved($event)"
+      (cancelled)="onEditorClosed()"
+    />
   }
 </div>

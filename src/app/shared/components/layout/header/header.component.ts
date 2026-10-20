@@ -1,18 +1,24 @@
 import { Component, HostListener, signal } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-header',
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  standalone: true,
+  imports: [RouterLink, ButtonModule],
   templateUrl: './header.component.html',
-  styleUrl: './header.component.css'
 })
 export class HeaderComponent {
-  mobileMenuOpen = signal(false);
+  readonly mobileMenuOpen = signal(false);
+
+  /** sections of the home page (ids in public-home); the router scrolls to the fragment */
+  readonly links = [
+    { label: 'Features', fragment: 'features' },
+    { label: 'How it works', fragment: 'how' },
+  ];
 
   toggleMenu(): void {
-    this.mobileMenuOpen.update(v => !v);
+    this.mobileMenuOpen.update((v) => !v);
   }
 
   @HostListener('document:keydown.escape')
