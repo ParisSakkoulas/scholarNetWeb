@@ -136,12 +136,12 @@ export const routes: Routes = [
             (m) => m.PublicationListComponent,
           ),
       },
+      { path: 'file-requests', redirectTo: 'requests/files', pathMatch: 'full' },
+      { path: 'requests', redirectTo: 'requests/files', pathMatch: 'full' },
       {
-        path: 'file-requests',
+        path: 'requests/:kind',
         loadComponent: () =>
-          import('./features/publications/file-requests/file-requests.component').then(
-            (m) => m.FileRequestsComponent,
-          ),
+          import('./features/requests/requests.component').then((m) => m.RequestsComponent),
       },
       // must stay above :publicationId or "search" would be read as an id
       {

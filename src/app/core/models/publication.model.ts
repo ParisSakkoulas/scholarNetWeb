@@ -31,14 +31,34 @@ export const PUBLICATION_VISIBILITY_LABEL: Record<PublicationVisibility, string>
   private: 'Private',
 };
 
+export type AuthorStatus = 'pending' | 'confirmed' | 'declined';
+
+export const AUTHOR_STATUS_LABEL: Record<AuthorStatus, string> = {
+  pending: 'Awaiting confirmation',
+  confirmed: 'Confirmed',
+  declined: 'Declined',
+};
+
 export interface PublicationAuthor {
+  _id?: string;
+  /** Set for scholarNet members; outside co-authors have only a name. */
   user?: string | null;
   name: string;
   affiliation?: string;
   orcid?: string;
   order?: number;
   isCorresponding?: boolean;
+  status?: AuthorStatus;
   confirmed?: boolean;
+  respondedAt?: string;
+}
+
+export interface AddAuthorPayload {
+  user?: string;
+  name?: string;
+  affiliation?: string;
+  orcid?: string;
+  isCorresponding?: boolean;
 }
 
 export interface PublicationIdentifiers {
@@ -94,6 +114,72 @@ export interface PublicationPage {
   total: number;
   page: number;
   limit: number;
+}
+
+// ---------------- import by DOI ----------------
+
+export type ImportSource = 'openalex' | 'dblp';
+
+export const IMPORT_SOURCE_LABEL: Record<ImportSource, string> = {
+  openalex: 'OpenAlex',
+  dblp: 'DBLP',
+};
+
+export interface ImportDraft {
+  source: ImportSource;
+  sourceUrl?: string;
+  warnings: string[];
+  type: PublicationType;
+  title: string;
+  abstract?: string;
+  year: number;
+  keywords: string[];
+  authors: { name: string; orcid?: string; affiliation?: string; order: number }[];
+  [typeSpecific: string]: unknown;
+}
+
+export type ImportSourceResult =
+  | { status: 'found'; draft: ImportDraft }
+  | { status: 'not_found' }
+  | { status: 'error'; message: string };
+
+export interface ImportLookup {
+  doi: string;
+  /** A publication with this DOI that the user can already see. */
+  existing: { id: string; title: string } | null;
+  sources: Record<ImportSource, ImportSourceResult>;
+}
+
+export interface ImportResult {
+  publication: Publication;
+  source: ImportSource;
+  warnings: string[];
+}
+
+export interface ImportAuthorCandidate {
+  id: string;
+  name: string;
+  orcid?: string;
+  worksCount: number;
+  citedBy: number;
+  institution?: string;
+}
+
+export interface ImportAuthorWork {
+  doi: string;
+  title: string;
+  year?: number;
+  type?: string;
+  venue?: string;
+  /** Already in scholarNet, so it can't be imported again. */
+  existing: boolean;
+}
+
+export interface ImportAuthorWorksPage {
+  total: number;
+  page: number;
+  pageSize: number;
+  works: ImportAuthorWork[];
 }
 
 // ---------------- type-specific form fields ----------------

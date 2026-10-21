@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, Input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AvatarModule } from 'primeng/avatar';
@@ -35,6 +35,9 @@ type StatusFilter = AccessRequestStatus | 'all';
   templateUrl: './file-requests.component.html',
 })
 export class FileRequestsComponent {
+  /** Hide the page title and spacing when shown inside the requests page. */
+  @Input() embedded = false;
+
   private readonly api = inject(PublicationFilesService);
 
   readonly timeAgo = timeAgo;

@@ -51,6 +51,54 @@
     <!-- Authors -->
     <fieldset class="m-0 rounded-lg border border-[var(--p-content-border-color)] px-4 pb-4 pt-2">
       <legend class="px-1 text-sm font-medium text-gray-700">Authors</legend>
+      @if (isEdit) {
+        <!-- Edit: changes go straight to the authors endpoints -->
+        <ul class="m-0 flex list-none flex-col gap-2 p-0">
+          @for (a of liveAuthors(); track a._id) {
+            <li class="flex items-center gap-2 text-sm">
+              <span class="flex-1">
+                {{ a.name }}
+                <app-author-status-badge [author]="a" />
+                @if (!a.user) {
+                  <span class="ml-1 text-xs text-gray-500">(external)</span>
+                }
+              </span>
+              <p-button
+                type="button"
+                icon="pi pi-times"
+                severity="secondary"
+                variant="text"
+                rounded
+                size="small"
+                ariaLabel="Remove author"
+                [disabled]="authorBusy() || liveAuthors().length === 1"
+                (onClick)="removeLive(a)"
+              />
+            </li>
+          }
+        </ul>
+        <div class="mt-3 flex flex-wrap items-center gap-2">
+          <app-author-picker class="min-w-48 flex-1" (picked)="addMember($event)" />
+          <input
+            pInputText
+            [formControl]="externalName"
+            class="min-w-40 flex-1"
+            placeholder="Or add an outside co-author"
+            aria-label="Outside co-author name"
+            (keydown.enter)="$event.preventDefault(); addExternal()"
+          />
+          <p-button
+            type="button"
+            label="Add"
+            icon="pi pi-plus"
+            severity="secondary"
+            size="small"
+            [disabled]="authorBusy() || !externalName.value.trim()"
+            (onClick)="addExternal()"
+          />
+        </div>
+      } @else {
+      <app-author-picker class="mb-3 block" (picked)="addMemberRow($event)" />
       <div formArrayName="authors" class="flex flex-col gap-2">
         @for (a of authors.controls; track a; let i = $index) {
           <div [formGroupName]="i" class="flex flex-wrap items-center gap-2">
@@ -59,8 +107,12 @@
               formControlName="name"
               class="min-w-40 flex-1"
               placeholder="Full name"
+              [readonly]="isLinked(i)"
               [attr.aria-label]="'Author ' + (i + 1) + ' name'"
             />
+            @if (isLinked(i)) {
+              <span class="text-xs text-gray-500" title="Will be invited to confirm">member</span>
+            }
             <input
               pInputText
               formControlName="affiliation"
@@ -103,6 +155,7 @@
         styleClass="mt-2"
         (onClick)="addAuthor()"
       />
+      }
     </fieldset>
 
     <div class="grid grid-cols-2 gap-4">

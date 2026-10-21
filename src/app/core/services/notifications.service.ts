@@ -74,7 +74,9 @@ export class NotificationsService {
     // an invite is answered from the teams list, the invited user is not a member yet
     if (n.type === 'TEAM_INVITE') return ['/main/teams'];
     // the uploader answers access requests from the inbox
-    if (n.type === 'FILE_ACCESS_REQUEST') return ['/main/file-requests'];
+    if (n.type === 'FILE_ACCESS_REQUEST') return ['/main/requests/files'];
+    // an authorship invite is answered from the inbox too
+    if (n.type === 'PUBLICATION_AUTHOR_INVITE') return ['/main/requests/authorship'];
     if (n.type === 'TEAM_INVITE_ACCEPTED' && n.entityId) {
       return ['/main/teams', n.entityId, 'members'];
     }

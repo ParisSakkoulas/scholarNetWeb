@@ -137,6 +137,7 @@
                     } @else {
                       {{ a.name }}
                     }
+                    <app-author-status-badge [author]="a" />
                   </div>
                   @if (a.affiliation) {
                     <div class="text-xs text-gray-500">{{ a.affiliation }}</div>

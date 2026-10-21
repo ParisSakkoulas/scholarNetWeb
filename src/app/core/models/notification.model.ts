@@ -12,6 +12,10 @@ export type NotificationType =
   | 'FILE_ACCESS_REQUEST'
   | 'FILE_ACCESS_APPROVED'
   | 'FILE_ACCESS_REJECTED'
+  | 'PUBLICATION_AUTHOR_INVITE'
+  | 'PUBLICATION_AUTHOR_ACCEPTED'
+  | 'PUBLICATION_AUTHOR_DECLINED'
+  | 'PUBLICATION_AUTHOR_REMOVED'
   | 'SYSTEM';
 
 export interface AppNotification {
@@ -98,6 +102,26 @@ export const NOTIFICATION_TYPE_META: Record<
     label: 'File access',
     icon: 'pi pi-lock',
     color: 'bg-rose-100 text-rose-700',
+  },
+  PUBLICATION_AUTHOR_INVITE: {
+    label: 'Authorship invites',
+    icon: 'pi pi-book',
+    color: 'bg-amber-100 text-amber-700',
+  },
+  PUBLICATION_AUTHOR_ACCEPTED: {
+    label: 'Authorship',
+    icon: 'pi pi-check-circle',
+    color: 'bg-emerald-100 text-emerald-700',
+  },
+  PUBLICATION_AUTHOR_DECLINED: {
+    label: 'Authorship',
+    icon: 'pi pi-times-circle',
+    color: 'bg-rose-100 text-rose-700',
+  },
+  PUBLICATION_AUTHOR_REMOVED: {
+    label: 'Authorship',
+    icon: 'pi pi-user-minus',
+    color: 'bg-slate-200 text-slate-700',
   },
   SYSTEM: {
     label: 'System',

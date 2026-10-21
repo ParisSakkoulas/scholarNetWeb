@@ -24,6 +24,7 @@ import {
 import { AuthService } from '../../../core/services/auth.service';
 import { publicationsBlueprint } from '../configs/publications.blueprint';
 import { PublicationFormComponent } from '../publication-form/publication-form.component';
+import { PublicationImportComponent } from '../publication-import/publication-import.component';
 
 type Scope = 'mine' | 'all';
 
@@ -38,6 +39,7 @@ type Scope = 'mine' | 'all';
     ToastModule,
     GenericTableComponent,
     PublicationFormComponent,
+    PublicationImportComponent,
   ],
   providers: [ConfirmationService, MessageService],
   templateUrl: './publication-list.component.html',
@@ -57,6 +59,7 @@ export class PublicationListComponent {
   readonly scope = signal<Scope>('mine');
   readonly typeFilter = signal<PublicationType | null>(null);
   readonly showCreate = signal(false);
+  readonly showImport = signal(false);
   readonly editing = signal<Publication | null>(null);
 
   readonly scopeOptions = [
@@ -127,6 +130,28 @@ export class PublicationListComponent {
     this.showCreate.set(false);
     this.messages.add({ severity: 'success', summary: 'Publication added', detail: pub.title });
     this.tableRef().reload();
+  }
+
+  onImported(r: { publication: Publication; warnings: string[] }): void {
+    this.showImport.set(false);
+    this.messages.add({
+      severity: 'success',
+      summary: 'Publication imported',
+      detail: r.publication.title,
+    });
+    this.scope.set('mine');
+    this.reloadFromStart();
+  }
+
+  onImportedMany(r: { count: number; close: boolean }): void {
+    if (r.close) this.showImport.set(false);
+    this.messages.add({
+      severity: 'success',
+      summary: 'Publications imported',
+      detail: `${r.count} publication${r.count === 1 ? '' : 's'} added`,
+    });
+    this.scope.set('mine');
+    this.reloadFromStart();
   }
 
   onUpdated(pub: Publication): void {

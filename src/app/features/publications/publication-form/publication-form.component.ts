@@ -25,17 +25,21 @@ import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { TabsModule } from 'primeng/tabs';
 import { TextareaModule } from 'primeng/textarea';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, Observable } from 'rxjs';
 
 import {
   PUBLICATION_TYPE_LABEL,
   PUBLICATION_VISIBILITY_LABEL,
   Publication,
+  PublicationAuthor,
   PublicationType,
   PublicationVisibility,
   TYPE_FIELDS,
   TypeField,
 } from '../../../core/models/publication.model';
+import { UserSearchResult } from '../../teams/models/user-search.model';
+import { AuthorPickerComponent } from '../author-picker/author-picker.component';
+import { AuthorStatusBadgeComponent } from '../author-status-badge/author-status-badge.component';
 import { AuthService } from '../../../core/services/auth.service';
 import { DraftReference, ReferenceImport } from '../../../core/models/reference.model';
 import { ReferencesService } from '../../../core/services/references.service';
@@ -47,6 +51,9 @@ import { PublicationsService } from '../../../core/services/publications.service
 
 const toOptions = (labels: Record<string, string>) =>
   Object.entries(labels).map(([value, label]) => ({ value, label }));
+
+const memberName = (u: UserSearchResult) =>
+  `${u.firstName ?? ''} ${u.lastName ?? ''}`.trim() || u.username;
 
 /** ISO date from the API -> Date for the date picker (null when empty). */
 const toDate = (v: unknown): Date | null => {
@@ -76,6 +83,8 @@ const fromDate = (d: Date | null): string | null =>
     TabsModule,
     PublicationReferencesComponent,
     PublicationFilesManagerComponent,
+    AuthorPickerComponent,
+    AuthorStatusBadgeComponent,
     ButtonModule,
   ],
   templateUrl: './publication-form.component.html',
@@ -129,6 +138,7 @@ export class PublicationFormComponent implements OnInit {
 
   ngOnInit(): void {
     const p = this.publication;
+    this.liveAuthors.set(p?.authors ?? []);
     this.currentType.set(p?.type ?? 'journal_article');
     this.tab.set(this.startTab);
 
@@ -167,6 +177,61 @@ export class PublicationFormComponent implements OnInit {
 
   addAuthor(): void {
     this.authors.push(this.authorGroup({ name: '' }));
+  }
+
+  /** Create mode: a picked member becomes a linked row (the name comes from their account). */
+  addMemberRow(u: UserSearchResult): void {
+    if (this.authors.controls.some((c) => c.get('user')!.value === u._id)) return;
+    const row = this.authorGroup({ user: u._id, name: memberName(u) });
+    // reuse a blank trailing row instead of leaving an empty one behind
+    const last = this.authors.at(this.authors.length - 1);
+    if (last && !last.get('user')!.value && !last.get('name')!.value.trim()) {
+      this.authors.setControl(this.authors.length - 1, row);
+    } else {
+      this.authors.push(row);
+    }
+  }
+
+  isLinked(index: number): boolean {
+    return !!this.authors.at(index).get('user')!.value;
+  }
+
+  // Edit mode: the API ignores `authors` on PATCH, so the list is changed through its own endpoints.
+
+  readonly liveAuthors = signal<PublicationAuthor[]>([]);
+  readonly authorBusy = signal(false);
+  readonly externalName = new FormControl('', { nonNullable: true });
+
+  addMember(u: UserSearchResult): void {
+    this.runAuthorCall(this.service.addAuthor(this.publication!._id, { user: u._id }));
+  }
+
+  addExternal(): void {
+    const name = this.externalName.value.trim();
+    if (!name) return;
+    this.runAuthorCall(this.service.addAuthor(this.publication!._id, { name }), () =>
+      this.externalName.reset(),
+    );
+  }
+
+  removeLive(a: PublicationAuthor): void {
+    this.runAuthorCall(this.service.removeAuthor(this.publication!._id, a._id!));
+  }
+
+  private runAuthorCall(call: Observable<{ authors: PublicationAuthor[] }>, done?: () => void): void {
+    this.authorBusy.set(true);
+    this.error.set(null);
+    call.subscribe({
+      next: (r) => {
+        this.liveAuthors.set(r.authors);
+        done?.();
+        this.authorBusy.set(false);
+      },
+      error: (err) => {
+        this.error.set(err?.error?.message ?? 'Could not update the authors.');
+        this.authorBusy.set(false);
+      },
+    });
   }
 
   removeAuthor(index: number): void {
@@ -318,14 +383,16 @@ export class PublicationFormComponent implements OnInit {
       title: v.title.trim(),
       abstract: text(v.abstract),
       year: Number(v.year),
-      authors: v.authors.map((a: any, i: number) => ({
-        ...(a.user && { user: a.user }),
-        name: a.name.trim(),
-        ...(a.affiliation?.trim() && { affiliation: a.affiliation.trim() }),
-        ...(a.orcid?.trim() && { orcid: a.orcid.trim() }),
-        isCorresponding: !!a.isCorresponding,
-        order: i,
-      })),
+      ...(!this.isEdit && {
+        authors: v.authors.map((a: any, i: number) => ({
+          ...(a.user && { user: a.user }),
+          name: a.name.trim(),
+          ...(a.affiliation?.trim() && { affiliation: a.affiliation.trim() }),
+          ...(a.orcid?.trim() && { orcid: a.orcid.trim() }),
+          isCorresponding: !!a.isCorresponding,
+          order: i,
+        })),
+      }),
       keywords: v.keywords,
       fields: v.fields,
       language: text(v.language),

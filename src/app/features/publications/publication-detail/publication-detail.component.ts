@@ -20,6 +20,7 @@ import { CitedWork } from '../../../core/models/reference.model';
 import { ReferencesService } from '../../../core/services/references.service';
 import { PublicationFilesViewerComponent } from '../files/publication-files-viewer.component';
 import { PublicationReferencesComponent } from '../publication-references/publication-references.component';
+import { AuthorStatusBadgeComponent } from '../author-status-badge/author-status-badge.component';
 import { PublicationFormComponent } from '../publication-form/publication-form.component';
 import { RatingComponent } from '../../../shared/components/ui/rating/rating.component';
 
@@ -34,6 +35,7 @@ import { RatingComponent } from '../../../shared/components/ui/rating/rating.com
     ConfirmDialogModule,
     ToastModule,
     PublicationFormComponent,
+    AuthorStatusBadgeComponent,
     PublicationReferencesComponent,
     PublicationFilesViewerComponent,
     RatingComponent,

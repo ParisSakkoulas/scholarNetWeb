@@ -4,10 +4,18 @@ import { Observable } from 'rxjs';
 
 import { environment } from '../../../environmets/environment';
 import {
+  AddAuthorPayload,
+  ImportAuthorCandidate,
+  ImportAuthorWorksPage,
+  ImportLookup,
+  ImportResult,
+  ImportSource,
   Publication,
+  PublicationAuthor,
   PublicationPage,
   PublicationPayload,
   PublicationType,
+  PublicationVisibility,
 } from '../models/publication.model';
 
 export interface PublicationFilters {
@@ -54,8 +62,57 @@ export class PublicationsService {
     return this.http.patch<Publication>(`${this.api}/${id}`, payload);
   }
 
+  /** Step 1 of the DOI import: nothing is saved, it only shows what each source has. */
+  lookupDoi(doi: string): Observable<ImportLookup> {
+    return this.http.get<ImportLookup>(`${this.api}/import/lookup`, { params: { doi } });
+  }
+
+  /** Step 2: the API fetches the chosen source again and creates the publication. */
+  importDoi(doi: string, source: ImportSource, visibility?: PublicationVisibility): Observable<ImportResult> {
+    return this.http.post<ImportResult>(`${this.api}/import`, {
+      doi,
+      source,
+      ...(visibility && { visibility }),
+    });
+  }
+
+  /** OpenAlex authors matching a name. */
+  searchImportAuthors(name: string): Observable<ImportAuthorCandidate[]> {
+    return this.http.get<ImportAuthorCandidate[]>(`${this.api}/import/authors`, { params: { name } });
+  }
+
+  /** One page of an author's works that have a DOI. */
+  importAuthorWorks(authorId: string, page = 1): Observable<ImportAuthorWorksPage> {
+    return this.http.get<ImportAuthorWorksPage>(`${this.api}/import/authors/${authorId}/works`, {
+      params: { page },
+    });
+  }
+
   remove(id: string): Observable<{ deleted: true }> {
     return this.http.delete<{ deleted: true }>(`${this.api}/${id}`);
+  }
+
+  // ---------------- authors ----------------
+
+  addAuthor(id: string, payload: AddAuthorPayload): Observable<{ authors: PublicationAuthor[] }> {
+    return this.http.post<{ authors: PublicationAuthor[] }>(`${this.api}/${id}/authors`, payload);
+  }
+
+  removeAuthor(id: string, authorId: string): Observable<{ authors: PublicationAuthor[] }> {
+    return this.http.delete<{ authors: PublicationAuthor[] }>(`${this.api}/${id}/authors/${authorId}`);
+  }
+
+  /** Publications I am listed on but have not answered yet. */
+  invitations(page = 1, limit = 10): Observable<PublicationPage> {
+    const params = new HttpParams().set('page', page).set('limit', limit);
+    return this.http.get<PublicationPage>(`${this.api}/authors/invitations`, { params });
+  }
+
+  respondToAuthorship(id: string, accept: boolean): Observable<{ authors: PublicationAuthor[] }> {
+    return this.http.post<{ authors: PublicationAuthor[] }>(
+      `${this.api}/${id}/authors/me/${accept ? 'accept' : 'decline'}`,
+      {},
+    );
   }
 
   private params(f: PublicationFilters): HttpParams {

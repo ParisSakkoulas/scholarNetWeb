@@ -104,7 +104,7 @@ export class InlineHeaderComponent {
       command: () => this.goToOwnProfile(),
     },
     { label: 'My teams', icon: 'pi pi-users', routerLink: '/main/teams' },
-    { label: 'File requests', icon: 'pi pi-key', routerLink: '/main/file-requests' },
+    { label: 'Requests', icon: 'pi pi-inbox', routerLink: '/main/requests/files' },
     { label: 'Settings', icon: 'pi pi-cog', routerLink: '/settings' },
     { label: 'Activity', icon: 'pi pi-history', routerLink: '/settings' },
     { separator: true },

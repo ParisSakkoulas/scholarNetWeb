@@ -1,0 +1,259 @@
+<p-dialog
+  [visible]="true"
+  [modal]="true"
+  [closable]="true"
+  [dismissableMask]="true"
+  [draggable]="false"
+  [style]="{ width: '44rem', maxWidth: '95vw' }"
+  [header]="mode() === 'doi' ? 'Import from DOI' : 'Import my publications'"
+  (visibleChange)="$event || cancelled.emit()"
+>
+  <div class="flex flex-col gap-4 pt-2">
+    <p-selectbutton
+      [options]="modeOptions"
+      optionLabel="label"
+      optionValue="value"
+      [allowEmpty]="false"
+      [ngModel]="mode()"
+      (ngModelChange)="setMode($event)"
+      ariaLabelledBy="Import mode"
+    />
+
+    @if (error()) {
+      <p class="m-0 text-sm text-red-600" role="alert">{{ error() }}</p>
+    }
+
+    @if (mode() === 'doi') {
+      <form class="flex gap-2" (submit)="$event.preventDefault(); search()">
+        <input
+          pInputText
+          [formControl]="doi"
+          class="flex-1"
+          placeholder="10.1038/nature14539 or https://doi.org/…"
+          aria-label="DOI"
+          autofocus
+        />
+        <p-button
+          type="submit"
+          label="Look up"
+          icon="pi pi-search"
+          [loading]="searching()"
+          [disabled]="!doi.value.trim() || !!importing()"
+        />
+      </form>
+
+      @if (lookup(); as l) {
+        @if (l.existing; as ex) {
+          <p class="m-0 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">
+            This DOI is already in scholarNet:
+            <a [routerLink]="['/main/publications', ex.id]" class="font-medium underline" (click)="cancelled.emit()">{{ ex.title }}</a>.
+            Importing it again creates a duplicate.
+          </p>
+        }
+
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-gray-700" for="imp-vis">Visibility</label>
+          <p-select
+            inputId="imp-vis"
+            [formControl]="visibility"
+            [options]="visibilityOptions"
+            optionLabel="label"
+            optionValue="value"
+            appendTo="body"
+          />
+        </div>
+
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          @for (s of sources; track s) {
+            @let r = l.sources[s];
+            <section class="flex flex-col gap-2 rounded-lg border border-[var(--p-content-border-color)] p-3">
+              <h3 class="m-0 text-sm font-semibold text-gray-900">{{ sourceLabel[s] }}</h3>
+
+              @switch (r.status) {
+                @case ('found') {
+                  <p class="m-0 text-sm font-medium text-gray-900">{{ r.draft.title }}</p>
+                  <p class="m-0 text-xs text-gray-600">
+                    {{ typeLabel[r.draft.type] }} · {{ r.draft.year }}
+                  </p>
+                  <p class="m-0 text-xs text-gray-600">{{ authorNames(r.draft.authors) }}</p>
+                  @for (w of r.draft.warnings; track w) {
+                    <p class="m-0 text-xs text-amber-700"><i class="pi pi-exclamation-triangle"></i> {{ w }}</p>
+                  }
+                  <p-button
+                    class="mt-auto"
+                    label="Import from {{ sourceLabel[s] }}"
+                    icon="pi pi-download"
+                    size="small"
+                    [loading]="importing() === s"
+                    [disabled]="!!importing()"
+                    (onClick)="import(s)"
+                  />
+                }
+                @case ('not_found') {
+                  <p class="m-0 text-sm text-gray-500">No record for this DOI.</p>
+                }
+                @case ('error') {
+                  <p class="m-0 text-sm text-red-600">{{ r.message }}</p>
+                }
+              }
+            </section>
+          }
+        </div>
+        <p class="m-0 text-xs text-gray-500">
+          You will be added as an author. Everyone else is added as an outside author.
+        </p>
+      }
+    } @else {
+      <!-- By author name -->
+      @if (!pickedAuthor()) {
+        <p class="m-0 text-sm text-gray-600">
+          Type your full name and we will find your available publications in OpenAlex.
+        </p>
+        <form class="flex gap-2" (submit)="$event.preventDefault(); searchAuthors()">
+          <input
+            pInputText
+            [formControl]="authorName"
+            class="flex-1"
+            placeholder="Full name, e.g. Yann LeCun"
+            aria-label="Author full name"
+          />
+          <p-button
+            type="submit"
+            label="Search"
+            icon="pi pi-search"
+            [loading]="loadingAuthors()"
+            [disabled]="authorName.value.trim().length < 2"
+          />
+        </form>
+
+        @if (candidates(); as list) {
+          @if (!list.length) {
+            <p class="m-0 text-sm text-gray-500">No author found with that name.</p>
+          } @else {
+            <p class="m-0 text-sm text-gray-600">Select the profile that is you:</p>
+            <ul class="m-0 flex max-h-80 list-none flex-col gap-2 overflow-y-auto p-0">
+              @for (a of list; track a.id) {
+                <li>
+                  <button
+                    type="button"
+                    class="flex w-full cursor-pointer flex-col gap-0.5 rounded-lg border border-[var(--p-content-border-color)] bg-transparent p-3 text-left hover:bg-surface-50"
+                    (click)="pickAuthor(a)"
+                  >
+                    <span class="text-sm font-medium text-gray-900">{{ a.name }}</span>
+                    <span class="text-xs text-gray-600">
+                      {{ a.institution || 'No institution listed' }} · {{ a.worksCount }} works · {{ a.citedBy }} citations
+                    </span>
+                    @if (a.orcid) {
+                      <span class="text-xs text-gray-500">ORCID {{ a.orcid }}</span>
+                    }
+                  </button>
+                </li>
+              }
+            </ul>
+          }
+        }
+      } @else {
+        @let author = pickedAuthor()!;
+        <div class="flex items-center justify-between gap-2">
+          <div class="min-w-0">
+            <p class="m-0 truncate text-sm font-medium text-gray-900">{{ author.name }}</p>
+            <p class="m-0 text-xs text-gray-600">{{ worksTotal() }} publications with a DOI</p>
+          </div>
+          <p-button
+            type="button"
+            label="Not me"
+            icon="pi pi-arrow-left"
+            severity="secondary"
+            variant="text"
+            size="small"
+            [disabled]="!!progress()"
+            (onClick)="backToCandidates()"
+          />
+        </div>
+
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-gray-700" for="imp-vis-a">Visibility</label>
+          <p-select
+            inputId="imp-vis-a"
+            [formControl]="visibility"
+            [options]="visibilityOptions"
+            optionLabel="label"
+            optionValue="value"
+            appendTo="body"
+          />
+        </div>
+
+        @if (importable().length) {
+          <label class="flex items-center gap-2 text-sm text-gray-700">
+            <input
+              type="checkbox"
+              [checked]="selected().size === importable().length"
+              [disabled]="!!progress()"
+              (change)="toggleAll()"
+            />
+            Select all available ({{ importable().length }})
+          </label>
+        }
+
+        <ul class="m-0 flex max-h-96 list-none flex-col gap-1 overflow-y-auto p-0">
+          @for (w of works(); track w.doi) {
+            <li class="flex items-start gap-2 rounded-md px-2 py-1.5" [class.opacity-60]="w.existing">
+              <input
+                type="checkbox"
+                class="mt-1"
+                [checked]="w.existing || selected().has(w.doi)"
+                [disabled]="w.existing || !!progress()"
+                [attr.aria-label]="'Select ' + w.title"
+                (change)="toggle(w.doi)"
+              />
+              <div class="min-w-0 flex-1">
+                <p class="m-0 text-sm text-gray-900">{{ w.title }}</p>
+                <p class="m-0 text-xs text-gray-600">
+                  {{ w.year }}@if (w.venue) { · {{ w.venue }} } · {{ w.doi }}
+                </p>
+              </div>
+              @if (w.existing) {
+                <span class="shrink-0 text-xs text-gray-500">Already added</span>
+              }
+            </li>
+          }
+        </ul>
+
+        @if (canLoadMore()) {
+          <p-button
+            type="button"
+            label="Load more"
+            severity="secondary"
+            variant="outlined"
+            size="small"
+            [loading]="loadingWorks()"
+            [disabled]="!!progress()"
+            (onClick)="loadMoreWorks()"
+          />
+        } @else if (loadingWorks() && !works().length) {
+          <p class="m-0 text-sm text-gray-500">Loading…</p>
+        } @else if (!works().length) {
+          <p class="m-0 text-sm text-gray-500">No publications with a DOI were found for this profile.</p>
+        }
+
+        <div class="flex items-center justify-between gap-2">
+          <p class="m-0 text-xs text-gray-500">
+            @if (progress(); as p) {
+              Importing {{ p.done }} of {{ p.total }}…
+            } @else {
+              You will be added as an author on each. Everyone else is added as an outside author.
+            }
+          </p>
+          <p-button
+            type="button"
+            [label]="'Import selected (' + selected().size + ')'"
+            icon="pi pi-download"
+            [loading]="!!progress()"
+            [disabled]="!selected().size || !!progress()"
+            (onClick)="importSelected()"
+          />
+        </div>
+      }
+    }
+  </div>
+</p-dialog>
