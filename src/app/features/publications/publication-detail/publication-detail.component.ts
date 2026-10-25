@@ -6,7 +6,6 @@ import { AvatarModule } from 'primeng/avatar';
 import { ButtonModule } from 'primeng/button';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TagModule } from 'primeng/tag';
-import { ToastModule } from 'primeng/toast';
 
 import {
   PUBLICATION_TYPE_LABEL,
@@ -33,14 +32,13 @@ import { RatingComponent } from '../../../shared/components/ui/rating/rating.com
     ButtonModule,
     TagModule,
     ConfirmDialogModule,
-    ToastModule,
     PublicationFormComponent,
     AuthorStatusBadgeComponent,
     PublicationReferencesComponent,
     PublicationFilesViewerComponent,
     RatingComponent,
   ],
-  providers: [ConfirmationService, MessageService],
+  providers: [ConfirmationService],
   templateUrl: './publication-detail.component.html',
 })
 export class PublicationDetailComponent implements OnInit {

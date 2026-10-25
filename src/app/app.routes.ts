@@ -173,6 +173,51 @@ export const routes: Routes = [
           ),
       },
 
+      // Supervisor and thesis tracker ('students' must stay above ':id')
+      {
+        path: 'supervision',
+        loadComponent: () =>
+          import('./features/supervision/components/supervision-list/supervision-list.component').then(
+            (m) => m.SupervisionListComponent,
+          ),
+      },
+      {
+        path: 'supervision/students',
+        loadComponent: () =>
+          import('./features/supervision/components/supervisor-dashboard/supervisor-dashboard.component').then(
+            (m) => m.SupervisorDashboardComponent,
+          ),
+      },
+      {
+        path: 'supervision/:id',
+        loadComponent: () =>
+          import('./features/supervision/components/supervision-detail/supervision-detail.component').then(
+            (m) => m.SupervisionDetailComponent,
+          ),
+      },
+      {
+        path: 'supervision/:id/workspace',
+        data: { hideFooter: true },
+        loadComponent: () =>
+          import('./features/supervision/components/workspace-page/workspace-page.component').then(
+            (m) => m.WorkspacePageComponent,
+          ),
+      },
+      {
+        path: 'supervision/:id/documents/:docId',
+        loadComponent: () =>
+          import('./features/supervision/components/document-page/document-page.component').then(
+            (m) => m.DocumentPageComponent,
+          ),
+      },
+      {
+        path: 'supervision/:id/meetings/:meetingId',
+        loadComponent: () =>
+          import('./features/supervision/components/meeting-page/meeting-page.component').then(
+            (m) => m.MeetingPageComponent,
+          ),
+      },
+
       // Teams
       {
         path: 'teams',

@@ -24,7 +24,6 @@ import { ProgressBarModule } from 'primeng/progressbar';
 import { TagModule } from 'primeng/tag';
 import { RouterLink } from '@angular/router';
 
-import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 
 /** The seed column every new project gets — see ProjectsService.create() on the Nest side. */
@@ -47,7 +46,6 @@ export interface CompletionStats {
     PriorityBadgeComponent,
     ButtonModule,
     ConfirmDialogModule,
-    ToastModule,
     ProgressBarModule,
     TagModule,
     RouterLink,
@@ -55,7 +53,7 @@ export interface CompletionStats {
 
   templateUrl: './project-board.component.html',
   styleUrl: './project-board.component.css',
-  providers: [ConfirmationService, ToastModule, MessageService],
+  providers: [ConfirmationService],
 })
 export class ProjectBoardComponent implements OnInit {
   project = signal<ProjectWithBoards | null>(null);

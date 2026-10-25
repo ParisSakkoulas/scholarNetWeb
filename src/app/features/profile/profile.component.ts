@@ -14,7 +14,6 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
-import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { availabilityLabel } from './edit-profile/availability-options';
@@ -34,7 +33,6 @@ import {
 import { ProfileItemDialogComponent } from './components/profile-item-dialog/profile-item-dialog.component';
 import { SpinnerComponent } from '../../shared/components/ui/spinner/spinner.component';
 import { AuthService } from '../../core/services/auth.service';
-import { ToastService } from '../../core/services/toast.service';
 import { ProfileService } from '../../core/services/profile.service';
 
 import { ProfilePublicationsComponent } from './components/profile-publications/profile-publications.component';
@@ -78,10 +76,9 @@ interface ProfileTabDef {
     ProfileItemDialogComponent,
     FollowListDialogComponent,
     ProfilePublicationsComponent,
-    ToastModule,
     ConfirmDialogModule,
   ],
-  providers: [MessageService, ConfirmationService],
+  providers: [ConfirmationService],
   templateUrl: './profile.component.html',
   styleUrl: './profile.component.css',
 })
@@ -90,7 +87,6 @@ export class ProfileComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
   private readonly profileService = inject(ProfileService);
-  private readonly toastService = inject(ToastService);
   private readonly title = inject(Title);
   private readonly messages = inject(MessageService);
   private readonly followsService = inject(FollowsService);
@@ -354,9 +350,9 @@ export class ProfileComponent implements OnInit {
   async copyToClipboard(value: string): Promise<void> {
     try {
       await navigator.clipboard.writeText(value);
-      this.toastService.success('Copied to clipboard!');
+      this.messages.add({ severity: 'success', summary: 'Copied to clipboard!' });
     } catch {
-      this.toastService.success('Could not copy, try selecting it manually');
+      this.messages.add({ severity: 'error', summary: 'Could not copy, try selecting it manually' });
     }
   }
 }

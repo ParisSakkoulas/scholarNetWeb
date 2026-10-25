@@ -1,0 +1,331 @@
+<p-confirmdialog />
+<div class="mx-auto flex max-w-7xl flex-col gap-6 p-4 pb-16">
+  @if (loading()) {
+    <p-skeleton height="12rem" />
+  } @else {
+  @if (data(); as d) {
+    <header class="flex flex-wrap items-start justify-between gap-3">
+      <div class="min-w-0">
+        <a [routerLink]="isSupervisor() ? '/main/supervision/students' : '/main/supervision'" class="text-sm">
+          <i class="pi pi-arrow-left mr-1" aria-hidden="true"></i>Back
+        </a>
+        <h1 class="m-0 mt-1 text-2xl font-semibold text-surface-900">{{ d.supervision.title }}</h1>
+        <p class="m-0 text-sm text-surface-500">
+          {{ personName(d.supervision.studentId) }} with
+          {{ personName(d.supervision.supervisorIds[0]) }}
+          @if (d.supervision.supervisorIds.length > 1) {
+            <span> + {{ d.supervision.supervisorIds.length - 1 }} co-supervisor(s)</span>
+          }
+        </p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <p-tag
+          [value]="supervisionMeta[d.supervision.status].label"
+          [severity]="supervisionMeta[d.supervision.status].severity"
+        />
+        <p-button label="Export summary" icon="pi pi-download" severity="secondary" variant="outlined" [loading]="exporting()" (onClick)="exportMenu.toggle($event)" />
+        <p-menu #exportMenu [model]="exportItems" [popup]="true" appendTo="body" />
+        @if (canShare()) {
+          <p-button label="Share on feed" icon="pi pi-share-alt" (onClick)="openShare()" />
+        }
+        @if (!readOnly()) {
+          <p-button label="End" icon="pi pi-times" severity="danger" variant="outlined" (onClick)="end()" />
+        }
+      </div>
+    </header>
+
+    @if (readOnly()) {
+      <p class="m-0 rounded-lg bg-surface-100 p-3 text-sm text-surface-700">
+        This supervision has ended. Everything below is read-only history.
+      </p>
+    }
+
+    @if (d.stats) {
+      <section class="flex flex-wrap items-center gap-x-8 gap-y-2" aria-label="Progress">
+        <div class="w-64">
+          <p-progressbar [value]="d.stats.progress" [showValue]="false" styleClass="h-2" />
+          <span class="text-xs text-surface-500">
+            {{ d.stats.milestonesApproved }}/{{ d.stats.milestonesTotal }} milestones approved
+          </span>
+        </div>
+        @if (d.stats.overdueCount) {
+          <p-tag severity="danger" [value]="d.stats.overdueCount + ' overdue'" />
+        }
+      </section>
+    }
+
+    <p-tabs value="overview">
+      <p-tablist>
+        <p-tab value="overview">Overview</p-tab>
+        <p-tab value="documents">Documents</p-tab>
+        <p-tab value="meetings">Meetings ({{ meetings().length }})</p-tab>
+      </p-tablist>
+      <p-tabpanels>
+      <p-tabpanel value="overview">
+
+    <div class="grid gap-6 lg:grid-cols-3">
+      <!-- Milestones -->
+      <section class="lg:col-span-2" aria-label="Milestones">
+        <div class="mb-3 flex items-center justify-between">
+          <h2 class="m-0 text-lg font-semibold text-surface-900">Milestones</h2>
+          @if (!readOnly()) {
+            <p-button label="Add" icon="pi pi-plus" size="small" variant="text" (onClick)="milestoneDialog.set(true)" />
+          }
+        </div>
+
+        @if (!d.milestones.length) {
+          <div class="rounded-xl border border-dashed border-surface-300 p-6 text-center">
+            <p class="m-0 text-sm text-surface-600">No milestones yet.</p>
+            @if (!readOnly()) {
+              <p-button class="mt-3 inline-block" label="Use the thesis timeline" icon="pi pi-list-check" (onClick)="applyTemplate()" />
+              <p class="m-0 mt-2 text-xs text-surface-500">
+                Proposal, literature review, data collection, draft chapters, submission.
+              </p>
+            }
+          </div>
+        } @else {
+          <p-timeline [value]="d.milestones" align="left" styleClass="w-full [&_.p-timeline-event-opposite]:hidden [&_.p-timeline-event-content]:min-w-0 [&_.p-timeline-event-content]:flex-1">
+            <ng-template #marker let-m>
+              <span
+                class="flex h-3 w-3 rounded-full"
+                [class]="m.status === 'approved' ? 'bg-green-500' : isOverdue(m.dueDate, m.status === 'approved') ? 'bg-red-500' : 'bg-surface-300'"
+              ></span>
+            </ng-template>
+            <ng-template #content let-m>
+              <div class="mb-4 rounded-lg border border-surface-200 bg-white p-3">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <p class="m-0 font-medium text-surface-900">{{ m.title }}</p>
+                  <p-tag [value]="meta(m.status).label" [severity]="meta(m.status).severity" />
+                </div>
+                @if (m.description) {
+                  <p class="m-0 mt-1 text-sm text-surface-600">{{ m.description }}</p>
+                }
+                <div class="mt-2 flex flex-wrap items-center justify-between gap-2">
+                  <span class="text-xs" [class]="isOverdue(m.dueDate, m.status === 'approved') ? 'font-medium text-red-600' : 'text-surface-500'">
+                    @if (m.dueDate) {
+                      Due {{ m.dueDate | date: 'mediumDate' }}
+                      @if (isOverdue(m.dueDate, m.status === 'approved')) { (overdue) }
+                    } @else {
+                      No due date
+                    }
+                  </span>
+                  <div class="flex items-center gap-1">
+                    <p-button
+                      label="Documents"
+                      icon="pi pi-file"
+                      size="small"
+                      variant="text"
+                      severity="secondary"
+                      [ariaExpanded]="docsOpen() === m._id"
+                      (onClick)="toggleDocs(m)"
+                    />
+                    @if (canEditStatus(m)) {
+                      <p-select
+                        [options]="statusOptions()"
+                        optionLabel="label"
+                        optionValue="value"
+                        [ngModel]="m.status"
+                        (ngModelChange)="setStatus(m, $event)"
+                        size="small"
+                        ariaLabel="Milestone status"
+                        appendTo="body"
+                      />
+                      <p-button icon="pi pi-trash" severity="danger" variant="text" size="small" ariaLabel="Remove milestone" (onClick)="removeMilestone(m)" />
+                    }
+                  </div>
+                </div>
+                @if (docsOpen() === m._id) {
+                  <div class="mt-3">
+                    <app-documents-section
+                      [supervisionId]="id"
+                      [milestoneId]="m._id"
+                      [canCreate]="!readOnly()"
+                    />
+                  </div>
+                }
+              </div>
+            </ng-template>
+          </p-timeline>
+        }
+      </section>
+
+      <!-- Side column -->
+      <aside class="flex flex-col gap-6">
+        <section class="rounded-xl border border-surface-200 bg-white p-4" aria-label="Next meeting">
+          <h2 class="m-0 mb-2 text-base font-semibold text-surface-900">Next meeting</h2>
+          @if (d.nextMeeting) {
+            <p class="m-0 text-sm text-surface-800">{{ d.nextMeeting.scheduledAt | date: 'full' }}</p>
+            <p class="m-0 text-xs text-surface-500">{{ d.nextMeeting.agenda.length }} agenda item(s)</p>
+            <a [routerLink]="['meetings', d.nextMeeting._id]">
+              <p-button class="mt-3 inline-block" label="Open" icon="pi pi-arrow-right" size="small" variant="outlined" />
+            </a>
+          } @else {
+            <p class="m-0 text-sm text-surface-500">Nothing planned.</p>
+          }
+        </section>
+
+        <section class="rounded-xl border border-surface-200 bg-white p-4" aria-label="Open action items">
+          <h2 class="m-0 mb-2 text-base font-semibold text-surface-900">Open action items</h2>
+          @if (!d.openActionItems.length) {
+            <p class="m-0 text-sm text-surface-500">All caught up.</p>
+          } @else {
+            <ul class="m-0 flex list-none flex-col gap-2 p-0">
+              @for (item of d.openActionItems; track item._id) {
+                <li class="flex items-start gap-2">
+                  @if (!readOnly()) {
+                    <p-button icon="pi pi-check" size="small" variant="outlined" rounded ariaLabel="Mark done" (onClick)="markDone(item)" />
+                  }
+                  <div class="min-w-0 text-sm">
+                    <p class="m-0 text-surface-800">{{ item.text }}</p>
+                    <p class="m-0 text-xs" [class]="isOverdue(item.dueDate) ? 'font-medium text-red-600' : 'text-surface-500'">
+                      {{ personName(item.assigneeId) }}
+                      @if (item.dueDate) { · due {{ item.dueDate | date: 'mediumDate' }} }
+                    </p>
+                    @if (item.attachments?.length) {
+                      <ul class="m-0 mt-1 flex list-none flex-col gap-1 p-0">
+                        @for (f of item.attachments; track f._id) {
+                          <li class="flex items-center gap-1 text-xs">
+                            <i class="pi pi-paperclip text-surface-400" aria-hidden="true"></i>
+                            <button type="button" class="min-w-0 cursor-pointer truncate border-0 bg-transparent p-0 text-left text-primary-600 underline" (click)="openFile(item, f)">{{ f.fileName }}</button>
+                            <p-button icon="pi pi-download" size="small" variant="text" severity="secondary" ariaLabel="Download file" (onClick)="downloadFile(item, f)" />
+                            @if (isSupervisor() && !readOnly()) {
+                              <p-button icon="pi pi-times" size="small" variant="text" severity="danger" ariaLabel="Remove file" (onClick)="removeFile(item, f)" />
+                            }
+                          </li>
+                        }
+                      </ul>
+                    }
+                    @if (isSupervisor() && !readOnly()) {
+                      <label class="mt-1 inline-flex cursor-pointer items-center gap-1 text-xs text-primary-600 hover:underline" [class.opacity-60]="uploadingItem() === item._id">
+                        <i [class]="uploadingItem() === item._id ? 'pi pi-spin pi-spinner' : 'pi pi-upload'" aria-hidden="true"></i>
+                        Attach file for the student
+                        <input type="file" class="sr-only" accept=".pdf,.doc,.docx" [disabled]="uploadingItem() === item._id" (change)="attachFile(item, $event)" />
+                      </label>
+                    }
+                  </div>
+                </li>
+              }
+            </ul>
+          }
+          @if (isSupervisor() && !readOnly()) {
+            <p-button class="mt-3 inline-block" label="Upload file for the student" icon="pi pi-upload" size="small" variant="outlined" (onClick)="fileTaskDialog.set(true)" />
+          }
+        </section>
+      </aside>
+    </div>
+
+      </p-tabpanel>
+      <p-tabpanel value="documents">
+        <div class="flex flex-col gap-4">
+    <a
+      [routerLink]="['workspace']"
+      class="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-surface-200 bg-white p-4 no-underline transition hover:border-primary-300"
+    >
+      <span class="flex items-center gap-3">
+        <i class="pi pi-file-edit text-2xl text-primary-600" aria-hidden="true"></i>
+        <span>
+          <span class="block font-medium text-surface-900">Co-working document</span>
+          <span class="block text-sm text-surface-500">
+            Write together: the student writes, supervisors comment on the text.
+          </span>
+        </span>
+      </span>
+      <span class="text-sm font-medium text-primary-600">Open <i class="pi pi-arrow-right ml-1" aria-hidden="true"></i></span>
+    </a>
+    <app-documents-section
+      [supervisionId]="id"
+      [milestones]="d.milestones"
+      [canCreate]="!readOnly()"
+    />
+        </div>
+      </p-tabpanel>
+      <p-tabpanel value="meetings">
+        <div class="flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <h2 class="m-0 text-lg font-semibold text-surface-900">Meetings</h2>
+            @if (!readOnly()) {
+              <p-button label="Schedule meeting" icon="pi pi-calendar-plus" size="small" (onClick)="meetingDialog.set(true)" />
+            }
+          </div>
+          @if (!meetings().length) {
+            <div class="rounded-xl border border-dashed border-surface-300 p-6 text-center">
+              <p class="m-0 text-sm text-surface-600">No meetings yet.</p>
+            </div>
+          } @else {
+            @for (m of meetings(); track m._id) {
+              <a [routerLink]="['meetings', m._id]" class="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-surface-200 bg-white p-4 no-underline hover:bg-surface-50">
+                <div class="min-w-0">
+                  <p class="m-0 font-medium text-surface-900">{{ m.scheduledAt | date: 'full' }}</p>
+                  <p class="m-0 text-xs text-surface-500">{{ m.agenda?.length ?? 0 }} agenda item(s)</p>
+                </div>
+                <p-tag [value]="m.status" severity="secondary" />
+              </a>
+            }
+          }
+        </div>
+      </p-tabpanel>
+      </p-tabpanels>
+    </p-tabs>
+  }
+  }
+</div>
+
+<p-dialog header="Add milestone" [(visible)]="milestoneDialog" [modal]="true" [draggable]="false" [style]="{ width: '30rem' }" [breakpoints]="{ '640px': '95vw' }">
+  <div class="flex flex-col gap-3">
+    <input pInputText [(ngModel)]="milestoneForm.title" maxlength="200" placeholder="Title" class="w-full" />
+    <input pInputText [(ngModel)]="milestoneForm.description" maxlength="2000" placeholder="Description (optional)" class="w-full" />
+    <p-datepicker [(ngModel)]="milestoneForm.dueDate" [minDate]="minDate" dateFormat="yy-mm-dd" placeholder="Due date" appendTo="body" [fluid]="true" />
+    <label class="flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-surface-300 p-3 hover:border-primary-300">
+      <i class="pi pi-paperclip text-surface-500" aria-hidden="true"></i>
+      <span class="min-w-0 flex-1 truncate text-sm text-surface-700">{{ milestoneFile() ? milestoneFile()!.name : 'Attach a file (optional, PDF or Word)' }}</span>
+      @if (milestoneFile()) {
+        <button type="button" class="text-xs underline" (click)="milestoneFile.set(null); $event.preventDefault()">Remove</button>
+      }
+      <input type="file" class="sr-only" accept=".pdf,.doc,.docx" (change)="pickMilestoneFile($event)" />
+    </label>
+  </div>
+  <ng-template #footer>
+    <p-button label="Cancel" severity="secondary" variant="text" (onClick)="milestoneDialog.set(false)" />
+    <p-button label="Add" [disabled]="!milestoneForm.title.trim()" [loading]="saving()" (onClick)="saveMilestone()" />
+  </ng-template>
+</p-dialog>
+
+<p-dialog header="Share your milestone" [(visible)]="shareDialog" [modal]="true" [draggable]="false" [style]="{ width: '34rem' }" [breakpoints]="{ '640px': '95vw' }">
+  <div class="flex flex-col gap-2">
+    <p class="m-0 text-sm text-surface-600">Post this to your feed so the people who follow you can celebrate with you. You can edit the text first.</p>
+    <textarea pTextarea [(ngModel)]="shareText" rows="5" [maxLength]="maxPostLength" class="w-full"></textarea>
+    <small class="self-end text-surface-500">{{ shareText.length }} / {{ maxPostLength }}</small>
+  </div>
+  <ng-template #footer>
+    <p-button label="Not now" severity="secondary" variant="text" (onClick)="shareDialog.set(false)" />
+    <p-button label="Post to feed" icon="pi pi-send" [disabled]="!shareText.trim()" [loading]="sharing()" (onClick)="publishShare()" />
+  </ng-template>
+</p-dialog>
+
+<p-dialog header="Upload a file for the student" [(visible)]="fileTaskDialog" [modal]="true" [draggable]="false" [style]="{ width: '30rem' }" [breakpoints]="{ '640px': '95vw' }">
+  <div class="flex flex-col gap-3">
+    <label class="flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-surface-300 p-4 hover:border-primary-300">
+      <i class="pi pi-upload text-xl text-surface-500" aria-hidden="true"></i>
+      <span class="min-w-0 flex-1 truncate text-sm text-surface-700">{{ fileTaskFile() ? fileTaskFile()!.name : 'Choose a PDF or Word file (up to 25 MB)' }}</span>
+      <input type="file" class="sr-only" accept=".pdf,.doc,.docx" (change)="pickFileTaskFile($event)" />
+    </label>
+    <input pInputText [(ngModel)]="fileTaskForm.text" maxlength="500" placeholder="What should the student do with it?" class="w-full" />
+    <p-datepicker [(ngModel)]="fileTaskForm.dueDate" [minDate]="minDate" dateFormat="yy-mm-dd" placeholder="Due date (optional)" appendTo="body" [fluid]="true" />
+    <small class="text-surface-500">This adds an action item for the student with the file attached.</small>
+  </div>
+  <ng-template #footer>
+    <p-button label="Cancel" severity="secondary" variant="text" (onClick)="fileTaskDialog.set(false)" />
+    <p-button label="Upload" icon="pi pi-upload" [disabled]="!fileTaskFile() || !fileTaskForm.text.trim()" [loading]="saving()" (onClick)="saveFileTask()" />
+  </ng-template>
+</p-dialog>
+
+<p-dialog header="Schedule a meeting" [(visible)]="meetingDialog" [modal]="true" [draggable]="false" [style]="{ width: '30rem' }" [breakpoints]="{ '640px': '95vw' }">
+  <div class="flex flex-col gap-3">
+    <p-datepicker [(ngModel)]="meetingForm.scheduledAt" [showTime]="true" [minDate]="minDate" hourFormat="24" placeholder="Date and time (your time zone)" appendTo="body" [fluid]="true" />
+    <input pInputText [(ngModel)]="meetingForm.firstAgendaItem" maxlength="500" placeholder="First agenda item (optional)" class="w-full" />
+  </div>
+  <ng-template #footer>
+    <p-button label="Cancel" severity="secondary" variant="text" (onClick)="meetingDialog.set(false)" />
+    <p-button label="Schedule" [disabled]="!meetingForm.scheduledAt" [loading]="saving()" (onClick)="saveMeeting()" />
+  </ng-template>
+</p-dialog>

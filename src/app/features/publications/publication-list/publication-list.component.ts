@@ -6,7 +6,6 @@ import { ButtonModule } from 'primeng/button';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { SelectModule } from 'primeng/select';
 import { SelectButtonModule } from 'primeng/selectbutton';
-import { ToastModule } from 'primeng/toast';
 import { map } from 'rxjs';
 
 import {
@@ -36,12 +35,11 @@ type Scope = 'mine' | 'all';
     SelectModule,
     SelectButtonModule,
     ConfirmDialogModule,
-    ToastModule,
     GenericTableComponent,
     PublicationFormComponent,
     PublicationImportComponent,
   ],
-  providers: [ConfirmationService, MessageService],
+  providers: [ConfirmationService],
   templateUrl: './publication-list.component.html',
 })
 export class PublicationListComponent {

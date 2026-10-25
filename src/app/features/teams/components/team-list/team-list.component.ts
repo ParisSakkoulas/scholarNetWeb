@@ -14,7 +14,6 @@ import {
 import { teamsBlueprint } from '../../configs/teams.blueprint';
 import { GenericTableComponent } from '../../../../shared/components/generic-table/generic-table.component';
 import { ConfirmationService, MessageService } from 'primeng/api';
-import { ToastModule } from 'primeng/toast';
 import { TeamInvitationsComponent } from '../team-invitations/team-invitations.component';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
@@ -25,12 +24,11 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
     ButtonModule,
     GenericTableComponent,
     ConfirmDialogModule,
-    ToastModule,
     TeamInvitationsComponent,
   ],
   templateUrl: './team-list.component.html',
   styleUrl: './team-list.component.css',
-  providers: [ConfirmationService, MessageService],
+  providers: [ConfirmationService],
 })
 export class TeamListComponent {
   private teamsService = inject(TeamsService);

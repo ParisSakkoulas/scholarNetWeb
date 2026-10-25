@@ -4,7 +4,6 @@ import { NgTemplateOutlet } from '@angular/common';
 import { Button } from 'primeng/button';
 import { ProgressSpinner } from 'primeng/progressspinner';
 import { Tag } from 'primeng/tag';
-import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 
 import { AuthService } from '../../../../core/services/auth.service';
@@ -17,11 +16,9 @@ import { AuthService } from '../../../../core/services/auth.service';
     Button,
     ProgressSpinner,
     Tag,
-    ToastModule,
   ],
   templateUrl: './verify-email.component.html',
   styleUrl: './verify-email.component.css',
-  providers: [MessageService],
 })
 export class VerifyEmailComponent implements OnInit {
   private route = inject(ActivatedRoute);

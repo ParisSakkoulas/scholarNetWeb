@@ -1,0 +1,100 @@
+<div class="mx-auto flex max-w-5xl flex-col gap-6 p-4">
+  <header class="flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="m-0 text-2xl font-semibold text-surface-900">My students</h1>
+      <p class="m-0 text-sm text-surface-500">Everyone you supervise in one view.</p>
+    </div>
+    <a routerLink="/main/supervision">
+      <p-button label="My thesis" icon="pi pi-graduation-cap" severity="secondary" variant="outlined" />
+    </a>
+  </header>
+
+  @if (invitations().length) {
+    <section class="rounded-xl border border-blue-200 bg-blue-50 p-4" aria-label="Invitations">
+      <h2 class="mb-3 mt-0 flex items-center gap-2 text-base font-semibold text-blue-900">
+        <i class="pi pi-envelope" aria-hidden="true"></i> Invitations
+      </h2>
+      <ul class="m-0 flex list-none flex-col gap-2 p-0">
+        @for (inv of invitations(); track inv._id) {
+          <li class="flex flex-wrap items-center gap-3 rounded-lg border border-blue-100 bg-white p-3">
+            <div class="min-w-0 flex-1">
+              <p class="m-0 truncate font-medium text-surface-900">{{ inv.title }}</p>
+              <p class="m-0 text-sm text-surface-500">
+                {{ personName(inv.studentId) }} asks you to supervise them
+              </p>
+            </div>
+            <div class="flex gap-2">
+              <p-button
+                label="Decline"
+                severity="secondary"
+                variant="outlined"
+                [disabled]="busy() === inv._id"
+                (onClick)="respond(inv, false)"
+              />
+              <p-button
+                label="Accept"
+                icon="pi pi-check"
+                [loading]="busy() === inv._id"
+                (onClick)="respond(inv, true)"
+              />
+            </div>
+          </li>
+        }
+      </ul>
+    </section>
+  }
+
+  @if (loading()) {
+    <p-skeleton height="10rem" />
+  } @else {
+    <p-table [value]="students()" [rowHover]="true" styleClass="p-datatable-sm">
+      <ng-template #header>
+        <tr>
+          <th>Student</th>
+          <th>Thesis</th>
+          <th class="w-52">Progress</th>
+          <th>Next meeting</th>
+          <th class="w-28">Status</th>
+        </tr>
+      </ng-template>
+      <ng-template #body let-row>
+        <tr class="cursor-pointer" (click)="open(row)">
+          <td class="font-medium">
+            {{ personName(row.studentId) }}
+            @if (row.supervisorRole === 'co-supervisor') {
+              <span class="ml-1 text-xs text-surface-500">(co-supervisor)</span>
+            }
+          </td>
+          <td>{{ row.title }}</td>
+          <td>
+            <p-progressbar [value]="row.stats?.progress ?? 0" [showValue]="false" styleClass="h-2" />
+            <span class="text-xs text-surface-500">
+              {{ row.stats?.milestonesApproved ?? 0 }}/{{ row.stats?.milestonesTotal ?? 0 }} approved
+            </span>
+          </td>
+          <td>
+            @if (row.stats?.nextMeeting) {
+              {{ row.stats.nextMeeting.scheduledAt | date: 'medium' }}
+            } @else {
+              <span class="text-surface-400">None planned</span>
+            }
+          </td>
+          <td>
+            @if (row.stats?.overdueCount) {
+              <p-tag severity="danger" [value]="row.stats.overdueCount + ' overdue'" />
+            } @else {
+              <p-tag severity="success" value="On track" />
+            }
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="5" class="py-6 text-center text-surface-500">
+            No students yet. They appear here once you accept an invitation.
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  }
+</div>

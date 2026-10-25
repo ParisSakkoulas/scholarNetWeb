@@ -20,7 +20,6 @@ import { InputText } from 'primeng/inputtext';
 import { Message } from 'primeng/message';
 import { Password } from 'primeng/password';
 import { Tag } from 'primeng/tag';
-import { ToastModule } from 'primeng/toast';
 
 // Insides
 import { SpinnerComponent } from '../../../../shared/components/ui/spinner/spinner.component';
@@ -43,11 +42,10 @@ import { MessageService } from 'primeng/api';
     Password,
     Tag,
     SpinnerComponent,
-    ToastModule,
   ],
   templateUrl: './register.component.html',
   styleUrl: './register.component.css',
-  providers: [HttpClient, MessageService],
+  providers: [HttpClient],
 })
 export class RegisterComponent {
   // variables

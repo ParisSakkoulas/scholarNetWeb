@@ -1,0 +1,61 @@
+<p-dialog
+  header="Invite a supervisor"
+  [(visible)]="visible"
+  [modal]="true"
+  [draggable]="false"
+  [style]="{ width: '32rem' }"
+  [breakpoints]="{ '640px': '95vw' }"
+>
+  <div class="flex flex-col gap-4">
+    <label class="flex flex-col gap-1">
+      <span class="text-sm font-medium text-surface-700">Thesis title</span>
+      <input
+        pInputText
+        [(ngModel)]="title"
+        maxlength="200"
+        placeholder="e.g. Graph neural networks for citation analysis"
+        class="w-full"
+      />
+    </label>
+
+    <div class="flex flex-col gap-1">
+      <span class="text-sm font-medium text-surface-700">Supervisor</span>
+      <p-autocomplete
+        [(ngModel)]="selection"
+        [suggestions]="suggestions()"
+        (completeMethod)="searchUsers($event)"
+        optionLabel="fullName"
+        [minLength]="2"
+        [delay]="300"
+        [forceSelection]="false"
+        [showClear]="true"
+        [fluid]="true"
+        appendTo="body"
+        placeholder="Search by name, or type an email address"
+      >
+        <ng-template #item let-user>
+          <div class="min-w-0">
+            <p class="m-0 truncate text-sm font-medium text-surface-900">{{ user.fullName }}</p>
+            <p class="m-0 truncate text-xs text-surface-500">&#64;{{ user.username }}</p>
+          </div>
+        </ng-template>
+      </p-autocomplete>
+      @if (typedEmail) {
+        <small class="text-surface-500">
+          Not on ScholarNet yet? We will email {{ typedEmail }} and the invitation waits for them.
+        </small>
+      }
+    </div>
+  </div>
+
+  <ng-template #footer>
+    <p-button label="Cancel" severity="secondary" variant="text" (onClick)="visible.set(false)" />
+    <p-button
+      label="Send invitation"
+      icon="pi pi-send"
+      [disabled]="!canSend"
+      [loading]="sending()"
+      (onClick)="send()"
+    />
+  </ng-template>
+</p-dialog>

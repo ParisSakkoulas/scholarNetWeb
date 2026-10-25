@@ -2,6 +2,7 @@ import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideRouter, withInMemoryScrolling } from '@angular/router';
 import { providePrimeNG } from 'primeng/config';
+import { MessageService } from 'primeng/api';
 import Aura from '@primeuix/themes/aura';
 import { ScholarNetPreset } from './scholarnet-preset';
 import { ModernPreset } from './moder-preset';
@@ -22,5 +23,6 @@ export const appConfig: ApplicationConfig = {
       ripple: true,
     }),
     provideAnimationsAsync(),
+    MessageService,
   ],
 };

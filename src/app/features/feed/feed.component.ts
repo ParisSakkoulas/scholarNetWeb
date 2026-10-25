@@ -4,7 +4,6 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { SkeletonModule } from 'primeng/skeleton';
-import { ToastModule } from 'primeng/toast';
 
 import { Post } from '../../core/models/post.model';
 import { PostsService } from '../../core/services/posts.service';
@@ -20,11 +19,10 @@ import { PostComposerComponent } from './components/post-composer/post-composer.
     ButtonModule,
     ConfirmDialogModule,
     SkeletonModule,
-    ToastModule,
     PostCardComponent,
     PostComposerComponent,
   ],
-  providers: [MessageService, ConfirmationService],
+  providers: [ConfirmationService],
   templateUrl: './feed.component.html',
 })
 export class FeedComponent implements OnInit {

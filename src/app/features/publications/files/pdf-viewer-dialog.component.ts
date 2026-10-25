@@ -13,6 +13,7 @@ import {
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import type { PDFDocumentProxy, RenderTask } from 'pdfjs-dist';
+import type { Observable } from 'rxjs';
 
 import { PublicationFilesService } from '../../../core/services/publication-files.service';
 import { fileIcon } from './file-utils';
@@ -42,6 +43,12 @@ async function loadPdfJs() {
   return pdfjs;
 }
 
+/** Lets other features reuse the viewer: where the bytes come from and how to save them. */
+export interface PdfSource {
+  fetch: () => Observable<Blob>;
+  download: () => Observable<unknown>;
+}
+
 interface PageBox {
   num: number;
   width: number;
@@ -62,8 +69,11 @@ interface PageBox {
 export class PdfViewerDialogComponent implements AfterViewInit, OnDestroy {
   private readonly api = inject(PublicationFilesService);
 
-  readonly publicationId = input.required<string>();
+  /** Publication files: the viewer fetches through the publications API. */
+  readonly publicationId = input<string>('');
   readonly file = input.required<{ _id: string; name: string }>();
+  /** Any other feature passes its own source instead of a publication id. */
+  readonly source = input<PdfSource | null>(null);
   readonly closed = output<void>();
 
   private readonly scroller = viewChild<ElementRef<HTMLElement>>('scroller');
@@ -101,7 +111,7 @@ export class PdfViewerDialogComponent implements AfterViewInit, OnDestroy {
   private async open(): Promise<void> {
     try {
       const blob = await new Promise<Blob>((resolve, reject) =>
-        this.api.fetchBlob(this.publicationId(), this.file()._id).subscribe({ next: resolve, error: reject }),
+        this.bytes$().subscribe({ next: resolve, error: reject }),
       );
       const pdfjs = await loadPdfJs();
       const data = new Uint8Array(await blob.arrayBuffer());
@@ -125,6 +135,10 @@ export class PdfViewerDialogComponent implements AfterViewInit, OnDestroy {
       this.loading.set(false);
       this.error.set(await this.messageFor(err));
     }
+  }
+
+  private bytes$(): Observable<Blob> {
+    return this.source()?.fetch() ?? this.api.fetchBlob(this.publicationId(), this.file()._id);
   }
 
   private async messageFor(err: unknown): Promise<string> {
@@ -277,7 +291,8 @@ export class PdfViewerDialogComponent implements AfterViewInit, OnDestroy {
   }
 
   download(): void {
-    this.api.download(this.publicationId(), this.file()).subscribe({
+    const download$ = this.source()?.download() ?? this.api.download(this.publicationId(), this.file());
+    download$.subscribe({
       error: () => this.error.set('Could not download the file.'),
     });
   }

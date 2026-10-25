@@ -4,4 +4,6 @@
     <router-outlet />
 </main>
 
-<app-footer></app-footer>
+@if (!hideFooter()) {
+    <app-footer></app-footer>
+}

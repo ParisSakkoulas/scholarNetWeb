@@ -1,0 +1,109 @@
+<div class="mx-auto flex max-w-4xl flex-col gap-6 p-4">
+  @if (loading()) {
+    <p-skeleton height="14rem" />
+  } @else {
+    @if (doc(); as d) {
+      <header class="flex flex-wrap items-start justify-between gap-3">
+        <div class="min-w-0">
+          <a [routerLink]="['/main/supervision', supervisionId]" class="text-sm">
+            <i class="pi pi-arrow-left mr-1" aria-hidden="true"></i>Back to supervision
+          </a>
+          <h1 class="m-0 mt-1 text-2xl font-semibold text-surface-900">{{ d.title }}</h1>
+          @if (d.openThreads) { <p class="m-0 text-sm text-surface-500">{{ d.openThreads }} open comment thread(s)</p> }
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <p-tag [value]="statusMeta[d.status].label" [severity]="statusMeta[d.status].severity" />
+          @if (canMarkReady()) {
+            <p-button label="Ready for review" icon="pi pi-send" (onClick)="setStatus('ready_for_review')" />
+          }
+          @if (canReview()) {
+            <p-button label="Request changes" icon="pi pi-replay" severity="secondary" variant="outlined" (onClick)="setStatus('changes_requested')" />
+            <p-button label="Mark reviewed" icon="pi pi-check" severity="success" (onClick)="setStatus('reviewed')" />
+          }
+        </div>
+      </header>
+
+      @if (readOnly()) {
+        <p class="m-0 rounded-lg bg-surface-100 p-3 text-sm text-surface-700">
+          This supervision has ended. The document and its comments are read-only.
+        </p>
+      }
+
+      <!-- Versions -->
+      <section class="rounded-xl border border-surface-200 bg-white p-4" aria-label="Versions">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          @if (d.versions.length) {
+            <div class="flex flex-wrap items-center gap-2">
+              <p-select
+                [options]="versionOptions()"
+                optionLabel="label"
+                optionValue="value"
+                [ngModel]="selected()"
+                (ngModelChange)="selectVersion($event)"
+                ariaLabel="Version"
+              />
+              @if (version(); as v) {
+                <span class="text-sm text-surface-500">{{ v.fileName }}</span>
+                @if (v.byRole === 'supervisor') { <p-tag value="Reviewed copy" severity="info" /> }
+              }
+            </div>
+            <div class="flex gap-2">
+              @if (isPdf()) {
+                <p-button label="Preview" icon="pi pi-eye" severity="secondary" variant="outlined" (onClick)="previewing.set(true)" />
+              }
+              <p-button label="Download" icon="pi pi-download" severity="secondary" variant="outlined" (onClick)="download()" />
+            </div>
+          } @else {
+            <p class="m-0 text-sm text-surface-500">
+              @if (isStudent() && canUpload()) { Upload the first version so your supervisor can read it. }
+              @else { Nothing uploaded yet. }
+            </p>
+          }
+        </div>
+
+        @if (version()?.note; as note) {
+          <p class="m-0 mt-2 text-sm text-surface-600">“{{ note }}”</p>
+        }
+
+        @if (!isPdf() && version()) {
+          <p class="m-0 mt-2 text-xs text-surface-500">Word files can be downloaded but not previewed.</p>
+        }
+
+        @if (canUpload()) {
+          <div class="mt-4 flex flex-wrap items-center gap-2 border-t border-surface-100 pt-4">
+            <input pInputText [(ngModel)]="note" maxlength="300" placeholder="Note for this version (optional)" class="min-w-0 flex-1" />
+            <label class="inline-flex cursor-pointer items-center gap-2 rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700" [class.opacity-60]="uploading()">
+              <i [class]="uploading() ? 'pi pi-spin pi-spinner' : 'pi pi-upload'" aria-hidden="true"></i>
+              {{ isSupervisor() ? 'Upload reviewed copy' : d.versions.length ? 'Upload new version' : 'Upload file' }}
+              <input type="file" class="sr-only" accept=".pdf,.doc,.docx" [disabled]="uploading()" (change)="onFile($event)" />
+            </label>
+          </div>
+          <p class="m-0 mt-1 text-xs text-surface-500">
+            PDF or Word, up to 25 MB. Earlier versions are kept.
+            @if (isSupervisor()) { Download the file, review it in your own tools, then upload your annotated copy here; the status stays as it is. }
+          </p>
+        }
+      </section>
+
+      <!-- Comments -->
+      @if (version(); as v) {
+        <app-document-comments
+          [docId]="docId"
+          [versionId]="v._id"
+          [role]="d.role"
+          [readOnly]="readOnly()"
+          [pollMs]="20000"
+          (changed)="load()"
+        />
+      } @else {
+        <p class="m-0 text-sm text-surface-500">Comments appear here once a version is uploaded.</p>
+      }
+    }
+  }
+</div>
+
+@if (previewing() && version(); as v) {
+  @if (pdfSource(); as src) {
+    <app-pdf-viewer-dialog [file]="{ _id: v._id, name: v.fileName ?? 'document.pdf' }" [source]="src" (closed)="previewing.set(false)" />
+  }
+}

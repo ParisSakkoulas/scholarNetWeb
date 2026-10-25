@@ -6,7 +6,6 @@ import { ButtonModule } from 'primeng/button';
 import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { SkeletonModule } from 'primeng/skeleton';
-import { ToastModule } from 'primeng/toast';
 
 import {
   AppNotification,
@@ -27,10 +26,8 @@ type StatusFilter = 'all' | 'unread';
     PaginatorModule,
     SelectButtonModule,
     SkeletonModule,
-    ToastModule,
     NotificationItemComponent,
   ],
-  providers: [MessageService],
   templateUrl: './notifications.component.html',
 })
 export class NotificationsComponent implements OnInit {
@@ -92,6 +89,12 @@ export class NotificationsComponent implements OnInit {
           });
         },
       });
+  }
+
+  selectTopic(value: string): void {
+    if (this.topic === value) return;
+    this.topic = value as NotificationType | 'ALL';
+    this.load(1);
   }
 
   onFilterChange(): void {

@@ -15,7 +15,6 @@ import { DividerModule } from 'primeng/divider';
 import { PasswordModule } from 'primeng/password';
 import { MessageModule } from 'primeng/message';
 import { InputTextModule } from 'primeng/inputtext';
-import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 
 import { AuthService } from '../../../../core/services/auth.service';
@@ -36,11 +35,10 @@ import { SpinnerComponent } from '../../../../shared/components/ui/spinner/spinn
     TagModule,
     MessageModule,
     InputTextModule,
-    ToastModule,
   ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
-  providers: [HttpClient, MessageService],
+  providers: [HttpClient],
 })
 export class LoginComponent {
   // services
@@ -80,7 +78,6 @@ export class LoginComponent {
 
     this.authService.login(loginPayload).subscribe({
       next: (response) => {
-        // this.toastService.success("Welcome back!");
         // console.log(response)
         this.loading.set(false);
         this.router.navigate(['/main/feed']);

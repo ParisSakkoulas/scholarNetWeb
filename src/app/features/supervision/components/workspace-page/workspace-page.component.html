@@ -1,0 +1,166 @@
+<div
+  [class]="focusMode()
+    ? 'fixed inset-0 z-[900] flex flex-col gap-2 overflow-hidden bg-white p-3'
+    : 'mx-auto flex w-full max-w-[1800px] flex-col gap-2 px-3 py-2'"
+>
+  @if (loading()) {
+    <p-skeleton height="24rem" />
+  } @else if (missing()) {
+    <a [routerLink]="['/main/supervision', supervisionId]" class="text-sm">
+      <i class="pi pi-arrow-left mr-1" aria-hidden="true"></i>Back to supervision
+    </a>
+    <section class="rounded-xl border border-dashed border-surface-300 p-8 text-center">
+      <i class="pi pi-file-edit mb-2 text-3xl text-surface-400" aria-hidden="true"></i>
+      <p class="m-0 font-medium text-surface-800">No co-working document yet</p>
+      @if (isStudent() && !readOnly()) {
+        <p class="m-0 mt-1 text-sm text-surface-500">
+          Write here and your supervisor can read it and comment on the text.
+        </p>
+        <p-button class="mt-4 inline-block" label="Start the document" icon="pi pi-plus" [loading]="starting()" (onClick)="start()" />
+      } @else {
+        <p class="m-0 mt-1 text-sm text-surface-500">The student has not started it yet.</p>
+      }
+    </section>
+  } @else {
+  @if (doc(); as d) {
+    <header class="flex flex-wrap items-start justify-between gap-3">
+      <div class="min-w-0">
+        <h1 class="m-0 flex items-center gap-2 text-xl font-semibold text-surface-900">
+          <a [routerLink]="['/main/supervision', supervisionId]" class="text-sm font-normal" aria-label="Back to supervision" title="Back to supervision">
+            <i class="pi pi-arrow-left" aria-hidden="true"></i>
+          </a>
+          {{ d.title }}
+        </h1>
+        <p class="m-0 text-sm text-surface-500" aria-live="polite">
+          @if (editable()) {
+            @switch (saveState()) {
+              @case ('saved') { <i class="pi pi-check mr-1 text-green-600" aria-hidden="true"></i>Saved @if (savedAt(); as at) { at {{ at | date: 'shortTime' }} } }
+              @case ('unsaved') { Unsaved changes… }
+              @case ('saving') { <i class="pi pi-spin pi-spinner mr-1" aria-hidden="true"></i>Saving… }
+              @case ('error') { <span class="text-red-600">Could not save. <button type="button" class="underline" (click)="retrySave()">Retry</button></span> }
+              @case ('conflict') { <span class="text-red-600">Changed in another tab. <button type="button" class="underline" (click)="reloadFromServer()">Load the latest copy</button></span> }
+            }
+          } @else if (isStudent()) {
+            Read-only
+          } @else {
+            Following the student's draft
+            @if (d.openThreads) { · {{ d.openThreads }} open comment thread(s) }
+          }
+          @if (editorCmp(); as ed) { · {{ ed.words() }} words }
+        </p>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <p-tag [value]="statusMeta[d.status].label" [severity]="statusMeta[d.status].severity" />
+        <p-select
+          [options]="versionOptions()"
+          optionLabel="label"
+          optionValue="value"
+          [ngModel]="viewing()"
+          (ngModelChange)="selectVersion($event)"
+          ariaLabel="Version"
+        />
+        @if (marginComments()) {
+          <p-selectbutton [options]="filterOptions" [ngModel]="commentFilter()" (ngModelChange)="commentFilter.set($event)" optionLabel="label" optionValue="value" size="small" [allowEmpty]="false" ariaLabel="Filter comments" />
+        }
+        <p-button [label]="focusMode() ? 'Exit full screen' : 'Full screen'" [icon]="focusMode() ? 'pi pi-window-minimize' : 'pi pi-window-maximize'" severity="secondary" variant="outlined" (onClick)="toggleFocus()" />
+        <p-button label="Export Word" icon="pi pi-file-word" severity="secondary" variant="outlined" [loading]="exporting()" (onClick)="exportWord()" />
+        @if (editable()) {
+          <p-button label="Save version" icon="pi pi-bookmark" severity="secondary" variant="outlined" [disabled]="saveState() !== 'saved'" (onClick)="openVersionDialog()" />
+        }
+        @if (canMarkReady()) {
+          <p-button label="Ready for review" icon="pi pi-send" [disabled]="saveState() !== 'saved'" (onClick)="setStatus('ready_for_review')" />
+        }
+        @if (canReview()) {
+          <p-button label="Request changes" icon="pi pi-replay" severity="secondary" variant="outlined" (onClick)="setStatus('changes_requested')" />
+          <p-button label="Mark reviewed" icon="pi pi-check" severity="success" (onClick)="setStatus('reviewed')" />
+        }
+      </div>
+    </header>
+
+    @if (readOnly()) {
+      <p class="m-0 rounded-lg bg-surface-100 p-3 text-sm text-surface-700">
+        This supervision has ended. The document and its comments are read-only.
+      </p>
+    }
+    @if (!isLive()) {
+      <p class="m-0 flex flex-wrap items-center justify-between gap-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-900">
+        <span>You are viewing version {{ viewing() }}, read-only.</span>
+        <button type="button" class="underline" (click)="selectVersion(null)">Back to the live draft</button>
+      </p>
+    }
+
+    <!-- the editor fills the height left under the header; comments sit in its margin when wide -->
+    <div [class]="focusMode() ? 'min-h-0 flex-1' : 'h-[calc(100dvh-9.5rem)] min-h-[32rem]'">
+      <app-rich-editor
+        #editor
+        [editable]="editable()"
+        [commentable]="canCommentNow()"
+        [highlights]="isLive() ? highlights() : []"
+        [activeId]="activeId()"
+        (contentChange)="onContent($event)"
+        (commentRequested)="pendingAnchor.set($event)"
+        (highlightClicked)="focusThread($event)"
+        (outdatedChange)="outdated.set($event)"
+        (positionsChange)="anchorTops.set($event)"
+      >
+        @if (marginComments() && role(); as r) {
+          <div margin class="rich-editor__margin">
+            <app-document-comments
+              [docId]="d._id"
+              [role]="r"
+              layout="margin"
+              [readOnly]="readOnly()"
+              [canStart]="true"
+              [pendingAnchor]="pendingAnchor()"
+              [activeId]="activeId()"
+              [outdatedIds]="outdated()"
+              [anchorTops]="anchorTops()"
+              [pollMs]="15000"
+              [(filter)]="commentFilter"
+              (threadsChange)="onThreads($event)"
+              (threadClicked)="focusThread($event._id)"
+              (anchorCleared)="pendingAnchor.set(null)"
+              (changed)="reloadDoc()"
+            />
+          </div>
+        }
+      </app-rich-editor>
+    </div>
+
+    <!-- narrow screens: comments below the editor as a list -->
+    @if (!marginComments() && !focusMode()) {
+      @if (isLive() && role(); as r) {
+        <app-document-comments
+          [docId]="d._id"
+          [role]="r"
+          [readOnly]="readOnly()"
+          [canStart]="true"
+          [pendingAnchor]="pendingAnchor()"
+          [activeId]="activeId()"
+          [outdatedIds]="outdated()"
+          [pollMs]="15000"
+          (threadsChange)="onThreads($event)"
+          (threadClicked)="focusThread($event._id)"
+          (anchorCleared)="pendingAnchor.set(null)"
+          (changed)="reloadDoc()"
+        />
+      } @else {
+        <p class="m-0 rounded-xl border border-surface-200 bg-white p-4 text-sm text-surface-500">
+          Comments are on the live draft. Go back to it to read or add comments.
+        </p>
+      }
+    }
+  }
+  }
+</div>
+
+<p-dialog header="Save a version" [(visible)]="versionDialog" [modal]="true" [draggable]="false" [style]="{ width: '28rem' }" [breakpoints]="{ '640px': '95vw' }">
+  <p class="mt-0 text-sm text-surface-600">
+    A version is a snapshot you and your supervisor can always go back to. Keep writing in the live draft afterwards.
+  </p>
+  <input pInputText [(ngModel)]="versionNote" maxlength="300" placeholder="Note, e.g. Chapter 2 first draft (optional)" class="w-full" />
+  <ng-template #footer>
+    <p-button label="Cancel" severity="secondary" variant="text" (onClick)="versionDialog.set(false)" />
+    <p-button label="Save version" [loading]="savingVersion()" (onClick)="saveVersion()" />
+  </ng-template>
+</p-dialog>

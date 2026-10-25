@@ -1,0 +1,130 @@
+<div class="mx-auto flex max-w-4xl flex-col gap-6 p-4">
+  @if (loading()) {
+    <p-skeleton height="14rem" />
+  } @else {
+  @if (meeting(); as m) {
+    <header class="flex flex-wrap items-start justify-between gap-3">
+      <div>
+        <a [routerLink]="['/main/supervision', id]" class="text-sm">
+          <i class="pi pi-arrow-left mr-1" aria-hidden="true"></i>Back to supervision
+        </a>
+        <h1 class="m-0 mt-1 text-2xl font-semibold text-surface-900">
+          Meeting on {{ m.scheduledAt | date: 'full' }}
+        </h1>
+        <p class="m-0 text-sm text-surface-500">Shown in your time zone.</p>
+      </div>
+      @if (!readOnly()) {
+        <div class="flex flex-wrap items-center gap-2">
+          <p-select
+            [options]="statusOptions"
+            optionLabel="label"
+            optionValue="value"
+            [ngModel]="m.status"
+            (ngModelChange)="setStatus($event)"
+            ariaLabel="Meeting status"
+          />
+          <p-datepicker
+            [showTime]="true"
+            hourFormat="24"
+            placeholder="Reschedule"
+            appendTo="body"
+            (onSelect)="reschedule($event)"
+          />
+        </div>
+      } @else {
+        <p-tag [value]="m.status" severity="secondary" />
+      }
+    </header>
+
+    <!-- Agenda -->
+    <section class="rounded-xl border border-surface-200 bg-white p-4" aria-label="Agenda">
+      <h2 class="m-0 mb-3 text-lg font-semibold text-surface-900">Agenda</h2>
+      @if (!m.agenda.length) {
+        <p class="m-0 text-sm text-surface-500">No topics yet. Add what you want to discuss.</p>
+      } @else {
+        <ol class="m-0 flex list-decimal flex-col gap-2 pl-5">
+          @for (a of m.agenda; track a._id) {
+            <li class="text-sm text-surface-800">
+              <span class="flex items-start justify-between gap-2">
+                <span>{{ a.text }}</span>
+                @if (!readOnly()) {
+                  <p-button icon="pi pi-times" severity="secondary" variant="text" size="small" ariaLabel="Remove agenda item" (onClick)="removeAgenda(a._id)" />
+                }
+              </span>
+            </li>
+          }
+        </ol>
+      }
+      @if (!readOnly()) {
+        <form class="mt-3 flex gap-2" (ngSubmit)="addAgenda()">
+          <input pInputText name="agenda" [(ngModel)]="newAgenda" maxlength="500" placeholder="Add a topic" class="flex-1" />
+          <p-button type="submit" label="Add" icon="pi pi-plus" [disabled]="!newAgenda.trim()" />
+        </form>
+      }
+    </section>
+
+    <!-- Notes -->
+    <section class="rounded-xl border border-surface-200 bg-white p-4" aria-label="Notes">
+      <h2 class="m-0 mb-3 text-lg font-semibold text-surface-900">Notes</h2>
+      <textarea
+        pTextarea
+        [(ngModel)]="notes"
+        [disabled]="readOnly()"
+        rows="8"
+        maxlength="20000"
+        class="w-full"
+        placeholder="What was decided? Write it down after the meeting."
+      ></textarea>
+      @if (!readOnly()) {
+        <p-button class="mt-2 inline-block" label="Save notes" icon="pi pi-save" [loading]="savingNotes()" (onClick)="saveNotes()" />
+      }
+    </section>
+
+    <!-- Action items -->
+    <section class="rounded-xl border border-surface-200 bg-white p-4" aria-label="Action items">
+      <h2 class="m-0 mb-3 text-lg font-semibold text-surface-900">Action items</h2>
+      @if (!m.actionItems.length) {
+        <p class="m-0 text-sm text-surface-500">Nothing assigned from this meeting yet.</p>
+      } @else {
+        <ul class="m-0 flex list-none flex-col gap-2 p-0">
+          @for (i of m.actionItems; track i._id) {
+            <li class="flex items-start gap-2">
+              @if (!readOnly()) {
+                <p-button
+                  [icon]="i.status === 'done' ? 'pi pi-check-circle' : 'pi pi-circle'"
+                  [severity]="i.status === 'done' ? 'success' : 'secondary'"
+                  variant="text"
+                  rounded
+                  [ariaLabel]="i.status === 'done' ? 'Reopen' : 'Mark done'"
+                  (onClick)="toggleItem(i._id, i.status === 'done')"
+                />
+              }
+              <div class="min-w-0 flex-1 text-sm">
+                <p class="m-0" [class]="i.status === 'done' ? 'text-surface-400 line-through' : 'text-surface-800'">{{ i.text }}</p>
+                <p class="m-0 text-xs" [class]="i.status === 'open' && isOverdue(i.dueDate) ? 'font-medium text-red-600' : 'text-surface-500'">
+                  {{ personName(i.assigneeId) }}
+                  @if (i.dueDate) { · due {{ i.dueDate | date: 'mediumDate' }} }
+                </p>
+              </div>
+              @if (!readOnly()) {
+                <p-button icon="pi pi-trash" severity="danger" variant="text" size="small" ariaLabel="Remove action item" (onClick)="removeItem(i._id)" />
+              }
+            </li>
+          }
+        </ul>
+      }
+
+      @if (!readOnly()) {
+        <form class="mt-4 grid gap-2 sm:grid-cols-[1fr_12rem_11rem_auto]" (ngSubmit)="addItem()">
+          <input pInputText name="text" [(ngModel)]="newItem.text" maxlength="500" placeholder="Add action item" />
+          <p-select name="assignee" [options]="people()" optionLabel="label" optionValue="value" [(ngModel)]="newItem.assigneeId" placeholder="Assignee" appendTo="body" />
+          <p-datepicker name="due" [(ngModel)]="newItem.dueDate" dateFormat="yy-mm-dd" placeholder="Due date" appendTo="body" [fluid]="true" />
+          <p-button type="submit" label="Add" icon="pi pi-plus" [disabled]="!newItem.text.trim() || !newItem.assigneeId" />
+        </form>
+      }
+    </section>
+
+    <app-documents-section [supervisionId]="id" [meetingId]="meetingId" [canCreate]="!readOnly()" />
+  }
+  }
+</div>

@@ -1,0 +1,161 @@
+<p-confirmdialog />
+
+<!-- One thread: used by both layouts -->
+<ng-template #thread let-t>
+  <div
+    [id]="'thread-' + t._id"
+    class="rounded-md border border-l-[3px] bg-white px-3 py-2"
+    [class]="authorColor(t).border + ' ' + (t._id === activeId() ? 'border-surface-400' : 'border-surface-200') + (t.status === 'resolved' ? ' opacity-60' : '')"
+    (click)="threadClicked.emit(t)"
+  >
+    @if (layout() === 'panel' && t.anchor?.quote; as quote) {
+      <p class="m-0 mb-2 line-clamp-2 border-l-4 border-yellow-400 bg-yellow-50 px-2 py-1 text-xs italic text-surface-700">“{{ quote }}”</p>
+    }
+    @if (isOutdated(t)) {
+      <p class="m-0 mb-2 border-l-4 border-amber-400 bg-amber-50 px-2 py-1 text-xs text-amber-800">
+        The commented text was edited@if (t.anchor?.quote; as q) {: “{{ q }}”}
+      </p>
+    }
+    <div class="flex items-start justify-between gap-2">
+      <div class="min-w-0">
+        <p class="m-0 text-sm font-medium" [class]="authorColor(t).name">
+          {{ personName(t.authorId) }}
+          <span class="ml-1 text-xs font-normal text-surface-500">{{ t.createdAt | date: 'medium' }}</span>
+        </p>
+        <p class="m-0 mt-1 whitespace-pre-wrap break-words text-sm text-surface-800">{{ t.text }}</p>
+      </div>
+      <div class="flex shrink-0 items-center gap-1">
+        @if (t.status === 'resolved') { <p-tag value="Resolved" severity="success" /> }
+        @if (canResolve(t)) {
+          <p-button
+            [label]="t.status === 'open' ? 'Resolve' : 'Reopen'"
+            [icon]="t.status === 'open' ? 'pi pi-check' : 'pi pi-replay'"
+            size="small"
+            variant="text"
+            severity="secondary"
+            (onClick)="toggleResolved(t); $event.stopPropagation()"
+          />
+        }
+        @if (canDelete(t)) {
+          <p-button icon="pi pi-trash" size="small" variant="text" severity="danger" ariaLabel="Delete comment" (onClick)="remove(t, true); $event.stopPropagation()" />
+        }
+      </div>
+    </div>
+
+    @if (t.replies?.length) {
+      <ul class="m-0 mt-3 flex list-none flex-col gap-2 p-0">
+        @for (r of t.replies; track r._id) {
+          <li class="border-l-2 pl-2" [class]="authorColor(r).border">
+            <div class="flex items-center justify-between gap-2">
+              <p class="m-0 text-sm font-medium" [class]="authorColor(r).name">
+                {{ personName(r.authorId) }}
+                <span class="ml-1 text-xs font-normal text-surface-500">{{ r.createdAt | date: 'medium' }}</span>
+              </p>
+              @if (canDelete(r)) {
+                <p-button icon="pi pi-trash" size="small" variant="text" severity="danger" ariaLabel="Delete reply" (onClick)="remove(r, false); $event.stopPropagation()" />
+              }
+            </div>
+            <p class="m-0 whitespace-pre-wrap break-words text-sm text-surface-800">{{ r.text }}</p>
+          </li>
+        }
+      </ul>
+    }
+
+    @if (!readOnly()) {
+      <form class="mt-3 flex gap-2" (ngSubmit)="reply(t)" (click)="$event.stopPropagation()">
+        <input pInputText [name]="'reply-' + t._id" [(ngModel)]="replies[t._id]" maxlength="4000" placeholder="Reply…" class="min-w-0 flex-1" />
+        <p-button type="submit" label="Reply" size="small" [disabled]="!(replies[t._id] ?? '').trim()" />
+      </form>
+    }
+  </div>
+</ng-template>
+
+<!-- The new-comment form: used by both layouts -->
+<ng-template #composer>
+  <form class="flex flex-col gap-2 rounded-lg border border-blue-300 bg-white p-3 shadow" (ngSubmit)="add()">
+    @if (pendingAnchor(); as a) {
+      <p class="m-0 flex items-start justify-between gap-2 border-l-4 border-blue-400 bg-blue-50 px-2 py-1 text-xs italic text-surface-700">
+        <span class="line-clamp-2">Commenting on “{{ a.quote }}”</span>
+        <button type="button" class="not-italic underline" (click)="anchorCleared.emit()">Remove</button>
+      </p>
+    }
+    <textarea pTextarea name="newComment" [(ngModel)]="newComment" rows="3" maxlength="4000" class="w-full" [placeholder]="pendingAnchor() ? 'Your comment on the selected text' : 'Add a comment'"></textarea>
+    <p-button class="self-start" type="submit" label="Comment" icon="pi pi-comment" size="small" [disabled]="!newComment.trim()" />
+  </form>
+</ng-template>
+
+@if (layout() === 'margin') {
+  <!-- Margin: each card sits level with its text -->
+  <div class="relative w-full" [style.height.px]="marginHeight()" aria-label="Comments">
+    @if (loading() && !threads().length) {
+      <p-skeleton height="4rem" />
+    } @else if (error()) {
+      <p class="m-0 text-sm text-red-600" role="alert">
+        Could not load the comments.
+        <button type="button" class="underline" (click)="load(true)">Try again</button>
+      </p>
+    } @else if (!threads().length && !pendingAnchor()) {
+      <p class="m-0 text-xs text-surface-500">
+        @if (filter() === 'all') { Select text and use “Comment on selection” to start a comment. }
+        @else { No {{ filter() }} comments. }
+      </p>
+    }
+
+    @for (t of threads(); track t._id) {
+      <div
+        class="absolute inset-x-0 transition-[top] duration-150"
+        [attr.data-card]="t._id"
+        [style.top.px]="tops()[t._id] ?? 0"
+        [style.visibility]="tops()[t._id] === undefined ? 'hidden' : 'visible'"
+      >
+        <ng-container [ngTemplateOutlet]="thread" [ngTemplateOutletContext]="{ $implicit: t }" />
+      </div>
+    }
+
+    @if (pendingAnchor() && canStart() && !readOnly()) {
+      <div
+        class="absolute inset-x-0 z-10 transition-[top] duration-150"
+        [attr.data-card]="pendingId"
+        [style.top.px]="tops()[pendingId] ?? 0"
+        [style.visibility]="tops()[pendingId] === undefined ? 'hidden' : 'visible'"
+      >
+        <ng-container [ngTemplateOutlet]="composer" />
+      </div>
+    }
+  </div>
+} @else {
+  <!-- Panel: a plain list -->
+  <section class="rounded-xl border border-surface-200 bg-white p-4" aria-label="Comments">
+    <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
+      <h2 class="m-0 text-lg font-semibold text-surface-900">Comments</h2>
+      @if (showFilter()) {
+        <p-selectbutton [options]="filterOptions" [ngModel]="filter()" (ngModelChange)="filter.set($event)" optionLabel="label" optionValue="value" size="small" [allowEmpty]="false" ariaLabel="Filter comments" />
+      }
+    </div>
+
+    @if (loading()) {
+      <p-skeleton height="5rem" />
+    } @else if (error()) {
+      <p class="m-0 text-sm text-red-600" role="alert">
+        Could not load the comments.
+        <button type="button" class="underline" (click)="load(true)">Try again</button>
+      </p>
+    } @else if (!threads().length) {
+      <p class="m-0 text-sm text-surface-500">
+        @if (filter() === 'all') { No comments yet. } @else { No {{ filter() }} comments. }
+      </p>
+    } @else {
+      <ul class="m-0 flex list-none flex-col gap-4 p-0">
+        @for (t of threads(); track t._id) {
+          <li><ng-container [ngTemplateOutlet]="thread" [ngTemplateOutletContext]="{ $implicit: t }" /></li>
+        }
+      </ul>
+    }
+
+    @if (canStart() && !readOnly()) {
+      <div class="mt-4 border-t border-surface-100 pt-4">
+        <ng-container [ngTemplateOutlet]="composer" />
+      </div>
+    }
+  </section>
+}

@@ -4,7 +4,6 @@ import { ConfirmationService, MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { SkeletonModule } from 'primeng/skeleton';
-import { ToastModule } from 'primeng/toast';
 
 import { Post } from '../../../core/models/post.model';
 import { PostsService } from '../../../core/services/posts.service';
@@ -19,12 +18,10 @@ import { PostCardComponent } from '../components/post-card/post-card.component';
     ButtonModule,
     ConfirmDialogModule,
     SkeletonModule,
-    ToastModule,
     PostCardComponent,
   ],
-  providers: [MessageService, ConfirmationService],
+  providers: [ConfirmationService],
   template: `
-    <p-toast />
     <p-confirmdialog />
 
     <div class="mx-auto min-h-[calc(100vh-12rem)] max-w-2xl px-4 py-8">

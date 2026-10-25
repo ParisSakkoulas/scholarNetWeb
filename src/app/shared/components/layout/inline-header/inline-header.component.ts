@@ -104,6 +104,7 @@ export class InlineHeaderComponent {
       command: () => this.goToOwnProfile(),
     },
     { label: 'My teams', icon: 'pi pi-users', routerLink: '/main/teams' },
+    { label: 'My students', icon: 'pi pi-graduation-cap', routerLink: '/main/supervision/students' },
     { label: 'Requests', icon: 'pi pi-inbox', routerLink: '/main/requests/files' },
     { label: 'Settings', icon: 'pi pi-cog', routerLink: '/settings' },
     { label: 'Activity', icon: 'pi pi-history', routerLink: '/settings' },

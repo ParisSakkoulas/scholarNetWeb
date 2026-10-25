@@ -1,0 +1,71 @@
+<section class="rounded-xl border border-surface-200 bg-white p-4" aria-label="Documents">
+  <div class="mb-3 flex items-center justify-between">
+    <h2 class="m-0 text-lg font-semibold text-surface-900">Documents</h2>
+    @if (canCreate()) {
+      <p-button label="Upload file" icon="pi pi-upload" size="small" variant="text" (onClick)="dialog.set(true)" />
+    }
+  </div>
+
+  @if (loading()) {
+    <p-skeleton height="3rem" />
+  } @else if (error()) {
+    <p class="m-0 text-sm text-red-600" role="alert">
+      Could not load the documents.
+      <button type="button" class="underline" (click)="load()">Try again</button>
+    </p>
+  } @else if (!docs().length) {
+    <p class="m-0 text-sm text-surface-500">
+      No documents yet.
+      @if (canCreate()) { Upload a PDF or Word file so the other side can read it and comment. }
+    </p>
+  } @else {
+    <ul class="m-0 flex list-none flex-col gap-2 p-0">
+      @for (d of docs(); track d._id) {
+        <li>
+          <a
+            [routerLink]="d.mode === 'editor' ? ['/main/supervision', supervisionId(), 'workspace'] : ['/main/supervision', supervisionId(), 'documents', d._id]"
+            class="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-surface-200 p-3 no-underline hover:border-primary-300"
+          >
+            <div class="min-w-0">
+              <p class="m-0 truncate font-medium text-surface-900">{{ d.title }}</p>
+              <p class="m-0 text-xs text-surface-500">
+                @if (d.currentVersion) { v{{ d.currentVersion }} · } @else { No file yet · }
+                updated {{ d.updatedAt | date: 'medium' }}
+                @if (milestoneTitle(d); as m) { · {{ m }} }
+              </p>
+            </div>
+            <p-tag [value]="statusMeta[d.status].label" [severity]="statusMeta[d.status].severity" />
+          </a>
+        </li>
+      }
+    </ul>
+  }
+</section>
+
+<p-dialog header="Upload a file" [(visible)]="dialog" [modal]="true" [draggable]="false" [style]="{ width: '28rem' }" [breakpoints]="{ '640px': '95vw' }">
+  <div class="flex flex-col gap-3">
+    <label class="flex cursor-pointer items-center gap-3 rounded-lg border border-dashed border-surface-300 p-4 hover:border-primary-300">
+      <i class="pi pi-upload text-xl text-surface-500" aria-hidden="true"></i>
+      <span class="min-w-0 truncate text-sm text-surface-700">{{ file ? file.name : 'Choose a PDF or Word file (up to 25 MB)' }}</span>
+      <input type="file" class="sr-only" accept=".pdf,.doc,.docx" (change)="onPick($event)" />
+    </label>
+    <input pInputText [(ngModel)]="title" maxlength="200" placeholder="Title, e.g. Chapter 2 draft" class="w-full" />
+    <input pInputText [(ngModel)]="note" maxlength="300" placeholder="Note (optional)" class="w-full" />
+    @if (!milestoneId() && milestoneOptions().length) {
+      <p-select
+        [options]="milestoneOptions()"
+        optionLabel="label"
+        optionValue="value"
+        [(ngModel)]="pickedMilestone"
+        placeholder="Milestone (optional)"
+        [showClear]="true"
+        appendTo="body"
+        [fluid]="true"
+      />
+    }
+  </div>
+  <ng-template #footer>
+    <p-button label="Cancel" severity="secondary" variant="text" (onClick)="dialog.set(false)" />
+    <p-button label="Upload" icon="pi pi-upload" [disabled]="!title.trim() || !file" [loading]="saving()" (onClick)="create()" />
+  </ng-template>
+</p-dialog>

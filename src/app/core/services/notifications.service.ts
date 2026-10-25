@@ -80,6 +80,20 @@ export class NotificationsService {
     if (n.type === 'TEAM_INVITE_ACCEPTED' && n.entityId) {
       return ['/main/teams', n.entityId, 'members'];
     }
+    if (n.type.startsWith('DOCUMENT_') && n.entityId && n.data?.['mode'] === 'editor') {
+      return ['/main/supervision', n.entityId, 'workspace'];
+    }
+    if (n.type.startsWith('DOCUMENT_') && n.entityId && n.data?.['documentId']) {
+      return ['/main/supervision', n.entityId, 'documents', String(n.data['documentId'])];
+    }
+    // an invitation is answered from the supervisor dashboard
+    if (n.type === 'SUPERVISION_INVITE') return ['/main/supervision/students'];
+    if (n.type === 'MEETING_REMINDER' && n.entityId && n.data?.['meetingId']) {
+      return ['/main/supervision', n.entityId, 'meetings', String(n.data['meetingId'])];
+    }
+    if (n.entityType === 'supervision' && n.entityId) {
+      return ['/main/supervision', n.entityId];
+    }
     if (n.entityType === 'post' && n.entityId) {
       return ['/main/posts', n.entityId];
     }

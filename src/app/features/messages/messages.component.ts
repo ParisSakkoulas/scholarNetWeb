@@ -18,7 +18,6 @@ import { MessageService } from 'primeng/api';
 import { AvatarModule } from 'primeng/avatar';
 import { ButtonModule } from 'primeng/button';
 import { SkeletonModule } from 'primeng/skeleton';
-import { ToastModule } from 'primeng/toast';
 
 import {
   ChatMessage,
@@ -34,8 +33,7 @@ const MAX_LENGTH = 4000;
 @Component({
   selector: 'app-messages',
   standalone: true,
-  imports: [FormsModule, AvatarModule, ButtonModule, SkeletonModule, ToastModule],
-  providers: [MessageService],
+  imports: [FormsModule, AvatarModule, ButtonModule, SkeletonModule],
   templateUrl: './messages.component.html',
 })
 export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {

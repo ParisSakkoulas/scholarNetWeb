@@ -16,6 +16,19 @@ export type NotificationType =
   | 'PUBLICATION_AUTHOR_ACCEPTED'
   | 'PUBLICATION_AUTHOR_DECLINED'
   | 'PUBLICATION_AUTHOR_REMOVED'
+  | 'SUPERVISION_INVITE'
+  | 'SUPERVISION_RESPONDED'
+  | 'SUPERVISION_ENDED'
+  | 'MILESTONE_DUE_SOON'
+  | 'MILESTONE_OVERDUE'
+  | 'ACTION_ITEM_ASSIGNED'
+  | 'ACTION_ITEM_DUE_SOON'
+  | 'ACTION_ITEM_OVERDUE'
+  | 'MEETING_REMINDER'
+  | 'DOCUMENT_READY_FOR_REVIEW'
+  | 'DOCUMENT_REVIEWED'
+  | 'DOCUMENT_COMMENT'
+  | 'DOCUMENT_REPLY'
   | 'SYSTEM';
 
 export interface AppNotification {
@@ -122,6 +135,71 @@ export const NOTIFICATION_TYPE_META: Record<
     label: 'Authorship',
     icon: 'pi pi-user-minus',
     color: 'bg-slate-200 text-slate-700',
+  },
+  SUPERVISION_INVITE: {
+    label: 'Supervision invites',
+    icon: 'pi pi-graduation-cap',
+    color: 'bg-amber-100 text-amber-700',
+  },
+  SUPERVISION_RESPONDED: {
+    label: 'Supervision',
+    icon: 'pi pi-check-circle',
+    color: 'bg-emerald-100 text-emerald-700',
+  },
+  SUPERVISION_ENDED: {
+    label: 'Supervision',
+    icon: 'pi pi-flag',
+    color: 'bg-slate-200 text-slate-700',
+  },
+  MILESTONE_DUE_SOON: {
+    label: 'Milestones',
+    icon: 'pi pi-clock',
+    color: 'bg-amber-100 text-amber-700',
+  },
+  MILESTONE_OVERDUE: {
+    label: 'Milestones',
+    icon: 'pi pi-exclamation-triangle',
+    color: 'bg-rose-100 text-rose-700',
+  },
+  ACTION_ITEM_ASSIGNED: {
+    label: 'Action items',
+    icon: 'pi pi-check-square',
+    color: 'bg-amber-100 text-amber-700',
+  },
+  ACTION_ITEM_DUE_SOON: {
+    label: 'Action items',
+    icon: 'pi pi-clock',
+    color: 'bg-amber-100 text-amber-700',
+  },
+  ACTION_ITEM_OVERDUE: {
+    label: 'Action items',
+    icon: 'pi pi-exclamation-triangle',
+    color: 'bg-rose-100 text-rose-700',
+  },
+  MEETING_REMINDER: {
+    label: 'Meetings',
+    icon: 'pi pi-calendar',
+    color: 'bg-sky-100 text-sky-700',
+  },
+  DOCUMENT_READY_FOR_REVIEW: {
+    label: 'Documents',
+    icon: 'pi pi-file-edit',
+    color: 'bg-amber-100 text-amber-700',
+  },
+  DOCUMENT_REVIEWED: {
+    label: 'Documents',
+    icon: 'pi pi-check-circle',
+    color: 'bg-emerald-100 text-emerald-700',
+  },
+  DOCUMENT_COMMENT: {
+    label: 'Document comments',
+    icon: 'pi pi-comment',
+    color: 'bg-sky-100 text-sky-700',
+  },
+  DOCUMENT_REPLY: {
+    label: 'Document comments',
+    icon: 'pi pi-reply',
+    color: 'bg-sky-100 text-sky-700',
   },
   SYSTEM: {
     label: 'System',

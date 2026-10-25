@@ -13,7 +13,6 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { Select } from 'primeng/select';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TagModule } from 'primeng/tag';
-import { ToastModule } from 'primeng/toast';
 
 import { AuthService } from '../../../../core/services/auth.service';
 import { UserService } from '../../../../core/services/user.service';
@@ -43,9 +42,8 @@ interface InviteCandidate extends UserSearchResult {
     Select,
     SkeletonModule,
     TagModule,
-    ToastModule,
   ],
-  providers: [MessageService, ConfirmationService],
+  providers: [ConfirmationService],
   templateUrl: './team-members.component.html',
   styleUrl: './team-members.component.css',
 })

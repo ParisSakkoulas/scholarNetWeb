@@ -26,7 +26,6 @@ import {
   ContactVisibilityLevel, Profile } from '../../../core/models/profile.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { ProfileService } from '../../../core/services/profile.service';
-import { ToastService } from '../../../core/services/toast.service';
 import { UserService } from '../../../core/services/user.service';
 import { SpinnerComponent } from '../../../shared/components/ui/spinner/spinner.component';
 import { InputTextModule } from 'primeng/inputtext';
@@ -34,7 +33,6 @@ import { TextareaModule } from 'primeng/textarea';
 import { ButtonModule } from 'primeng/button';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { AutoCompleteModule } from 'primeng/autocomplete';
-import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { PasswordModule } from 'primeng/password';
 import { CheckboxModule } from 'primeng/checkbox';
@@ -84,7 +82,6 @@ interface SettingsTabDef {
     ButtonModule,
     SelectButtonModule,
     AutoCompleteModule,
-    ToastModule,
     Select,
     PasswordModule,
     CheckboxModule,
@@ -92,12 +89,10 @@ interface SettingsTabDef {
   ],
   templateUrl: './edit-profile.component.html',
   styleUrl: './edit-profile.component.css',
-  providers: [MessageService],
 })
 export class EditProfileComponent implements OnInit {
   private readonly profileService = inject(ProfileService);
   private readonly fb = inject(NonNullableFormBuilder);
-  private readonly toastService = inject(ToastService);
   private readonly authService = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
   private messageService = inject(MessageService);
