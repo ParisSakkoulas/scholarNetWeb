@@ -17,6 +17,23 @@
       />
     </div>
 
+    @if (canManage) {
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1"
+          >Assign to</label
+        >
+        <p-multiselect
+          formControlName="assigneeIds"
+          [options]="assignees"
+          optionLabel="name"
+          optionValue="_id"
+          placeholder="Nobody yet"
+          styleClass="w-full"
+          appendTo="body"
+        />
+      </div>
+    }
+
     @if (error()) {
       <p class="text-sm text-red-600">{{ error() }}</p>
     }

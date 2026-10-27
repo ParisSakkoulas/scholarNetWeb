@@ -9,7 +9,13 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TasksService } from '../../services/tasks.service';
-import { Task, TaskPriority, TaskStatus } from '../../models/task.model';
+import {
+  AssigneeOption,
+  Task,
+  TaskPriority,
+  TaskStatus,
+} from '../../models/task.model';
+import { MultiSelectModule } from 'primeng/multiselect';
 import { CommentThreadComponent } from '../comment-thread/comment-thread.component';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
@@ -30,12 +36,17 @@ import { CheckboxModule } from 'primeng/checkbox';
     SelectModule,
     ButtonModule,
     CheckboxModule,
+    MultiSelectModule,
   ],
   templateUrl: './task-detail-modal.component.html',
   styleUrl: './task-detail-modal.component.css',
 })
 export class TaskDetailModalComponent implements OnInit {
   @Input({ required: true }) task!: Task;
+  @Input() assignees: AssigneeOption[] = [];
+  /** Owners and admins assign tasks and approve completed ones. */
+  @Input() canManage = false;
+  @Input() currentUserId: string | null = null;
   @Output() closed = new EventEmitter<void>();
   @Output() taskUpdated = new EventEmitter<Task>();
 
@@ -45,6 +56,9 @@ export class TaskDetailModalComponent implements OnInit {
   editableDescription = signal('');
   editablePriority = signal<TaskPriority>('medium');
   editableStatus = signal<TaskStatus>('todo');
+  editableAssignees = signal<string[]>([]);
+  approving = signal(false);
+  error = signal<string | null>(null);
   saving = signal(false);
   subtasks = signal<Task[]>([]);
   newSubtaskTitle = signal('');
@@ -71,24 +85,78 @@ export class TaskDetailModalComponent implements OnInit {
     this.editableDescription.set(this.task.description ?? '');
     this.editablePriority.set(this.task.priority);
     this.editableStatus.set(this.task.status);
+    this.editableAssignees.set(this.assigneeIdsOf(this.task));
     this.loadSubtasks();
+  }
+
+  private assigneeIdsOf(task: Task): string[] {
+    return (task.assigneeIds as any[]).map((a) => (typeof a === 'string' ? a : a._id));
+  }
+
+  /** Managers can set any status; everyone else only on tasks assigned to them. */
+  get canChangeStatus(): boolean {
+    return (
+      this.canManage ||
+      (!!this.currentUserId && this.assigneeIdsOf(this.task).includes(this.currentUserId))
+    );
+  }
+
+  assigneeName(id: string): string {
+    return this.assignees.find((a) => a._id === id)?.name ?? id;
+  }
+
+  /** Approved tasks are read-only for everyone except admins and owners. */
+  get locked(): boolean {
+    return this.isApproved && !this.canManage;
+  }
+
+  get isApproved(): boolean {
+    return !!this.task.approvedAt;
+  }
+
+  /** Approval is only offered once the task is actually done (as saved, not as being edited). */
+  get canApprove(): boolean {
+    return this.canManage && this.task.status === 'done';
+  }
+
+  toggleApproval(): void {
+    this.approving.set(true);
+    this.error.set(null);
+    const request$ = this.isApproved
+      ? this.tasksService.unapprove(this.task._id)
+      : this.tasksService.approve(this.task._id);
+    request$.subscribe({
+      next: (updated) => {
+        this.approving.set(false);
+        this.taskUpdated.emit(updated);
+      },
+      error: (err) => {
+        this.approving.set(false);
+        this.error.set(err?.error?.message ?? 'Could not update approval');
+      },
+    });
   }
 
   save(): void {
     this.saving.set(true);
+    this.error.set(null);
     this.tasksService
       .update(this.task._id, {
         title: this.editableTitle(),
         description: this.editableDescription(),
         priority: this.editablePriority(),
         status: this.editableStatus(),
+        ...(this.canManage ? { assigneeIds: this.editableAssignees() } : {}),
       })
       .subscribe({
         next: (updated) => {
           this.saving.set(false);
           this.taskUpdated.emit(updated);
         },
-        error: () => this.saving.set(false),
+        error: (err) => {
+          this.saving.set(false);
+          this.error.set(err?.error?.message ?? 'Could not save the task');
+        },
       });
   }
 

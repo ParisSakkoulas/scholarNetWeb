@@ -44,6 +44,14 @@ export class TasksService {
     return this.http.patch<Task>(`${this.base}/tasks/${taskId}/move`, payload);
   }
 
+  approve(taskId: string) {
+    return this.http.post<Task>(`${this.base}/tasks/${taskId}/approve`, {});
+  }
+
+  unapprove(taskId: string) {
+    return this.http.post<Task>(`${this.base}/tasks/${taskId}/unapprove`, {});
+  }
+
   remove(taskId: string) {
     return this.http.delete<{ deleted: boolean }>(
       `${this.base}/tasks/${taskId}`,

@@ -218,6 +218,36 @@ export const routes: Routes = [
           ),
       },
 
+      // Writing circles ('mine' must stay above ':id')
+      {
+        path: 'circles',
+        loadComponent: () =>
+          import('./features/circles/components/circle-browse/circle-browse.component').then(
+            (m) => m.CircleBrowseComponent,
+          ),
+      },
+      {
+        path: 'circles/mine',
+        loadComponent: () =>
+          import('./features/circles/components/circle-mine/circle-mine.component').then(
+            (m) => m.CircleMineComponent,
+          ),
+      },
+      {
+        path: 'circles/:id',
+        loadComponent: () =>
+          import('./features/circles/components/circle-detail/circle-detail.component').then(
+            (m) => m.CircleDetailComponent,
+          ),
+      },
+      {
+        path: 'circles/:id/sessions/:sid',
+        loadComponent: () =>
+          import('./features/circles/components/session-page/session-page.component').then(
+            (m) => m.SessionPageComponent,
+          ),
+      },
+
       // Teams
       {
         path: 'teams',

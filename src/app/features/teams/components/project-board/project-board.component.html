@@ -69,9 +69,20 @@
         <div class="w-150 bg-gray-50 rounded-xl p-3 flex-shrink-0">
           <div class="flex items-center justify-between mb-3">
             <h3 class="text-sm font-medium text-gray-700">{{ column.name }}</h3>
-            <span class="text-xs text-gray-400">{{
-              tasksFor(column._id).length
-            }}</span>
+            <div class="flex items-center gap-1">
+              <span class="text-xs text-gray-400">{{
+                tasksFor(column._id).length
+              }}</span>
+              @if (myRole() !== "viewer") {
+                <p-button
+                  icon="pi pi-plus"
+                  label="Add task"
+                  size="small"
+                  [text]="true"
+                  (click)="addingToColumn.set(column._id)"
+                />
+              }
+            </div>
           </div>
 
           <div
@@ -83,9 +94,11 @@
             class="space-y-2 min-h-[40px]"
           >
             @for (task of tasksFor(column._id); track task._id) {
-              <div cdkDrag>
+              <div cdkDrag [cdkDragDisabled]="isLocked(task)">
                 <app-task-card
                   [task]="task"
+                  [assignees]="assignees()"
+                  [locked]="isLocked(task)"
                   (edit)="openTask($event)"
                   (deleteTask)="onDeleteTask($event)"
                 />
@@ -98,6 +111,8 @@
               <app-task-form
                 [projectId]="projectId"
                 [columnId]="column._id"
+                [assignees]="assignees()"
+                [canManage]="canManage()"
                 (created)="onTaskCreated($event)"
                 (cancelled)="addingToColumn.set(null)"
               />
@@ -118,6 +133,9 @@
   @if (selectedTask(); as t) {
     <app-task-detail-modal
       [task]="t"
+      [assignees]="assignees()"
+      [canManage]="canManage()"
+      [currentUserId]="myId()"
       (closed)="selectedTask.set(null)"
       (taskUpdated)="onTaskUpdated($event)"
     />

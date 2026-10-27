@@ -1,0 +1,159 @@
+<div class="mx-auto flex max-w-4xl flex-col gap-6 p-4">
+  <a routerLink="/main/circles" class="text-sm text-primary-600 no-underline"><i class="pi pi-arrow-left mr-1" aria-hidden="true"></i>All circles</a>
+
+  @if (loading()) {
+    <p-skeleton height="12rem" />
+  } @else if (loadError()) {
+    <section class="rounded-xl border border-dashed border-red-300 p-8 text-center">
+      <p class="m-0 font-medium text-surface-800">{{ loadError() }}</p>
+      <p-button class="mt-3 inline-block" label="Try again" severity="secondary" (onClick)="load()" />
+    </section>
+  } @else if (circle()) {
+    @if (circle(); as c) {
+    <header class="flex flex-wrap items-start justify-between gap-3">
+      <div class="min-w-0">
+        <h1 class="m-0 text-2xl font-semibold text-surface-900">{{ c.name }}</h1>
+        <p class="m-0 text-sm text-surface-500">{{ c.field }} · by {{ personName(c.ownerId) }}</p>
+        <div class="mt-2 flex flex-wrap gap-1">
+          <p-tag [value]="stageLabel[c.stage]" severity="info" />
+          <p-tag [value]="c.visibility === 'public' ? 'Public' : 'Invite-only'" severity="secondary" />
+          @if (c.status === 'closed') { <p-tag value="Closed" severity="danger" /> }
+        </div>
+      </div>
+
+      <div class="flex flex-wrap gap-2">
+        @if (isOwner()) {
+          <p-button label="Edit" icon="pi pi-pencil" severity="secondary" variant="outlined" [disabled]="c.status === 'closed'" (onClick)="editOpen.set(true)" />
+          <p-button label="Close circle" icon="pi pi-times" severity="danger" variant="outlined" [disabled]="c.status === 'closed'" (onClick)="confirmClose()" />
+        } @else if (isMember()) {
+          <p-button label="Leave" icon="pi pi-sign-out" severity="secondary" variant="outlined" (onClick)="confirmLeave()" />
+        } @else if (c.myStatus === 'pending') {
+          <p-tag value="Request pending" severity="warn" />
+        } @else if (c.myStatus !== 'removed' && c.status === 'active') {
+          <p-button
+            [label]="c.visibility === 'invite' ? 'Request to join' : 'Join'"
+            icon="pi pi-user-plus"
+            [disabled]="c.visibility === 'public' && isFull()"
+            [loading]="busy()"
+            (onClick)="join()"
+          />
+        }
+        @if (!isOwner()) {
+          <p-button icon="pi pi-flag" severity="secondary" [text]="true" ariaLabel="Report this circle" (onClick)="reportOpen.set(true)" />
+        }
+      </div>
+    </header>
+
+    @if (c.description) {
+      <p class="m-0 whitespace-pre-line text-surface-700">{{ c.description }}</p>
+    }
+
+    <section class="grid gap-3 rounded-xl border border-surface-200 bg-white p-4 sm:grid-cols-2">
+      <div>
+        <p class="m-0 text-xs uppercase tracking-wide text-surface-500">Schedule</p>
+        <p class="m-0 text-sm text-surface-800">{{ scheduleText(c) }}</p>
+        @if (c.nextSessionAt) {
+          <p class="m-0 mt-1 text-sm text-surface-600">Next, in your time: {{ c.nextSessionAt | date: 'EEEE d MMM, HH:mm (z)' }}</p>
+        }
+      </div>
+      <div>
+        <p class="m-0 text-xs uppercase tracking-wide text-surface-500">Seats</p>
+        <p class="m-0 text-sm text-surface-800">{{ c.memberCount }} of {{ c.maxMembers }} taken @if (isFull()) { <span class="text-amber-600">(full)</span> }</p>
+        @if (isMember() && c.meetingUrl) {
+          <a [href]="c.meetingUrl" target="_blank" rel="noopener noreferrer" class="mt-1 inline-block text-sm text-primary-600">
+            <i class="pi pi-video mr-1" aria-hidden="true"></i>Open the meeting link
+          </a>
+        }
+      </div>
+    </section>
+
+    @if (!isMember() && !isOwner()) {
+      <section class="rounded-xl border border-dashed border-surface-300 p-6 text-center">
+        <i class="pi pi-lock mb-2 text-2xl text-surface-400" aria-hidden="true"></i>
+        <p class="m-0 text-sm text-surface-600">Members, goals, results and the meeting link are visible to circle members only.</p>
+      </section>
+    } @else {
+      @if (isOwner() && pending().length) {
+        <section>
+          <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-surface-500">Join requests ({{ pending().length }})</h2>
+          <ul class="m-0 divide-y list-none rounded-xl border border-dashed border-surface-300 bg-surface-50 p-0">
+            @for (m of pending(); track m._id) {
+              <li class="flex items-center justify-between gap-3 px-4 py-3">
+                <span class="text-sm font-medium text-surface-900">{{ personName(m.userId) }}</span>
+                <span class="flex gap-2">
+                  <p-button label="Approve" size="small" [disabled]="isFull()" (onClick)="member(m, 'approve')" />
+                  <p-button label="Decline" size="small" severity="secondary" [text]="true" (onClick)="member(m, 'remove')" />
+                </span>
+              </li>
+            }
+          </ul>
+        </section>
+      }
+
+      <section>
+        <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-surface-500">Members ({{ seated().length }})</h2>
+        <ul class="m-0 divide-y list-none rounded-xl border border-surface-200 bg-white p-0">
+          @for (m of seated(); track m._id) {
+            <li class="flex items-center justify-between gap-3 px-4 py-3">
+              <span class="flex min-w-0 items-center gap-3">
+                <p-avatar [image]="m.userId.profilePhotoUrl" [label]="m.userId.profilePhotoUrl ? undefined : personName(m.userId).charAt(0).toUpperCase()" shape="circle" />
+                <span class="min-w-0">
+                  <span class="block truncate text-sm font-medium text-surface-900">{{ personName(m.userId) }}</span>
+                  <span class="block text-xs text-surface-500">{{ m.totalSessions }} sessions · {{ m.streak }} in a row</span>
+                </span>
+              </span>
+              <span class="flex items-center gap-2">
+                @if (m.role === 'owner') { <p-tag value="Owner" severity="info" /> }
+                @if (m.status === 'paused') { <p-tag value="Paused" severity="secondary" /> }
+                @if (isOwner() && m.role !== 'owner') {
+                  <p-button icon="pi pi-user-minus" severity="danger" [text]="true" size="small" ariaLabel="Remove member" (onClick)="confirmRemove(m)" />
+                }
+              </span>
+            </li>
+          }
+        </ul>
+      </section>
+
+      <section>
+        <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-surface-500">Sessions</h2>
+        @if (!sessions().length) {
+          <p class="m-0 text-sm text-surface-500">No sessions yet. They are planned automatically four weeks ahead.</p>
+        } @else {
+          <ul class="m-0 divide-y list-none rounded-xl border border-surface-200 bg-white p-0">
+            @for (s of sessions(); track s._id) {
+              <li class="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+                <div>
+                  <a [routerLink]="['/main/circles', c._id, 'sessions', s._id]" class="text-sm font-medium text-surface-900 no-underline hover:underline">{{ s.startsAt | date: 'EEE d MMM, HH:mm (z)' }}</a>
+                  <p class="m-0 text-xs text-surface-500">{{ s.durationMin }} min · {{ goalsSet(s) }} goal(s) set</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <p-tag [value]="s.status" [severity]="s.status === 'planned' ? 'info' : s.status === 'done' ? 'success' : 'secondary'" />
+                  @if (isOwner()) {
+                    @if (canMarkDone(s)) { <p-button label="Mark done" size="small" severity="secondary" [text]="true" (onClick)="setSession(s, 'done')" /> }
+                    @if (canCancel(s)) { <p-button label="Cancel" size="small" severity="danger" [text]="true" (onClick)="setSession(s, 'cancelled')" /> }
+                  }
+                </div>
+              </li>
+            }
+          </ul>
+        }
+      </section>
+    }
+
+    @if (editOpen()) {
+      <app-circle-form [circle]="c" (saved)="onEdited()" (cancelled)="editOpen.set(false)" />
+    }
+
+    <p-dialog header="Report this circle" [(visible)]="reportOpen" [modal]="true" [style]="{ width: '30rem', maxWidth: '95vw' }">
+      <p class="mt-0 text-sm text-surface-600">Tell the moderators what is wrong. Your report is private.</p>
+      <textarea pTextarea [(ngModel)]="reportReason" rows="4" maxlength="1000" class="w-full" aria-label="Reason"></textarea>
+      <div class="mt-3 flex justify-end gap-2">
+        <p-button label="Cancel" severity="secondary" [text]="true" (onClick)="reportOpen.set(false)" />
+        <p-button label="Send report" [disabled]="reportReason.trim().length < 5" (onClick)="sendReport()" />
+      </div>
+    </p-dialog>
+    }
+  }
+
+  <p-confirmDialog />
+</div>

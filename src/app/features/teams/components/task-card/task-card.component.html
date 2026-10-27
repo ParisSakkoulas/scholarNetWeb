@@ -12,6 +12,7 @@
         severity="secondary"
         (click)="onEditClick($event)"
       />
+      @if (!locked) {
       <p-button
         icon="pi pi-trash"
         [text]="true"
@@ -20,6 +21,7 @@
         severity="danger"
         (click)="onDeleteClick($event)"
       />
+      }
     </div>
   </div>
 
@@ -53,6 +55,17 @@
       <i class="pi pi-check-circle text-[11px]"></i>
       <span>Completed {{ task.doneAt | date: "MMM d" }}</span>
     </div>
+    @if (task.approvedAt) {
+      <div class="flex items-center gap-1 text-xs text-blue-600">
+        <i class="pi pi-verified text-[11px]"></i>
+        <span>Approved</span>
+      </div>
+    } @else {
+      <div class="flex items-center gap-1 text-xs text-amber-600">
+        <i class="pi pi-clock text-[11px]"></i>
+        <span>Awaiting approval</span>
+      </div>
+    }
   }
 
   @if (assigneeUsers.length > 0) {

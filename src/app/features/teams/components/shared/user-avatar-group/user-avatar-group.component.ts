@@ -26,6 +26,14 @@ export class UserAvatarGroupComponent {
     Math.max(0, this._users().length - this.max),
   );
 
+  /** Full names of the people hidden behind the +N chip. */
+  readonly overflowNames = computed(() =>
+    this._users()
+      .slice(this.max)
+      .map((u) => u.name)
+      .join(', '),
+  );
+
   initials(name: string): string {
     return name
       .split(' ')

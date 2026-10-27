@@ -16,8 +16,18 @@ export interface Task {
   status: TaskStatus;
   createdBy: string;
   doneAt?: string | null;
+  /** set when an admin/owner has signed off the completed task */
+  approvedBy?: string | null;
+  approvedAt?: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+/** A team member that tasks can be assigned to. */
+export interface AssigneeOption {
+  _id: string;
+  name: string;
+  avatarUrl?: string;
 }
 
 export interface CreateTaskPayload {

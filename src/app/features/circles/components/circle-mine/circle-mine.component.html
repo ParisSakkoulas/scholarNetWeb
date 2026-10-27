@@ -1,0 +1,60 @@
+<div class="mx-auto flex max-w-4xl flex-col gap-6 p-4">
+  <header class="flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="m-0 text-2xl font-semibold text-surface-900">My circles</h1>
+      <p class="m-0 text-sm text-surface-500">Your next sessions, in your own time zone.</p>
+    </div>
+    <a routerLink="/main/circles">
+      <p-button label="Browse circles" icon="pi pi-search" />
+    </a>
+  </header>
+
+  @if (loading()) {
+    <p-skeleton height="7rem" />
+  } @else if (loadError()) {
+    <section class="rounded-xl border border-dashed border-red-300 p-8 text-center">
+      <p class="m-0 font-medium text-surface-800">Could not load your circles</p>
+      <p-button class="mt-3 inline-block" label="Try again" severity="secondary" (onClick)="load()" />
+    </section>
+  } @else if (!items().length) {
+    <section class="rounded-xl border border-dashed border-surface-300 p-8 text-center">
+      <i class="pi pi-pencil mb-2 text-3xl text-surface-400" aria-hidden="true"></i>
+      <p class="m-0 font-medium text-surface-800">You are not in a circle yet</p>
+      <p class="m-0 mt-1 text-sm text-surface-500">Join one, or start your own, to have someone expecting you to write.</p>
+    </section>
+  } @else {
+    <ul class="m-0 flex list-none flex-col gap-3 p-0">
+      @for (item of items(); track item.circle._id) {
+        <li class="rounded-xl border border-surface-200 bg-white p-4">
+          <div class="flex flex-wrap items-start justify-between gap-2">
+            <div class="min-w-0">
+              <a [routerLink]="['/main/circles', item.circle._id]" class="block truncate text-lg font-medium text-surface-900 no-underline hover:underline">{{ item.circle.name }}</a>
+              <p class="m-0 text-sm text-surface-500">{{ item.circle.field }} · {{ stageLabel[item.circle.stage] }}</p>
+            </div>
+            <div class="flex gap-1">
+              @if (item.myStatus === 'pending') { <p-tag value="Request pending" severity="warn" /> }
+              @if (item.myStatus === 'paused') { <p-tag value="Paused" severity="secondary" /> }
+              @if (item.streak > 0) { <p-tag [value]="item.streak + ' in a row'" severity="success" icon="pi pi-bolt" /> }
+            </div>
+          </div>
+
+          @if (item.nextSession; as next) {
+            <div class="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-surface-50 px-3 py-2">
+              <div>
+                <p class="m-0 text-sm font-medium text-surface-800">{{ next.startsAt | date: 'EEEE d MMM, HH:mm (z)' }}</p>
+                <p class="m-0 text-sm text-primary-600">{{ countdown(item) }}</p>
+              </div>
+              @if (item.myStatus !== 'pending') {
+                <a [routerLink]="['/main/circles', item.circle._id, 'sessions', next._id]">
+                  <p-button [label]="goalOpen(item) ? 'Set my goal' : 'Open session'" size="small" [severity]="goalOpen(item) ? 'primary' : 'secondary'" />
+                </a>
+              }
+            </div>
+          } @else {
+            <p class="m-0 mt-3 text-sm text-surface-500">No upcoming session planned.</p>
+          }
+        </li>
+      }
+    </ul>
+  }
+</div>

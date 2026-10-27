@@ -1,26 +1,36 @@
 <div class="flex items-center -space-x-2">
   @for (user of visible(); track user._id) {
-    <div
-      class="w-7 h-7 rounded-full border-2 border-white flex items-center justify-center bg-indigo-500 text-white text-xs font-medium overflow-hidden"
-      [title]="user.name"
-    >
-      @if (user.avatarUrl) {
-        <img
-          [src]="user.avatarUrl"
-          [alt]="user.name"
-          class="w-full h-full object-cover"
-        />
-      } @else {
-        {{ initials(user.name) }}
-      }
+    <div class="group relative">
+      <div
+        class="w-7 h-7 rounded-full border-2 border-white flex items-center justify-center bg-indigo-500 text-white text-xs font-medium overflow-hidden"
+      >
+        @if (user.avatarUrl) {
+          <img
+            [src]="user.avatarUrl"
+            [alt]="user.name"
+            class="w-full h-full object-cover"
+          />
+        } @else {
+          {{ initials(user.name) }}
+        }
+      </div>
+      <span
+        class="pointer-events-none absolute bottom-full left-1/2 z-20 mb-1 -translate-x-1/2 whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white opacity-0 shadow transition-opacity group-hover:opacity-100"
+        >{{ user.name }}</span
+      >
     </div>
   }
-
   @if (overflowCount() > 0) {
-    <div
-      class="w-7 h-7 rounded-full border-2 border-white flex items-center justify-center bg-gray-300 text-gray-700 text-xs font-medium"
-    >
-      +{{ overflowCount() }}
+    <div class="group relative">
+      <div
+        class="w-7 h-7 rounded-full border-2 border-white flex items-center justify-center bg-gray-300 text-gray-700 text-xs font-medium"
+      >
+        +{{ overflowCount() }}
+      </div>
+      <span
+        class="pointer-events-none absolute bottom-full left-1/2 z-20 mb-1 -translate-x-1/2 whitespace-nowrap rounded bg-gray-900 px-2 py-1 text-xs text-white opacity-0 shadow transition-opacity group-hover:opacity-100"
+        >{{ overflowNames() }}</span
+      >
     </div>
   }
 </div>

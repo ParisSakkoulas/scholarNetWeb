@@ -9,6 +9,7 @@
     <input
       pInputText
       [ngModel]="editableTitle()"
+      [disabled]="locked"
       (ngModelChange)="editableTitle.set($event)"
       class="w-full text-lg font-semibold border-none"
     />
@@ -21,6 +22,7 @@
       >
       <p-select
         [ngModel]="editablePriority()"
+        [disabled]="locked"
         (ngModelChange)="editablePriority.set($event)"
         [options]="priorityOptions"
         optionLabel="label"
@@ -35,6 +37,7 @@
       <p-select
         [ngModel]="editableStatus()"
         (ngModelChange)="editableStatus.set($event)"
+        [disabled]="!canChangeStatus || locked"
         [options]="statusOptions"
         optionLabel="label"
         optionValue="value"
@@ -44,6 +47,63 @@
     </div>
   </div>
 
+  <div class="mb-4">
+    <label class="block text-xs font-medium text-gray-500 mb-1"
+      >Assigned to</label
+    >
+    @if (canManage) {
+      <p-multiselect
+        [ngModel]="editableAssignees()"
+        (ngModelChange)="editableAssignees.set($event)"
+        [options]="assignees"
+        optionLabel="name"
+        optionValue="_id"
+        placeholder="Nobody yet"
+        styleClass="w-full"
+        appendTo="body"
+      />
+    } @else {
+      <p class="m-0 text-sm text-gray-700">
+        @for (id of editableAssignees(); track id; let last = $last) {
+          {{ assigneeName(id) }}{{ last ? "" : ", " }}
+        } @empty {
+          <span class="text-gray-400">Nobody yet</span>
+        }
+      </p>
+    }
+  </div>
+
+  @if (locked) {
+    <p class="mb-4 text-sm text-gray-500">
+      <i class="pi pi-lock mr-1"></i>This task is approved and can only be changed by an admin or owner.
+    </p>
+  }
+
+  @if (task.status === "done") {
+    <div
+      class="mb-4 flex items-center justify-between rounded-lg border px-3 py-2"
+      [class.border-blue-200]="isApproved"
+      [class.bg-blue-50]="isApproved"
+      [class.border-amber-200]="!isApproved"
+      [class.bg-amber-50]="!isApproved"
+    >
+      <span class="text-sm" [class.text-blue-700]="isApproved" [class.text-amber-700]="!isApproved">
+        <i class="pi mr-1" [class.pi-verified]="isApproved" [class.pi-clock]="!isApproved"></i>
+        {{ isApproved ? "Approved" : "Completed, awaiting approval" }}
+      </span>
+      @if (canApprove) {
+        <p-button
+          [label]="isApproved ? 'Withdraw approval' : 'Approve'"
+          [severity]="isApproved ? 'secondary' : 'success'"
+          [outlined]="isApproved"
+          size="small"
+          [loading]="approving()"
+          (click)="toggleApproval()"
+        />
+      }
+    </div>
+  }
+
   <div class="mb-6">
     <label class="block text-xs font-medium text-gray-500 mb-1"
       >Description</label
@@ -51,6 +111,7 @@
     <textarea
       pTextarea
       [ngModel]="editableDescription()"
+      [disabled]="locked"
       (ngModelChange)="editableDescription.set($event)"
       rows="3"
       class="w-full"
@@ -70,6 +131,7 @@
         <p-checkbox
           [binary]="true"
           [ngModel]="sub.status === 'done'"
+          [disabled]="locked"
           (ngModelChange)="toggleSubtaskDone(sub)"
         />
         <span
@@ -80,6 +142,7 @@
           {{ sub.title }}
         </span>
 
+        @if (!locked) {
         <p-button
           (click)="removeSubtask(sub._id)"
           icon="pi pi-times"
@@ -87,10 +150,13 @@
           [text]="true"
           severity="danger"
         />
+        }
       </div>
     }
 
-    @if (addingSubtask()) {
+    @if (locked) {
+      <!-- read-only -->
+    } @else if (addingSubtask()) {
       <div class="flex gap-2 mt-2">
         <input
           pInputText
@@ -119,12 +185,18 @@
     }
   </div>
 
+  @if (error()) {
+    <p class="mb-2 text-sm text-red-600">{{ error() }}</p>
+  }
+
   <div class="flex justify-end items-center mb-6">
+    @if (!locked) {
     <p-button
       [label]="saving() ? 'Saving...' : 'Save Changes'"
       [loading]="saving()"
       (click)="save()"
     />
+    }
   </div>
 
   <hr class="mb-4" />

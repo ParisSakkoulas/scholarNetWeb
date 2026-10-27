@@ -2,7 +2,7 @@
   [visible]="true"
   [modal]="true"
   [closable]="false"
-  [style]="{ width: '28rem' }"
+  [style]="{ width: '42rem', maxWidth: '95vw' }"
   [header]="isEdit ? 'Edit Team' : 'Create Team'"
 >
   <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
@@ -11,6 +11,7 @@
       <input pInputText formControlName="name" class="w-full" />
     </div>
 
+    @if (!isEdit) {
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-1">Slug</label>
       <input
@@ -20,6 +21,7 @@
         class="w-full"
       />
     </div>
+    }
 
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-1"
@@ -28,7 +30,7 @@
       <textarea
         pTextarea
         formControlName="description"
-        rows="2"
+        rows="6"
         class="w-full"
       ></textarea>
     </div>

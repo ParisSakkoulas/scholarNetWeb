@@ -66,9 +66,9 @@ export class TeamFormComponent implements OnInit {
       ],
       slug: [
         this.team?.slug ?? '',
-        [Validators.required, Validators.pattern(/^[a-z0-9-]+$/)],
+        this.team ? [] : [Validators.required, Validators.pattern(/^[a-z0-9-]+$/)],
       ],
-      description: [this.team?.description ?? ''],
+      description: [this.team?.description ?? '', [Validators.maxLength(500)]],
       visibility: [
         this.team?.visibility ?? ('private' as 'private' | 'public'),
       ],
@@ -84,10 +84,11 @@ export class TeamFormComponent implements OnInit {
     this.submitting.set(true);
     this.error.set(null);
 
-    const payload = this.form.getRawValue();
+    const { slug, ...editable } = this.form.getRawValue();
+    const payload = { slug, ...editable };
 
     const request$ = this.isEdit
-      ? this.teamsService.updateTeam(this.team!._id, payload)
+      ? this.teamsService.updateTeam(this.team!._id, editable)
       : this.teamsService.createTeam(payload as any);
 
     request$.subscribe({

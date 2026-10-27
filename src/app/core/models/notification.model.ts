@@ -8,6 +8,7 @@ export type NotificationType =
   | 'TEAM_INVITE'
   | 'TEAM_INVITE_ACCEPTED'
   | 'TASK_ASSIGNED'
+  | 'TASK_APPROVED'
   | 'MENTION'
   | 'FILE_ACCESS_REQUEST'
   | 'FILE_ACCESS_APPROVED'
@@ -29,6 +30,9 @@ export type NotificationType =
   | 'DOCUMENT_REVIEWED'
   | 'DOCUMENT_COMMENT'
   | 'DOCUMENT_REPLY'
+  | 'CIRCLE_JOIN_REQUEST'
+  | 'CIRCLE_JOIN_APPROVED'
+  | 'CIRCLE_MEMBER_JOINED'
   | 'SYSTEM';
 
 export interface AppNotification {
@@ -95,6 +99,26 @@ export const NOTIFICATION_TYPE_META: Record<
     label: 'Tasks',
     icon: 'pi pi-check-square',
     color: 'bg-amber-100 text-amber-700',
+  },
+  TASK_APPROVED: {
+    label: 'Tasks',
+    icon: 'pi pi-verified',
+    color: 'bg-blue-100 text-blue-700',
+  },
+  CIRCLE_JOIN_REQUEST: {
+    label: 'Circles',
+    icon: 'pi pi-pencil',
+    color: 'bg-amber-100 text-amber-700',
+  },
+  CIRCLE_JOIN_APPROVED: {
+    label: 'Circles',
+    icon: 'pi pi-pencil',
+    color: 'bg-emerald-100 text-emerald-700',
+  },
+  CIRCLE_MEMBER_JOINED: {
+    label: 'Circles',
+    icon: 'pi pi-user-plus',
+    color: 'bg-emerald-100 text-emerald-700',
   },
   MENTION: {
     label: 'Mentions',

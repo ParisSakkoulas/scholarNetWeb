@@ -10,7 +10,10 @@ import {
 } from '@angular/cdk/drag-drop';
 import { Column } from '../../models/column.model';
 import { ProjectWithBoards } from '../../models/project.model';
-import { Task } from '../../models/task.model';
+import { AssigneeOption, Task } from '../../models/task.model';
+import { TeamMember } from '../../models/team-member.model';
+import { TeamMembersService } from '../../services/team-members.service';
+import { AuthService } from '../../../../core/services/auth.service';
 import { ActivatedRoute } from '@angular/router';
 import { ProjectsService } from '../../services/projects.service';
 import { TasksService } from '../../services/tasks.service';
@@ -65,6 +68,14 @@ export class ProjectBoardComponent implements OnInit {
 
   projectId!: string;
 
+  /** Active team members — the people a task can be assigned to. */
+  assignees = signal<AssigneeOption[]>([]);
+  myRole = signal<string | null>(null);
+
+  /** Only owners and admins assign tasks and approve completed ones. */
+  canManage = computed(() => this.myRole() === 'owner' || this.myRole() === 'admin');
+  myId = computed(() => this.authService.currentUser()?.id ?? null);
+
   columns = computed<Column[]>(() => {
     const p = this.project();
     return p?.boards?.[0]?.columns ?? [];
@@ -114,6 +125,8 @@ export class ProjectBoardComponent implements OnInit {
   private tasksService = inject(TasksService);
   private confirmationService = inject(ConfirmationService);
   private messageService = inject(MessageService);
+  private membersService = inject(TeamMembersService);
+  private authService = inject(AuthService);
 
   ngOnInit(): void {
     this.projectId = this.route.snapshot.paramMap.get('projectId')!;
@@ -124,8 +137,33 @@ export class ProjectBoardComponent implements OnInit {
     this.loading.set(true);
     this.projectsService.getOne(this.projectId).subscribe((project) => {
       this.project.set(project);
+      this.loadTeam(project.teamId);
       this.loadTasks();
     });
+  }
+
+  private loadTeam(teamId: string): void {
+    this.membersService.myRole(teamId).subscribe({
+      next: ({ role }) => this.myRole.set(role),
+    });
+    this.membersService.list(teamId).subscribe({
+      next: (members) =>
+        this.assignees.set(
+          members.filter((m) => m.status === 'active').map((m) => this.toAssignee(m)),
+        ),
+    });
+  }
+
+  private toAssignee(member: TeamMember): AssigneeOption {
+    if (typeof member.userId === 'string') {
+      return { _id: member.userId, name: member.userId };
+    }
+    const u = member.userId;
+    return {
+      _id: u._id,
+      name: `${u.firstName ?? ''} ${u.lastName ?? ''}`.trim() || u.username,
+      avatarUrl: u.profilePhotoUrl,
+    };
   }
 
   loadTasks(): void {
@@ -141,6 +179,11 @@ export class ProjectBoardComponent implements OnInit {
       this.tasksByColumn.set(grouped);
       this.loading.set(false);
     });
+  }
+
+  /** Approved tasks are frozen for everyone except admins and owners. */
+  isLocked(task: Task): boolean {
+    return !!task.approvedAt && !this.canManage();
   }
 
   tasksFor(columnId: string): Task[] {

@@ -9,7 +9,8 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TasksService } from '../../services/tasks.service';
-import { Task } from '../../models/task.model';
+import { AssigneeOption, Task } from '../../models/task.model';
+import { MultiSelectModule } from 'primeng/multiselect';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
@@ -23,12 +24,16 @@ import { ButtonModule } from 'primeng/button';
     DialogModule,
     InputTextModule,
     ButtonModule,
+    MultiSelectModule,
   ],
   templateUrl: './task-form.component.html',
 })
 export class TaskFormComponent {
   @Input({ required: true }) projectId!: string;
   @Input({ required: true }) columnId!: string;
+  @Input() assignees: AssigneeOption[] = [];
+  /** Only owners and admins can assign tasks. */
+  @Input() canManage = false;
   @Output() created = new EventEmitter<Task>();
   @Output() cancelled = new EventEmitter<void>();
 
@@ -41,6 +46,7 @@ export class TaskFormComponent {
 
   form = this.fb.nonNullable.group({
     title: ['', [Validators.required, Validators.maxLength(200)]],
+    assigneeIds: [[] as string[]],
   });
 
   onSubmit(): void {
@@ -52,6 +58,9 @@ export class TaskFormComponent {
       .create(this.projectId, {
         title: this.form.getRawValue().title,
         columnId: this.columnId,
+        ...(this.canManage && this.form.getRawValue().assigneeIds.length
+          ? { assigneeIds: this.form.getRawValue().assigneeIds }
+          : {}),
       })
       .subscribe({
         next: (task) => {
