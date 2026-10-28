@@ -16,6 +16,7 @@ import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../../core/services/auth.service';
 import { AppNotification } from '../../../../core/models/notification.model';
 import { ChatService } from '../../../../core/services/chat.service';
+import { NavDrawerService } from '../../../../core/services/nav-drawer.service';
 import { NotificationsService } from '../../../../core/services/notifications.service';
 import { NotificationItemComponent } from '../../../../features/notifications/components/notification-item/notification-item.component';
 import { ClickOutsideDirective } from '../../../directives/click-outside.directive';
@@ -53,6 +54,7 @@ import { MenuItem } from 'primeng/api';
   styleUrl: './inline-header.component.css',
 })
 export class InlineHeaderComponent {
+  readonly drawer = inject(NavDrawerService);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly notificationsService = inject(NotificationsService);
@@ -105,6 +107,7 @@ export class InlineHeaderComponent {
     },
     { label: 'My teams', icon: 'pi pi-users', routerLink: '/main/teams' },
     { label: 'My circles', icon: 'pi pi-pencil', routerLink: '/main/circles/mine' },
+    { label: 'Saved grants', icon: 'pi pi-bookmark', routerLink: '/main/grants' },
     { label: 'My students', icon: 'pi pi-graduation-cap', routerLink: '/main/supervision/students' },
     { label: 'Requests', icon: 'pi pi-inbox', routerLink: '/main/requests/files' },
     { label: 'Settings', icon: 'pi pi-cog', routerLink: '/settings' },

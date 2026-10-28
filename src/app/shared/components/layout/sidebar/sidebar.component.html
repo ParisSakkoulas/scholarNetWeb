@@ -1,0 +1,17 @@
+<nav class="side-nav" aria-label="Sections">
+  <ul>
+    @for (item of items; track item.link) {
+      <li>
+        <a
+          [routerLink]="item.link"
+          routerLinkActive="is-active"
+          class="side-link"
+          (click)="onNavigate()"
+        >
+          <i [class]="item.icon" aria-hidden="true"></i>
+          <span>{{ item.label }}</span>
+        </a>
+      </li>
+    }
+  </ul>
+</nav>

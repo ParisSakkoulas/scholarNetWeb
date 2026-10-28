@@ -1,0 +1,46 @@
+/* Colors come from the PrimeNG tokens, like the header, so the theme and dark mode apply. */
+:host {
+  display: block;
+}
+
+.side-nav ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.side-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  color: var(--p-text-muted-color);
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.side-link i {
+  width: 1.1rem;
+  text-align: center;
+}
+
+.side-link:hover {
+  background: color-mix(in srgb, var(--p-content-background), var(--p-text-color) 6%);
+  color: var(--p-text-color);
+}
+
+.side-link.is-active {
+  background: color-mix(in srgb, var(--p-content-background), var(--p-primary-color) 12%);
+  color: var(--p-primary-color);
+  font-weight: 600;
+}
+
+.side-link:focus-visible {
+  outline: 2px solid var(--p-primary-color);
+  outline-offset: 2px;
+}

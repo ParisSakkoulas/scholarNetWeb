@@ -1,8 +1,32 @@
-<app-inline-header></app-inline-header>
+<!-- sticky, so the drawer below always lines up with the bottom of the header -->
+<div #top class="top">
+    <app-inline-header></app-inline-header>
+</div>
 
-<main>
-    <router-outlet />
-</main>
+<!--
+    PrimeNG drawer. Wide screens: no overlay, the page moves over (see .pushed) and the menu can be
+    closed and opened again from the header button. Phones: a normal modal drawer.
+-->
+<p-drawer
+    [visible]="drawer.open()"
+    (visibleChange)="drawer.set($event)"
+    position="left"
+    header="Menu"
+    [modal]="!drawer.isDesktop()"
+    [dismissible]="!drawer.isDesktop()"
+    [closeOnEscape]="!drawer.isDesktop()"
+    [blockScroll]="!drawer.isDesktop()"
+    [showCloseIcon]="true"
+    [style]="drawerStyle()"
+>
+    <app-sidebar />
+</p-drawer>
+
+<div class="body" [class.pushed]="drawer.open() && drawer.isDesktop()">
+    <main>
+        <router-outlet />
+    </main>
+</div>
 
 @if (!hideFooter()) {
     <app-footer></app-footer>

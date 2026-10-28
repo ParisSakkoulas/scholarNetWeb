@@ -1,0 +1,279 @@
+<div class="mx-auto flex max-w-4xl flex-col gap-5 p-4">
+  <a routerLink="/main/proposals" class="text-sm text-primary-600 no-underline"><i class="pi pi-arrow-left mr-1" aria-hidden="true"></i>My proposals</a>
+
+  @if (loading()) {
+    <p-skeleton height="16rem" />
+  } @else if (loadError()) {
+    <section class="rounded-xl border border-dashed border-surface-300 p-8 text-center">
+      <p class="m-0 font-medium text-surface-800">{{ loadError() }}</p>
+    </section>
+  } @else if (proposal()) {
+    @if (proposal(); as p) {
+      @if (isReviewer()) {
+        <section class="rounded-xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-800">
+          <i class="pi pi-eye mr-1" aria-hidden="true"></i>You were asked to review part of this proposal. You can read those sections, download their drafts, comment, and answer the request.
+        </section>
+      }
+
+      <header class="flex flex-wrap items-start justify-between gap-3">
+        <div class="min-w-0 flex-1">
+          @if (editingTitle()) {
+            <div class="flex gap-2">
+              <input pInputText [(ngModel)]="titleDraft" (keydown.enter)="saveTitle()" maxlength="200" class="w-full" aria-label="Proposal title" />
+              <p-button label="Save" size="small" [disabled]="titleDraft.trim().length < 3" (onClick)="saveTitle()" />
+              <p-button label="Cancel" size="small" severity="secondary" [text]="true" (onClick)="editingTitle.set(false)" />
+            </div>
+          } @else {
+            <h1 class="m-0 flex items-center gap-2 text-2xl font-semibold leading-snug text-surface-900">
+              {{ p.title }}
+              @if (canManage()) {
+                <p-button icon="pi pi-pencil" size="small" severity="secondary" [text]="true" ariaLabel="Rename" (onClick)="startEdit()" />
+              }
+            </h1>
+          }
+          <p class="m-0 text-sm text-surface-500">
+            <a [routerLink]="['/main/grants', p.callId._id]" class="text-primary-600">{{ p.callId.title }}</a>
+            · {{ p.callId.funder }} · {{ p.teamId ? 'Team: ' + p.teamId.name : 'Personal' }}
+          </p>
+        </div>
+        <div class="flex items-center gap-2">
+          @if (canManage()) {
+            <p-select [ngModel]="p.status" (ngModelChange)="setStatus($event)" [options]="statusOptions" optionLabel="label" optionValue="value" ariaLabel="Proposal status" appendTo="body" />
+          } @else {
+            <p-tag [value]="statusMeta[p.status].label" [severity]="statusMeta[p.status].severity" />
+          }
+        </div>
+      </header>
+
+      <section class="grid gap-3 rounded-xl border border-surface-200 bg-white p-4 sm:grid-cols-3">
+        <div>
+          <p class="m-0 text-xs uppercase tracking-wide text-surface-500">Funder's deadline</p>
+          <p class="m-0 text-sm font-medium" [class]="deadlineTone(p.callId.deadline)">{{ p.callId.deadline | date: 'EEE d MMM y' }}</p>
+          <p class="m-0 text-xs" [class]="deadlineTone(p.callId.deadline)">{{ deadlineText(p.callId.deadline) }}</p>
+          <a [href]="p.callId.url" target="_blank" rel="noopener noreferrer" class="text-xs text-primary-600">Official page <i class="pi pi-external-link text-[10px]" aria-hidden="true"></i></a>
+        </div>
+        <div>
+          <p class="m-0 text-xs uppercase tracking-wide text-surface-500">Your deadline</p>
+          @if (canManage()) {
+            <p-datepicker [ngModel]="p.internalDeadline ? toDate(p.internalDeadline) : null" (ngModelChange)="setInternalDeadline($event)" [showClear]="true" [showIcon]="true" [maxDate]="official()" dateFormat="yy-mm-dd" placeholder="Not set" appendTo="body" styleClass="w-full" />
+          } @else if (p.internalDeadline) {
+            <p class="m-0 text-sm font-medium" [class]="deadlineTone(p.internalDeadline)">{{ p.internalDeadline | date: 'EEE d MMM y' }}</p>
+          } @else {
+            <p class="m-0 text-sm text-surface-500">Not set</p>
+          }
+          @if (p.internalDeadline) { <p class="m-0 text-xs" [class]="deadlineTone(p.internalDeadline)">{{ deadlineText(p.internalDeadline) }}</p> }
+        </div>
+        <div>
+          <p class="m-0 text-xs uppercase tracking-wide text-surface-500">Progress</p>
+          <p-progressbar [value]="progress()" styleClass="!h-3 mt-2" />
+          @if (p.projectId && !isReviewer()) {
+            <a [routerLink]="['/main/projects', p.projectId]" class="mt-2 inline-block text-xs text-primary-600"><i class="pi pi-th-large mr-1" aria-hidden="true"></i>Open the team board</a>
+          }
+        </div>
+      </section>
+      <p class="m-0 text-xs text-surface-500">{{ disclaimer }} Last checked {{ p.callId.lastCheckedAt | date: 'd MMM y' }}.</p>
+
+      <!-- outcome -->
+      @if (showOutcome()) {
+        <section class="rounded-xl border p-4" [class]="p.status === 'awarded' ? 'border-emerald-200 bg-emerald-50' : p.status === 'rejected' ? 'border-rose-200 bg-rose-50' : 'border-surface-200 bg-white'">
+          <h2 class="m-0 text-base font-semibold text-surface-900">
+            @switch (p.status) {
+              @case ('awarded') { <i class="pi pi-trophy mr-1 text-emerald-600" aria-hidden="true"></i>Awarded }
+              @case ('rejected') { <i class="pi pi-times-circle mr-1 text-rose-600" aria-hidden="true"></i>Not funded }
+              @default { <i class="pi pi-send mr-1 text-primary-600" aria-hidden="true"></i>Submitted, waiting for an answer }
+            }
+          </h2>
+          <p class="m-0 mt-1 text-xs text-surface-600">
+            @if (p.submittedAt) { Submitted {{ p.submittedAt | date: 'd MMM y' }} }
+            @if (p.decidedAt) { · Answer {{ p.decidedAt | date: 'd MMM y' }} }
+          </p>
+          @if (canManage()) {
+            <textarea pTextarea [(ngModel)]="outcomeDraft" rows="2" maxlength="1000" class="mt-2 w-full" placeholder="A word on the result: amount, reviewer feedback, what to do next time" aria-label="Outcome note"></textarea>
+            <div class="mt-2 flex justify-end">
+              <p-button label="Save note" size="small" severity="secondary" variant="outlined" (onClick)="saveOutcome()" />
+            </div>
+          } @else if (p.outcomeNote) {
+            <p class="m-0 mt-2 whitespace-pre-line text-sm text-surface-800">{{ p.outcomeNote }}</p>
+          }
+        </section>
+      }
+
+      <section>
+        <h2 class="mb-2 mt-0 text-sm font-semibold uppercase tracking-wide text-surface-500">{{ isReviewer() ? 'Sections for you to review' : 'Sections' }}</h2>
+        <ul class="m-0 flex list-none flex-col gap-3 p-0">
+          @for (s of sections(); track s._id) {
+            <li class="rounded-xl border border-surface-200 bg-white p-4">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                  <span class="text-base font-medium text-surface-900">{{ s.title }}</span>
+                  <p-tag [value]="sectionLabel(s.status)" [severity]="sectionSeverity[s.status]" />
+                </div>
+                <div class="flex items-center">
+                  @if (canWrite()) {
+                    <p-button label="Snippets" icon="pi pi-clone" size="small" severity="secondary" [text]="true" (onClick)="pickerSection.set(s)" />
+                    <p-button label="Ask for review" icon="pi pi-eye" size="small" severity="secondary" [text]="true" (onClick)="openReviewRequest(s)" />
+                    <p-button icon="pi pi-trash" severity="danger" [text]="true" size="small" ariaLabel="Remove section" (onClick)="confirmRemoveSection(s)" />
+                  }
+                </div>
+              </div>
+
+              @if (!isReviewer()) {
+                <div class="mt-3 grid gap-3 sm:grid-cols-3">
+                  <div>
+                    <label class="mb-1 block text-xs text-surface-500">Status</label>
+                    <p-select [ngModel]="s.status" (ngModelChange)="changeSection(s, { status: $event })" [options]="sectionStatusOptions" optionLabel="label" optionValue="value" [disabled]="!canWrite() || busy() === s._id" styleClass="w-full" appendTo="body" />
+                  </div>
+                  <div>
+                    <label class="mb-1 block text-xs text-surface-500">Owner</label>
+                    @if (canManage()) {
+                      <p-select [ngModel]="personId(s.ownerId)" (ngModelChange)="changeSection(s, { ownerId: $event })" [options]="people()" optionLabel="label" optionValue="value" [showClear]="true" placeholder="Unassigned" [disabled]="busy() === s._id" styleClass="w-full" appendTo="body" />
+                    } @else {
+                      <p class="m-0 py-2 text-sm text-surface-800">{{ personName(s.ownerId) || 'Unassigned' }}</p>
+                    }
+                  </div>
+                  <div>
+                    <label class="mb-1 block text-xs text-surface-500">Due</label>
+                    @if (canWrite()) {
+                      <p-datepicker [ngModel]="dueDateOf(s)" (ngModelChange)="onDueDate(s, $event)" [maxDate]="official()" [showClear]="true" [showIcon]="true" dateFormat="yy-mm-dd" placeholder="No date" appendTo="body" styleClass="w-full" />
+                    } @else {
+                      <p class="m-0 py-2 text-sm text-surface-800">{{ s.dueDate ? (s.dueDate | date: 'd MMM y') : 'No date' }}</p>
+                    }
+                  </div>
+                </div>
+              }
+
+              <!-- review requests on this section -->
+              @if (reviewsOf(s).length) {
+                <ul class="m-0 mt-3 flex list-none flex-col gap-2 p-0">
+                  @for (r of reviewsOf(s); track r._id) {
+                    <li class="rounded-lg bg-surface-50 p-3 text-sm">
+                      <div class="flex flex-wrap items-center justify-between gap-2">
+                        <span class="text-surface-800">
+                          <i class="pi pi-eye mr-1 text-surface-400" aria-hidden="true"></i>
+                          <b>{{ personName(r.reviewerId) }}</b> was asked by {{ personName(r.requestedBy) }}
+                        </span>
+                        <span class="flex items-center gap-1">
+                          <p-tag [value]="reviewLabel[r.status]" [severity]="reviewSeverity[r.status]" />
+                          @if (r.status === 'pending' && personId(r.reviewerId) === myId()) {
+                            <p-button label="Answer" size="small" (onClick)="openAnswer(s, r)" />
+                          }
+                          @if (r.status === 'pending' && (canManage() || personId(r.requestedBy) === myId())) {
+                            <p-button icon="pi pi-times" size="small" severity="secondary" [text]="true" ariaLabel="Cancel the request" (onClick)="cancelReview(r)" />
+                          }
+                        </span>
+                      </div>
+                      @if (r.note) { <p class="m-0 mt-1 text-xs text-surface-600">Asked: {{ r.note }}</p> }
+                      @if (r.response) { <p class="m-0 mt-1 text-xs text-surface-800">Answer: {{ r.response }}</p> }
+                    </li>
+                  }
+                </ul>
+              }
+
+              <!-- drafts -->
+              <div class="mt-3 border-t border-surface-100 pt-3">
+                @if (s.files.length) {
+                  <ul class="m-0 mb-2 flex list-none flex-col gap-1 p-0">
+                    @for (f of s.files; track f._id) {
+                      <li class="flex items-center justify-between gap-2 text-sm">
+                        <span class="min-w-0 truncate"><i class="pi pi-file mr-1 text-surface-400" aria-hidden="true"></i>{{ f.fileName }} <span class="text-xs text-surface-500">· {{ fileSizeText(f.size) }} · {{ personName(f.uploadedBy) }}</span></span>
+                        <span class="flex shrink-0">
+                          <p-button icon="pi pi-download" [text]="true" size="small" severity="secondary" ariaLabel="Download" (onClick)="download(f)" />
+                          @if (canWrite()) { <p-button icon="pi pi-times" [text]="true" size="small" severity="danger" ariaLabel="Remove file" (onClick)="removeFile(f)" /> }
+                        </span>
+                      </li>
+                    }
+                  </ul>
+                } @else {
+                  <p class="m-0 mb-2 text-xs text-surface-500">No drafts attached. Write in your own tools and attach the file here.</p>
+                }
+                @if (canWrite()) {
+                  <label class="inline-flex cursor-pointer items-center gap-1 text-sm text-primary-600">
+                    <i class="pi pi-paperclip" aria-hidden="true"></i>Attach a draft (PDF or Word)
+                    <input type="file" accept=".pdf,.doc,.docx" class="hidden" (change)="onFilePicked(s, $event)" [disabled]="busy() === s._id" />
+                  </label>
+                }
+              </div>
+
+              <!-- comments -->
+              <div class="mt-3 border-t border-surface-100 pt-3">
+                <p-button [label]="isOpen(s) ? 'Hide comments' : 'Comments'" [icon]="isOpen(s) ? 'pi pi-chevron-up' : 'pi pi-comment'" size="small" severity="secondary" [text]="true" (onClick)="toggleThread(s)" />
+                @if (isOpen(s)) {
+                  <ul class="m-0 mt-2 flex list-none flex-col gap-2 p-0">
+                    @for (c of threadOf(s); track c._id) {
+                      <li class="rounded-lg bg-surface-50 p-3 text-sm">
+                        <div class="flex items-center justify-between gap-2">
+                          <span class="font-medium text-surface-900">{{ personName(c.authorId) }} <span class="text-xs font-normal text-surface-500">· {{ c.createdAt | date: 'd MMM, HH:mm' }}</span></span>
+                          @if (canDeleteComment(c)) {
+                            <p-button icon="pi pi-trash" size="small" severity="danger" [text]="true" ariaLabel="Delete comment" (onClick)="deleteComment(s, c)" />
+                          }
+                        </div>
+                        <p class="m-0 mt-1 whitespace-pre-line text-surface-800">{{ c.body }}</p>
+                      </li>
+                    } @empty {
+                      <li class="text-xs text-surface-500">No comments yet.</li>
+                    }
+                  </ul>
+                  @if (canComment) {
+                    <div class="mt-2 flex gap-2">
+                      <textarea pTextarea [(ngModel)]="drafts[s._id]" rows="2" maxlength="2000" class="w-full" placeholder="Write a comment" aria-label="New comment"></textarea>
+                      <p-button label="Post" size="small" [disabled]="!(drafts[s._id] ?? '').trim()" (onClick)="postComment(s)" />
+                    </div>
+                  }
+                }
+              </div>
+            </li>
+          }
+        </ul>
+
+        @if (canWrite()) {
+          <div class="mt-3 flex gap-2">
+            <input pInputText [(ngModel)]="newSection" (keydown.enter)="addSection()" maxlength="120" placeholder="Add a section, e.g. Data management plan" class="w-full" aria-label="New section" />
+            <p-button label="Add" icon="pi pi-plus" [disabled]="newSection.trim().length < 2" (onClick)="addSection()" />
+          </div>
+        }
+      </section>
+
+      @if (canManage()) {
+        <section class="border-t border-surface-200 pt-4 text-right">
+          <p-button label="Delete proposal" icon="pi pi-trash" severity="danger" variant="outlined" size="small" (onClick)="confirmDelete()" />
+        </section>
+      }
+
+      <!-- snippets: copy text into your own draft -->
+      @if (pickerSection(); as target) {
+        <app-snippet-picker [teamId]="p.teamId?._id ?? null" [sectionTitle]="target.title" (closed)="pickerSection.set(null)" />
+      }
+
+      <!-- ask someone to review a section -->
+      <p-dialog [visible]="!!reviewTarget()" (visibleChange)="!$event && reviewTarget.set(null)" [modal]="true" [style]="{ width: '30rem', maxWidth: '95vw' }" header="Ask for a review">
+        <p class="mt-0 text-sm text-surface-600">
+          Ask a teammate or one of your supervisors to look at "{{ reviewTarget()?.title }}". They can read this section and its drafts, comment, and answer. Nothing else.
+        </p>
+        @if (candidatesLoading()) {
+          <p-skeleton height="2.5rem" />
+        } @else if (!candidates().length) {
+          <p class="m-0 text-sm text-surface-500">There is nobody to ask yet: add teammates, or a supervisor from your thesis page.</p>
+        } @else {
+          <p-select [(ngModel)]="reviewerId" [options]="candidateOptions" optionLabel="label" optionValue="value" placeholder="Choose who" styleClass="w-full" appendTo="body" ariaLabel="Reviewer" />
+          <textarea pTextarea [(ngModel)]="reviewNote" rows="3" maxlength="500" class="mt-3 w-full" placeholder="What should they look at? (optional)" aria-label="Note"></textarea>
+        }
+        <div class="mt-3 flex justify-end gap-2">
+          <p-button label="Cancel" severity="secondary" [text]="true" (onClick)="reviewTarget.set(null)" />
+          <p-button label="Send request" icon="pi pi-send" [disabled]="!reviewerId" (onClick)="sendReviewRequest()" />
+        </div>
+      </p-dialog>
+
+      <!-- answer a review request -->
+      <p-dialog [visible]="!!answering()" (visibleChange)="!$event && answering.set(null)" [modal]="true" [style]="{ width: '30rem', maxWidth: '95vw' }" header="Your review">
+        <p class="mt-0 text-sm text-surface-600">"{{ answering()?.section?.title }}": approve it, or ask for changes. Use the comments for line-by-line remarks.</p>
+        <textarea pTextarea [(ngModel)]="answerText" rows="4" maxlength="1000" class="w-full" placeholder="Your overall answer (optional)" aria-label="Answer"></textarea>
+        <div class="mt-3 flex justify-end gap-2">
+          <p-button label="Request changes" icon="pi pi-replay" severity="danger" variant="outlined" (onClick)="answer('changes')" />
+          <p-button label="Approve" icon="pi pi-check" (onClick)="answer('approve')" />
+        </div>
+      </p-dialog>
+    }
+  }
+
+  <p-confirmDialog />
+</div>

@@ -106,6 +106,12 @@ export class NotificationsService {
     if (n.entityType === 'team' && n.entityId) {
       return ['/main/teams', n.entityId];
     }
+    if (n.entityType === 'proposal' && n.entityId) {
+      return ['/main/proposals', n.entityId];
+    }
+    if (n.entityType === 'grant' && n.entityId) {
+      return ['/main/grants', n.entityId];
+    }
     if (n.entityType === 'circle' && n.entityId) {
       return ['/main/circles', n.entityId];
     }

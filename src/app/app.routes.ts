@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { PublicLayoutComponent } from './layouts/public-layout/public-layout.component';
 import { MainLayoutComponent } from './layouts/main-layout/main-layout.component';
 import { authGuard } from './core/guards/auth.guard';
+import { adminGuard } from './core/guards/admin.guard';
 
 export const routes: Routes = [
   {
@@ -215,6 +216,55 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/supervision/components/meeting-page/meeting-page.component').then(
             (m) => m.MeetingPageComponent,
+          ),
+      },
+
+      // Snippet library
+      {
+        path: 'snippets',
+        loadComponent: () =>
+          import('./features/grants/components/snippet-list/snippet-list.component').then(
+            (m) => m.SnippetListComponent,
+          ),
+      },
+
+      // Grant proposals
+      {
+        path: 'proposals',
+        loadComponent: () =>
+          import('./features/grants/components/proposal-list/proposal-list.component').then(
+            (m) => m.ProposalListComponent,
+          ),
+      },
+      {
+        path: 'proposals/:id',
+        loadComponent: () =>
+          import('./features/grants/components/proposal-detail/proposal-detail.component').then(
+            (m) => m.ProposalDetailComponent,
+          ),
+      },
+
+      // Grant radar ('manage' must stay above ':id')
+      {
+        path: 'grants',
+        loadComponent: () =>
+          import('./features/grants/components/grant-list/grant-list.component').then(
+            (m) => m.GrantListComponent,
+          ),
+      },
+      {
+        path: 'grants/manage',
+        canActivate: [adminGuard],
+        loadComponent: () =>
+          import('./features/grants/components/grant-manage/grant-manage.component').then(
+            (m) => m.GrantManageComponent,
+          ),
+      },
+      {
+        path: 'grants/:id',
+        loadComponent: () =>
+          import('./features/grants/components/grant-detail/grant-detail.component').then(
+            (m) => m.GrantDetailComponent,
           ),
       },
 

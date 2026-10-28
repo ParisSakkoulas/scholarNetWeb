@@ -189,3 +189,10 @@ button:focus-visible {
     padding: 8px;
   }
 }
+
+/* the menu button opens and closes the side menu on every screen size */
+.menu-toggle {
+  display: inline-flex;
+  flex-shrink: 0;
+  margin-right: -16px;
+}

@@ -1,0 +1,33 @@
+<div class="mx-auto flex max-w-6xl flex-col gap-5 p-4">
+  <a routerLink="/main/grants" class="text-sm text-primary-600 no-underline"><i class="pi pi-arrow-left mr-1" aria-hidden="true"></i>Grant radar</a>
+
+  <header class="flex flex-wrap items-center justify-between gap-3">
+    <div>
+      <h1 class="m-0 text-2xl font-semibold text-surface-900">Manage grant calls</h1>
+      <p class="m-0 text-sm text-surface-500">Review submissions and keep the list accurate. Approve or reject only works on pending calls.</p>
+    </div>
+    <p-button label="Add call" icon="pi pi-plus" (onClick)="formMode.set('create')" />
+  </header>
+
+  <p-selectbutton [options]="statusTabs" [ngModel]="status()" (ngModelChange)="setStatus($event)" optionLabel="label" optionValue="value" [allowEmpty]="false" ariaLabel="Status" />
+
+  <app-generic-table [columns]="columns" [config]="config" storageKey="grant-manage" [fetchPage]="fetchPage" [actions]="rowActions" />
+
+  @if (formMode()) {
+    <app-grant-form mode="create" (saved)="onSaved()" (cancelled)="formMode.set(null)" />
+  }
+  @if (editing(); as g) {
+    <app-grant-form mode="edit" [grant]="g" (saved)="onSaved()" (cancelled)="editing.set(null)" />
+  }
+
+  <p-dialog header="Reject this submission" [visible]="!!rejecting()" (visibleChange)="!$event && rejecting.set(null)" [modal]="true" [style]="{ width: '30rem', maxWidth: '95vw' }">
+    <p class="mt-0 text-sm text-surface-600">Tell the submitter why. They will see this note.</p>
+    <textarea pTextarea [(ngModel)]="rejectNote" rows="3" maxlength="500" class="w-full" aria-label="Reason"></textarea>
+    <div class="mt-3 flex justify-end gap-2">
+      <p-button label="Cancel" severity="secondary" [text]="true" (onClick)="rejecting.set(null)" />
+      <p-button label="Reject" severity="danger" (onClick)="reject()" />
+    </div>
+  </p-dialog>
+
+  <p-confirmDialog />
+</div>

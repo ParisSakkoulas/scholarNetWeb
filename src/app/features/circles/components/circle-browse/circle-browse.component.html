@@ -101,12 +101,16 @@
       }
     </ul>
 
-    @if (pages() > 1) {
-      <nav class="flex items-center justify-center gap-3" aria-label="Pages">
-        <p-button icon="pi pi-chevron-left" severity="secondary" [text]="true" [disabled]="page() <= 1" (onClick)="goTo(page() - 1)" ariaLabel="Previous page" />
-        <span class="text-sm text-surface-600">Page {{ page() }} of {{ pages() }}</span>
-        <p-button icon="pi pi-chevron-right" severity="secondary" [text]="true" [disabled]="page() >= pages()" (onClick)="goTo(page() + 1)" ariaLabel="Next page" />
-      </nav>
+    @if (total() > 0) {
+      <p-paginator
+        [first]="first()"
+        [rows]="pageSize()"
+        [totalRecords]="total()"
+        [rowsPerPageOptions]="pageSizeOptions"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="{first} to {last} of {totalRecords}"
+        (onPageChange)="onPage($event)"
+      />
     }
   }
 

@@ -1,0 +1,62 @@
+<p-dialog
+  [visible]="true"
+  [modal]="true"
+  [closable]="false"
+  [style]="{ width: '40rem', maxWidth: '95vw' }"
+  header="Your grant preferences"
+>
+  @if (loading()) {
+    <p-skeleton height="12rem" />
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="save()" class="flex flex-col gap-4">
+      <p class="m-0 text-sm text-surface-600">
+        "For you" shows open calls that fit your country and career stage, ranked by the fields you list.
+        Leave something empty to not filter on it.
+      </p>
+
+      <div>
+        <label class="mb-1 block text-sm font-medium text-surface-700">Countries you can apply from</label>
+        <p-multiselect formControlName="countries" [options]="countries" optionLabel="name" optionValue="code" [filter]="true"
+          placeholder="Any country" display="chip" [maxSelectedLabels]="3" styleClass="w-full" appendTo="body" />
+      </div>
+
+      <div>
+        <label class="mb-1 block text-sm font-medium text-surface-700">Career stage</label>
+        <p-select formControlName="careerStage" [options]="careerStages" optionLabel="label" optionValue="value"
+          placeholder="Any stage" [showClear]="true" styleClass="w-full" appendTo="body" />
+      </div>
+
+      <div>
+        <label class="mb-1 block text-sm font-medium text-surface-700">Research fields (type one and press Enter)</label>
+        <p-autocomplete formControlName="fields" [multiple]="true" [typeahead]="false" [fluid]="true" placeholder="e.g. Machine learning" />
+        <p class="m-0 mt-1 text-xs text-surface-500">A call is shown when it lists at least one of these fields.</p>
+      </div>
+
+      <div>
+        <label class="mb-1 block text-sm font-medium text-surface-700">Funding types you prefer</label>
+        <p-multiselect formControlName="fundingTypes" [options]="fundingTypes" optionLabel="label" optionValue="value"
+          placeholder="Any type" styleClass="w-full" appendTo="body" />
+      </div>
+
+      <label class="flex items-start gap-3 rounded-lg border border-surface-200 p-3">
+        <p-toggleswitch formControlName="alertsEnabled" inputId="alerts" />
+        <span>
+          <span class="block text-sm font-medium text-surface-900">Alerts</span>
+          <span class="block text-xs text-surface-500">
+            Tell me about new matching calls, saved calls closing in 14 and 3 days, and changes to calls I saved.
+            Turn this off to stop all grant alerts.
+          </span>
+        </span>
+      </label>
+
+      @if (error()) {
+        <p class="m-0 text-sm text-red-600">{{ error() }}</p>
+      }
+
+      <div class="flex justify-end gap-2 pt-1">
+        <p-button type="button" label="Cancel" severity="secondary" [text]="true" (click)="cancelled.emit()" />
+        <p-button type="submit" label="Save" [loading]="submitting()" [disabled]="submitting()" />
+      </div>
+    </form>
+  }
+</p-dialog>

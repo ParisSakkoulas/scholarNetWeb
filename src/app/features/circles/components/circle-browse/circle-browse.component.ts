@@ -5,6 +5,7 @@ import { Router, RouterLink } from '@angular/router';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
+import { PaginatorModule, PaginatorState } from 'primeng/paginator';
 import { SelectModule } from 'primeng/select';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TagModule } from 'primeng/tag';
@@ -20,7 +21,8 @@ import {
 import { CirclesService } from '../../services/circles.service';
 import { CircleFormComponent, browserTimezone } from '../circle-form/circle-form.component';
 
-const PAGE_SIZE = 12;
+const PAGE_SIZE_OPTIONS = [6, 12, 24, 48];
+const DEFAULT_PAGE_SIZE = 12;
 
 /** Browse open circles, filter them, and join (or ask to join) one. */
 @Component({
@@ -32,6 +34,7 @@ const PAGE_SIZE = 12;
     RouterLink,
     ButtonModule,
     InputTextModule,
+    PaginatorModule,
     SelectModule,
     SkeletonModule,
     TagModule,
@@ -71,7 +74,18 @@ export class CircleBrowseComponent implements OnInit, OnDestroy {
 
   readonly stageLabel = STAGE_LABEL;
   readonly personName = personName;
-  readonly pages = computed(() => Math.max(1, Math.ceil(this.total() / PAGE_SIZE)));
+  readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
+  readonly pageSize = signal(DEFAULT_PAGE_SIZE);
+  /** Index of the first row shown, as the PrimeNG paginator wants it. */
+  readonly first = computed(() => (this.page() - 1) * this.pageSize());
+
+  /** Page changed or "rows per page" picked. */
+  onPage(event: PaginatorState): void {
+    this.pageSize.set(event.rows ?? DEFAULT_PAGE_SIZE);
+    this.page.set((event.page ?? 0) + 1);
+    this.load();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
   private typing?: ReturnType<typeof setTimeout>;
 
@@ -111,11 +125,6 @@ export class CircleBrowseComponent implements OnInit, OnDestroy {
     this.load();
   }
 
-  goTo(page: number): void {
-    this.page.set(page);
-    this.load();
-  }
-
   load(): void {
     this.loading.set(true);
     this.loadError.set(false);
@@ -126,7 +135,7 @@ export class CircleBrowseComponent implements OnInit, OnDestroy {
         visibility: this.visibility,
         timezone: this.zone === 'mine' ? browserTimezone() : '',
         page: this.page(),
-        pageSize: PAGE_SIZE,
+        pageSize: this.pageSize(),
       })
       .subscribe({
         next: (res) => {

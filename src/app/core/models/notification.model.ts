@@ -33,6 +33,16 @@ export type NotificationType =
   | 'CIRCLE_JOIN_REQUEST'
   | 'CIRCLE_JOIN_APPROVED'
   | 'CIRCLE_MEMBER_JOINED'
+  | 'GRANT_SUBMISSION_APPROVED'
+  | 'GRANT_SUBMISSION_REJECTED'
+  | 'GRANT_NEW_MATCH'
+  | 'GRANT_DEADLINE_SOON'
+  | 'GRANT_UPDATED'
+  | 'PROPOSAL_REMINDER'
+  | 'PROPOSAL_SECTION_ASSIGNED'
+  | 'PROPOSAL_REVIEW_REQUESTED'
+  | 'PROPOSAL_REVIEW_DONE'
+  | 'PROPOSAL_COMMENT'
   | 'SYSTEM';
 
 export interface AppNotification {
@@ -119,6 +129,56 @@ export const NOTIFICATION_TYPE_META: Record<
     label: 'Circles',
     icon: 'pi pi-user-plus',
     color: 'bg-emerald-100 text-emerald-700',
+  },
+  GRANT_SUBMISSION_APPROVED: {
+    label: 'Grants',
+    icon: 'pi pi-compass',
+    color: 'bg-emerald-100 text-emerald-700',
+  },
+  GRANT_SUBMISSION_REJECTED: {
+    label: 'Grants',
+    icon: 'pi pi-compass',
+    color: 'bg-rose-100 text-rose-700',
+  },
+  GRANT_NEW_MATCH: {
+    label: 'Grants',
+    icon: 'pi pi-compass',
+    color: 'bg-emerald-100 text-emerald-700',
+  },
+  GRANT_DEADLINE_SOON: {
+    label: 'Grants',
+    icon: 'pi pi-clock',
+    color: 'bg-amber-100 text-amber-700',
+  },
+  GRANT_UPDATED: {
+    label: 'Grants',
+    icon: 'pi pi-refresh',
+    color: 'bg-sky-100 text-sky-700',
+  },
+  PROPOSAL_REMINDER: {
+    label: 'Proposals',
+    icon: 'pi pi-clock',
+    color: 'bg-amber-100 text-amber-700',
+  },
+  PROPOSAL_SECTION_ASSIGNED: {
+    label: 'Proposals',
+    icon: 'pi pi-file-edit',
+    color: 'bg-violet-100 text-violet-700',
+  },
+  PROPOSAL_REVIEW_REQUESTED: {
+    label: 'Proposals',
+    icon: 'pi pi-eye',
+    color: 'bg-amber-100 text-amber-700',
+  },
+  PROPOSAL_REVIEW_DONE: {
+    label: 'Proposals',
+    icon: 'pi pi-check-circle',
+    color: 'bg-emerald-100 text-emerald-700',
+  },
+  PROPOSAL_COMMENT: {
+    label: 'Proposals',
+    icon: 'pi pi-comment',
+    color: 'bg-sky-100 text-sky-700',
   },
   MENTION: {
     label: 'Mentions',

@@ -1,4 +1,17 @@
 <header class="app-header">
+  <!-- Opens and closes the section menu (Publications, Teams, Thesis, Circles, Grants) -->
+  @if (currentUser()) {
+    <p-button
+      class="menu-toggle"
+      icon="pi pi-bars"
+      variant="text"
+      severity="secondary"
+      rounded
+      [ariaLabel]="drawer.open() ? 'Close menu' : 'Open menu'"
+      (onClick)="drawer.toggle()"
+    />
+  }
+
   <!-- Brand -->
   <a
     class="brand"
@@ -51,20 +64,8 @@
       <a routerLink="/main/feed" routerLinkActive="is-active" class="nav-link"
         >Feed</a
       >
-      <a routerLink="/main/publications" routerLinkActive="is-active" class="nav-link"
-        >Publications</a
-      >
       <a routerLink="/network" routerLinkActive="is-active" class="nav-link"
         >Network</a
-      >
-      <a routerLink="/main/teams" routerLinkActive="is-active" class="nav-link"
-        >Teams</a
-      >
-      <a routerLink="/main/supervision" routerLinkActive="is-active" class="nav-link"
-        >Thesis</a
-      >
-      <a routerLink="/main/circles" routerLinkActive="is-active" class="nav-link"
-        >Circles</a
       >
 
       <!-- Messages -->
